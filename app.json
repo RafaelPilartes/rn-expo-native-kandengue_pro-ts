@@ -10,21 +10,82 @@
     "splash": {
       "image": "./assets/splash-icon.png",
       "resizeMode": "contain",
-      "backgroundColor": "#ffffff"
+      "backgroundColor": "#EB212D"
     },
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "googleServicesFile": "./firebase/GoogleService-Info.plist",
+      "bundleIdentifier": "com.kandengueatrevido.pro",
+      "infoPlist": {
+        "UIBackgroundModes": ["location"],
+        "NSLocationWhenInUseUsageDescription": "This app requires access to your location to provide navigation and nearby services.",
+        "NSLocationAlwaysAndWhenInUseUsageDescription": "This app needs background location access to keep tracking your rides even when the app is closed.",
+        "NSLocationAlwaysUsageDescription": "This app requires background location access to function properly.",
+        "NSCameraUsageDescription": "Camera access is required to take photos.",
+        "NSMicrophoneUsageDescription": "Microphone access is required for in-app audio features.",
+        "NSPhotoLibraryUsageDescription": "Photo library access is required to upload or select images.",
+        "NSPhotoLibraryAddUsageDescription": "The app needs permission to save images to your library.",
+        "NSContactsUsageDescription": "Contacts access is required to allow selecting contacts from your device.",
+        "NSBluetoothAlwaysUsageDescription": "Bluetooth is required for connectivity features.",
+        "NSBluetoothPeripheralUsageDescription": "Bluetooth access is required to interact with nearby devices.",
+        "NSCalendarsUsageDescription": "Calendar access is required for scheduling features.",
+        "NSRemindersUsageDescription": "Reminders access is needed for task scheduling.",
+        "NSCameraUsageDescription": "Camera access is needed for taking photos.",
+        "NSUserTrackingUsageDescription": "Tracking permission is needed for analytics and personalized experience.",
+        "NSSpeechRecognitionUsageDescription": "Speech recognition is required to support voice features."
+      },
+      "config": {
+        "googleMapsApiKey": "AIzaSyCcaxxnCRThBiRzzjF4SHO-yo6qtV8q7iM"
+      }
     },
     "android": {
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
-        "backgroundColor": "#ffffff"
+        "backgroundColor": "#EB212D"
       },
       "edgeToEdgeEnabled": true,
-      "predictiveBackGestureEnabled": false
+      "predictiveBackGestureEnabled": false,
+      "googleServicesFile": "./firebase/google-services.json",
+      "package": "com.kandengueatrevido.pro",
+      "permissions": [
+        "INTERNET",
+        "VIBRATE",
+        "ACCESS_FINE_LOCATION",
+        "ACCESS_COARSE_LOCATION",
+        "ACCESS_BACKGROUND_LOCATION",
+        "RECORD_AUDIO",
+        "READ_EXTERNAL_STORAGE",
+        "WRITE_EXTERNAL_STORAGE",
+        "CAMERA",
+        "READ_CONTACTS",
+        "READ_PHONE_STATE",
+        "POST_NOTIFICATIONS"
+      ],
+      "config": {
+        "googleMaps": {
+          "apiKey": "AIzaSyCcaxxnCRThBiRzzjF4SHO-yo6qtV8q7iM"
+        }
+      }
     },
     "web": {
       "favicon": "./assets/favicon.png"
-    }
+    },
+    "extra": {
+      "eas": {
+        "projectId": "06ec27bd-85b7-4a93-a79d-9ec8f6b2767a"
+      }
+    },
+    "plugins": [
+      "@react-native-firebase/app",
+      "@react-native-firebase/auth",
+      [
+        "expo-build-properties",
+        {
+          "ios": {
+            "useFrameworks": "static"
+          }
+        }
+      ]
+    ]
   }
 }
