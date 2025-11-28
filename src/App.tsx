@@ -1,20 +1,71 @@
-import { StatusBar } from 'expo-status-bar';
-import { StyleSheet, Text, View } from 'react-native';
+import { useEffect } from 'react'
+import { StatusBar } from 'expo-status-bar'
 
-export default function App() {
+import '@/styles/global.css'
+import '@/i18n'
+import AppRouter from '@/routers'
+import { STORAGE_TYPE } from '@/storage/constants'
+import { StorageManager } from '@/storage/storageManager'
+import { useTranslation } from './hooks/useTranslation'
+import { useAppStore } from './storage/store/useAppStore'
+import { ThemeProvider } from './providers/ThemeProvider'
+import { NavigationContainer } from '@react-navigation/native'
+import { NetworkProvider } from './providers/NetworkProvider'
+import { GestureHandlerRootView } from 'react-native-gesture-handler'
+import { BottomSheetModalProvider } from '@gorhom/bottom-sheet'
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
+import { LocationProvider } from './context/LocationContext'
+import { TrackRideProvider } from './context/TrackRideContext'
+import { SafeAreaProvider } from 'react-native-safe-area-context'
+
+const queryClient = new QueryClient()
+
+function App() {
+  const { language } = useAppStore()
+  const { changeLanguage, ready } = useTranslation()
+
+  async function StoragePrepareApp() {
+    await StorageManager.initialize(STORAGE_TYPE.MMKV)
+  }
+
+  useEffect(() => {
+    console.log('Aguardando tradução...')
+
+    if (ready) {
+      changeLanguage(language)
+      console.log('Aplicando idioma:', language)
+    }
+  }, [ready, language])
+
+  useEffect(() => {
+    const init = async () => {
+      await StoragePrepareApp()
+    }
+    init()
+  }, [])
+
   return (
-    <View style={styles.container}>
-      <Text>Open up App.tsx to start working on your app!</Text>
-      <StatusBar style="auto" />
-    </View>
-  );
+    <SafeAreaProvider>
+      <ThemeProvider>
+        <QueryClientProvider client={queryClient}>
+          <NavigationContainer>
+            <GestureHandlerRootView style={{ flex: 1 }}>
+              <BottomSheetModalProvider>
+                <LocationProvider>
+                  <TrackRideProvider>
+                    <NetworkProvider>
+                      <StatusBar style="dark" />
+                      <AppRouter />
+                    </NetworkProvider>
+                  </TrackRideProvider>
+                </LocationProvider>
+              </BottomSheetModalProvider>
+            </GestureHandlerRootView>
+          </NavigationContainer>
+        </QueryClientProvider>
+      </ThemeProvider>
+    </SafeAreaProvider>
+  )
 }
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#fff',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-});
+export default App
