@@ -21,7 +21,7 @@ type RideFinishedScreenRouteParams = {
 }
 
 export default function RideFinishedScreen() {
-  const { navigationMainStack } = useAppProvider()
+  const { navigationMainStack, navigationHomeStack } = useAppProvider()
   const route = useRoute()
   const { details } = route.params as RideFinishedScreenRouteParams
 
@@ -142,7 +142,10 @@ export default function RideFinishedScreen() {
             <TouchableOpacity
               className="flex-1 bg-gray-200 rounded-xl py-4 flex-row items-center justify-center"
               onPress={() => {
-                navigationMainStack.navigate(ROUTES.MainTab.HOME)
+                navigationHomeStack.reset({
+                  index: 0,
+                  routes: [{ name: ROUTES.HomeStack.HOME }]
+                })
               }}
             >
               <Text className="text-gray-700 font-semibold text-base">
@@ -154,7 +157,7 @@ export default function RideFinishedScreen() {
               className="flex-1 bg-primary-200 rounded-xl py-4 flex-row items-center justify-center"
               onPress={() => {
                 // Navegar para tela de avaliação ou histórico
-                navigationMainStack.navigate(ROUTES.MainTab.HOME)
+                navigationHomeStack.goBack()
               }}
             >
               <Star size={18} color="white" className="mr-2" />

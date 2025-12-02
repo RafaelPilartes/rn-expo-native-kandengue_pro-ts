@@ -1,5 +1,5 @@
 // src/screens/DocumentsScreen.tsx
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react'
 import {
   View,
   Text,
@@ -7,220 +7,219 @@ import {
   Image,
   ScrollView,
   Alert,
-  ActivityIndicator,
-} from 'react-native';
+  ActivityIndicator
+} from 'react-native'
 import {
   Upload,
   CheckCircle,
   XCircle,
   Clock,
-  AlertCircle,
-} from 'lucide-react-native';
-import PageHeader from '@/components/PageHeader';
-import { useAuthStore } from '@/storage/store/useAuthStore';
-import { useDocumentsViewModel } from '@/viewModels/DocumentViewModel';
-import { useFileUploadViewModel } from '@/viewModels/FileUploadViewModel';
-import { useImagePicker } from '@/hooks/useImagePicker';
-import { ImagePickerPresets } from '@/services/picker/imagePickerPresets';
-import { DocumentInterface } from '@/interfaces/IDocument';
-import { DocumentType } from '@/types/document';
-import { DocumentStatus } from '@/types/enum';
-import { BaseLoadingPage } from '@/components/loadingPage';
+  AlertCircle
+} from 'lucide-react-native'
+import PageHeader from '@/components/PageHeader'
+import { useAuthStore } from '@/storage/store/useAuthStore'
+import { useDocumentsViewModel } from '@/viewModels/DocumentViewModel'
+import { useFileUploadViewModel } from '@/viewModels/FileUploadViewModel'
+import { useImagePicker } from '@/hooks/useImagePicker'
+import { ImagePickerPresets } from '@/services/picker/imagePickerPresets'
+import { DocumentInterface } from '@/interfaces/IDocument'
+import { DocumentType } from '@/types/document'
+import { DocumentStatus } from '@/types/enum'
+import { BaseLoadingPage } from '@/components/loadingPage'
 
 // 🔹 TIPOS para documentos obrigatórios do motorista
 const REQUIRED_DOCUMENTS: Array<{
-  id: DocumentType;
-  label: string;
-  description: string;
-  placeholder: string;
-  isRequired: boolean;
+  id: DocumentType
+  label: string
+  description: string
+  placeholder: string
+  isRequired: boolean
 }> = [
   {
     id: 'driver_license',
     label: 'Carta de Condução',
     description: 'Documento oficial de habilitação para conduzir',
     placeholder: 'https://via.placeholder.com/150x100.png?text=Carta+Condução',
-    isRequired: true,
+    isRequired: true
   },
   {
     id: 'id_front',
     label: 'Bilhete de Identidade (Frente)',
     description: 'Frente do seu documento de identificação',
     placeholder: 'https://via.placeholder.com/150x100.png?text=BI+Frente',
-    isRequired: true,
+    isRequired: true
   },
   {
     id: 'id_back',
     label: 'Bilhete de Identidade (Verso)',
     description: 'Verso do seu documento de identificação',
     placeholder: 'https://via.placeholder.com/150x100.png?text=BI+Verso',
-    isRequired: true,
-  },
-];
+    isRequired: true
+  }
+]
 
 export default function DocumentsScreen() {
   // 🔹 STORES & VIEWMODELS
-  const { driver } = useAuthStore();
+  const { driver } = useAuthStore()
   const { fetchAllDocumentsByField, createDocument, updateDocument } =
-    useDocumentsViewModel();
+    useDocumentsViewModel()
 
-  const { uploadSimple, uploadError } = useFileUploadViewModel();
+  const { uploadSimple, uploadError } = useFileUploadViewModel()
 
   const {
     pickImage,
     isUploading: isSelectingImage,
-    clearError,
-  } = useImagePicker();
+    clearError
+  } = useImagePicker()
 
   // 🔹 ESTADOS
-  const [documents, setDocuments] = useState<DocumentInterface[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
+  const [documents, setDocuments] = useState<DocumentInterface[]>([])
+  const [isLoading, setIsLoading] = useState(true)
 
   const [uploadingDocuments, setUploadingDocuments] = useState<Set<string>>(
-    new Set(),
-  );
-  const [selectedFiles, setSelectedFiles] = useState<Record<string, string>>(
-    {},
-  );
-  const [hasPendingChanges, setHasPendingChanges] = useState(false);
+    new Set()
+  )
+  const [selectedFiles, setSelectedFiles] = useState<Record<string, string>>({})
+  const [hasPendingChanges, setHasPendingChanges] = useState(false)
 
   // 🔹 EFFECT: Verificar mudanças pendentes
   useEffect(() => {
-    const hasChanges = Object.keys(selectedFiles).length > 0;
-    setHasPendingChanges(hasChanges);
-  }, [selectedFiles]);
+    const hasChanges = Object.keys(selectedFiles).length > 0
+    setHasPendingChanges(hasChanges)
+  }, [selectedFiles])
 
   // 🔹 FUNÇÃO: Fazer upload da imagem
   const handleUploadDocument = async (
     documentType: DocumentType,
-    fileUri: string,
+    fileUri: string
   ): Promise<string> => {
     try {
-      console.log(`📤 Iniciando upload do documento: ${documentType}`);
+      console.log(`📤 Iniciando upload do documento: ${documentType}`)
 
       const { url, path } = await uploadSimple({
         fileUri,
-        folder: `documents/${driver?.id}`,
-      });
+        folder: `documents/${driver?.id}`
+      })
 
       if (!url || !path) {
-        const errorMsg = uploadError?.message || 'Erro ao carregar documento';
-        console.error('❌ Upload falhou:', errorMsg);
-        throw new Error(errorMsg);
+        const errorMsg = uploadError?.message || 'Erro ao carregar documento'
+        console.error('❌ Upload falhou:', errorMsg)
+        throw new Error(errorMsg)
       }
 
-      console.log(`✅ Upload concluído: ${url}`);
-      return url;
+      console.log(`✅ Upload concluído: ${url}`)
+      return url
     } catch (err) {
-      console.error(`❌ Erro no upload do documento ${documentType}:`, err);
-      throw err;
+      console.error(`❌ Erro no upload do documento ${documentType}:`, err)
+      throw err
     }
-  };
+  }
 
   // 🔹 FUNÇÃO: Selecionar imagem
   const handlePickImage = async (documentType: DocumentType) => {
     try {
-      clearError();
+      clearError()
 
       const imageUri = await pickImage(
         ImagePickerPresets.DOCUMENT.config,
-        ImagePickerPresets.DOCUMENT.validation,
-      );
+        ImagePickerPresets.DOCUMENT.validation
+      )
 
       if (imageUri) {
-        console.log(`🖼️ Imagem selecionada para ${documentType}:`, imageUri);
+        console.log(`🖼️ Imagem selecionada para ${documentType}:`, imageUri)
         setSelectedFiles(prev => ({
           ...prev,
-          [documentType]: imageUri,
-        }));
+          [documentType]: imageUri
+        }))
       }
     } catch (error: any) {
-      console.error('❌ Erro ao selecionar imagem:', error);
+      console.error('❌ Erro ao selecionar imagem:', error)
       Alert.alert(
         'Erro',
-        error.message || 'Não foi possível selecionar a imagem',
-      );
+        error.message || 'Não foi possível selecionar a imagem'
+      )
     }
-  };
+  }
 
   // 🔹 FUNÇÃO: Salvar documento individual
   const handleSaveDocument = async (documentType: DocumentType) => {
     if (!driver?.id) {
-      Alert.alert('Erro', 'ID do motorista não encontrado');
-      return;
+      Alert.alert('Erro', 'ID do motorista não encontrado')
+      return
     }
 
-    const fileUri = selectedFiles[documentType];
+    const fileUri = selectedFiles[documentType]
     if (!fileUri) {
-      Alert.alert('Aviso', 'Por favor, selecione uma imagem primeiro');
-      return;
+      Alert.alert('Aviso', 'Por favor, selecione uma imagem primeiro')
+      return
     }
 
     // 🔹 ADICIONAR ao conjunto de uploads em andamento
-    setUploadingDocuments(prev => new Set(prev).add(documentType));
+    setUploadingDocuments(prev => new Set(prev).add(documentType))
 
     try {
       // 1. Fazer upload da imagem
-      const documentUrl = await handleUploadDocument(documentType, fileUri);
+      const documentUrl = await handleUploadDocument(documentType, fileUri)
 
       // 2. Buscar documento existente
       const existingDoc = documents?.find(
-        doc => doc.type === documentType && doc.user?.id === driver.id,
-      );
+        doc => doc.type === documentType && doc.user?.id === driver.id
+      )
 
       if (existingDoc) {
         // 3. ATUALIZAR documento existente
-        console.log(`📝 Atualizando documento existente: ${documentType}`);
+        console.log(`📝 Atualizando documento existente: ${documentType}`)
         await updateDocument.mutateAsync({
           id: existingDoc.id,
           document: {
             url: documentUrl,
             status: 'pending' as DocumentStatus,
-            updated_at: new Date(),
-          },
-        });
+            updated_at: new Date()
+          }
+        })
       } else {
         // 4. CRIAR novo documento
-        console.log(`📝 Criando novo documento: ${documentType}`);
+        console.log(`📝 Criando novo documento: ${documentType}`)
         await createDocument.mutateAsync({
           user: { id: driver.id } as any,
           type: documentType,
           url: documentUrl,
           status: 'pending' as DocumentStatus,
-          label: REQUIRED_DOCUMENTS.find(doc => doc.id === documentType)?.label,
-        });
+          label: REQUIRED_DOCUMENTS.find(doc => doc.id === documentType)?.label
+        })
       }
 
       // 5. LIMPAR arquivo selecionado
       setSelectedFiles(prev => {
-        const newFiles = { ...prev };
-        delete newFiles[documentType];
-        return newFiles;
-      });
+        const newFiles = { ...prev }
+        delete newFiles[documentType]
+        return newFiles
+      })
+      fetchDocuments()
 
-      Alert.alert('Sucesso', 'Documento enviado para análise!');
+      Alert.alert('Sucesso', 'Documento enviado para análise!')
     } catch (error: any) {
-      console.error(`❌ Erro ao salvar documento ${documentType}:`, error);
-      Alert.alert('Erro', error.message || 'Erro ao salvar documento');
+      console.error(`❌ Erro ao salvar documento ${documentType}:`, error)
+      Alert.alert('Erro', error.message || 'Erro ao salvar documento')
     } finally {
       // 🔹 REMOVER do conjunto de uploads em andamento
       setUploadingDocuments(prev => {
-        const newSet = new Set(prev);
-        newSet.delete(documentType);
-        return newSet;
-      });
+        const newSet = new Set(prev)
+        newSet.delete(documentType)
+        return newSet
+      })
     }
-  };
+  }
 
   // 🔹 FUNÇÃO: Enviar todos os documentos para análise
   const handleSubmitAllDocuments = async () => {
     if (!driver?.id) {
-      Alert.alert('Erro', 'ID do motorista não encontrado');
-      return;
+      Alert.alert('Erro', 'ID do motorista não encontrado')
+      return
     }
 
     // Verificar se há documentos pendentes de upload
-    const pendingUploads = Object.keys(selectedFiles);
+    const pendingUploads = Object.keys(selectedFiles)
     if (pendingUploads.length > 0) {
       Alert.alert(
         'Documentos Pendentes',
@@ -232,31 +231,31 @@ export default function DocumentsScreen() {
             onPress: () => {
               // Enviar cada documento pendente
               pendingUploads.forEach(async docType => {
-                await handleSaveDocument(docType as DocumentType);
-              });
-            },
-          },
-        ],
-      );
-      return;
+                await handleSaveDocument(docType as DocumentType)
+              })
+            }
+          }
+        ]
+      )
+      return
     }
 
     // Verificar se todos os documentos obrigatórios foram enviados
-    const requiredDocs = REQUIRED_DOCUMENTS.filter(doc => doc.isRequired);
+    const requiredDocs = REQUIRED_DOCUMENTS.filter(doc => doc.isRequired)
     const uploadedDocs =
       documents?.filter(
         doc =>
           doc.user?.id === driver.id &&
-          requiredDocs.some(req => req.id === doc.type),
-      ) || [];
+          requiredDocs.some(req => req.id === doc.type)
+      ) || []
 
     if (uploadedDocs.length < requiredDocs.length) {
-      const missingCount = requiredDocs.length - uploadedDocs.length;
+      const missingCount = requiredDocs.length - uploadedDocs.length
       Alert.alert(
         'Documentos Faltantes',
-        `Você precisa enviar ${missingCount} documento(s) obrigatório(s) antes de enviar para análise.`,
-      );
-      return;
+        `Você precisa enviar ${missingCount} documento(s) obrigatório(s) antes de enviar para análise.`
+      )
+      return
     }
 
     Alert.alert(
@@ -271,39 +270,39 @@ export default function DocumentsScreen() {
               // Aqui você pode adicionar lógica adicional se necessário
               Alert.alert(
                 'Sucesso',
-                'Documentos enviados para análise com sucesso!',
-              );
+                'Documentos enviados para análise com sucesso!'
+              )
             } catch (error) {
-              console.error('❌ Erro ao enviar documentos:', error);
-              Alert.alert('Erro', 'Erro ao enviar documentos para análise');
+              console.error('❌ Erro ao enviar documentos:', error)
+              Alert.alert('Erro', 'Erro ao enviar documentos para análise')
             }
-          },
-        },
-      ],
-    );
-  };
+          }
+        }
+      ]
+    )
+  }
 
   // BUSCAR documentos
   const fetchDocuments = async () => {
-    setIsLoading(true);
+    setIsLoading(true)
     try {
-      const response = await fetchAllDocumentsByField('user.id', driver?.id);
+      const response = await fetchAllDocumentsByField('user.id', driver?.id)
 
-      const docs = response?.data || [];
+      const docs = response?.data || []
 
-      setDocuments(docs);
+      setDocuments(docs)
     } catch (error) {
-      console.error('❌ Erro ao buscar documentos:', error);
+      console.error('❌ Erro ao buscar documentos:', error)
     } finally {
-      setIsLoading(false);
+      setIsLoading(false)
     }
-  };
+  }
 
   useEffect(() => {
     if (driver?.id) {
-      fetchDocuments();
+      fetchDocuments()
     }
-  }, [driver?.id]);
+  }, [driver?.id])
 
   // 🔹 COMPONENTE: Status do documento
   const getStatusUI = (status: DocumentStatus, feedback?: string) => {
@@ -318,7 +317,7 @@ export default function DocumentsScreen() {
               </Text>
             </View>
           </View>
-        );
+        )
       case 'rejected':
         return (
           <View className="mt-2">
@@ -332,7 +331,7 @@ export default function DocumentsScreen() {
               <Text className="text-red-500 text-xs mt-1">{feedback}</Text>
             )}
           </View>
-        );
+        )
       case 'pending':
         return (
           <View className="flex-row items-center mt-2">
@@ -341,7 +340,7 @@ export default function DocumentsScreen() {
               Em Análise
             </Text>
           </View>
-        );
+        )
       default:
         return (
           <View className="flex-row items-center mt-2">
@@ -350,24 +349,24 @@ export default function DocumentsScreen() {
               Não Enviado
             </Text>
           </View>
-        );
+        )
     }
-  };
+  }
 
   // 🔹 COMPONENTE: Card de documento
   const DocumentCard = ({
-    documentConfig,
+    documentConfig
   }: {
-    documentConfig: (typeof REQUIRED_DOCUMENTS)[0];
+    documentConfig: (typeof REQUIRED_DOCUMENTS)[0]
   }) => {
     const driverDocument = documents?.find(
-      doc => doc.type === documentConfig.id && doc.user?.id === driver?.id,
-    );
+      doc => doc.type === documentConfig.id && doc.user?.id === driver?.id
+    )
 
-    const selectedFile = selectedFiles[documentConfig.id];
-    const isUploading = uploadingDocuments.has(documentConfig.id);
-    const hasFileSelected = !!selectedFile;
-    const hasDocumentUploaded = !!driverDocument;
+    const selectedFile = selectedFiles[documentConfig.id]
+    const isUploading = uploadingDocuments.has(documentConfig.id)
+    const hasFileSelected = !!selectedFile
+    const hasDocumentUploaded = !!driverDocument
 
     return (
       <View className="bg-white rounded-2xl shadow-sm p-4 mb-4 border border-gray-100">
@@ -390,7 +389,17 @@ export default function DocumentsScreen() {
 
         {/* Área de Upload */}
         <TouchableOpacity
-          onPress={() => handlePickImage(documentConfig.id)}
+          onPress={() => {
+            if (driverDocument?.status === 'approved') {
+              Alert.alert(
+                'Documento já aprovado',
+                'Você não pode alterar um documento já aprovado.',
+                [{ text: 'Percebi' }]
+              )
+              return
+            }
+            handlePickImage(documentConfig.id)
+          }}
           disabled={isUploading || isSelectingImage}
           className={`items-center justify-center border-2 border-dashed rounded-xl h-40 bg-gray-50 mt-2 ${
             hasFileSelected ? 'border-green-300 bg-green-50' : 'border-gray-300'
@@ -403,13 +412,13 @@ export default function DocumentsScreen() {
             </View>
           ) : selectedFile ? (
             <Image
-              source={{ uri: selectedFile }}
+              source={{ uri: selectedFile ?? '' }}
               className="w-full h-full rounded-xl"
               resizeMode="cover"
             />
           ) : driverDocument?.url ? (
             <Image
-              source={{ uri: driverDocument.url }}
+              source={{ uri: driverDocument.url ?? '' }}
               className="w-full h-full rounded-xl"
               resizeMode="cover"
             />
@@ -428,7 +437,7 @@ export default function DocumentsScreen() {
           {/* Status */}
           {getStatusUI(
             driverDocument?.status || 'none',
-            driverDocument?.feedback,
+            driverDocument?.feedback
           )}
 
           {/* Botão de ação */}
@@ -451,8 +460,8 @@ export default function DocumentsScreen() {
           )}
         </View>
       </View>
-    );
-  };
+    )
+  }
 
   // 🔹 CALCULAR: Estatísticas dos documentos
   const documentStats = {
@@ -460,13 +469,13 @@ export default function DocumentsScreen() {
     uploaded: documents?.filter(doc => doc.user?.id === driver?.id).length || 0,
     approved:
       documents?.filter(
-        doc => doc.user?.id === driver?.id && doc.status === 'approved',
+        doc => doc.user?.id === driver?.id && doc.status === 'approved'
       ).length || 0,
     pending:
       documents?.filter(
-        doc => doc.user?.id === driver?.id && doc.status === 'pending',
-      ).length || 0,
-  };
+        doc => doc.user?.id === driver?.id && doc.status === 'pending'
+      ).length || 0
+  }
 
   if (isLoading) {
     return (
@@ -474,10 +483,10 @@ export default function DocumentsScreen() {
         title="Meus Documentos"
         primaryText={'Carregando documentos...'}
       />
-    );
+    )
   }
   return (
-    <View className="flex-1 bg-gray-50">
+    <View className="flex-1 bg-gray-50 m-safe">
       {/* Header */}
       <PageHeader title="Meus Documentos" canGoBack={true} />
 
@@ -561,5 +570,5 @@ export default function DocumentsScreen() {
         </View>
       </ScrollView>
     </View>
-  );
+  )
 }

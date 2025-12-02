@@ -59,7 +59,7 @@ export class FirebaseAuthDAO implements IAuthRepository {
       const driverEntity = new DriverEntity({
         ...driverData,
         id: driverId,
-        status: 'active' as UserStatus,
+        status: 'inactive' as UserStatus,
         availability: 'available',
         email_verified: false,
         phone_verified: false,

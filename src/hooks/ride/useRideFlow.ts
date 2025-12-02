@@ -46,20 +46,38 @@ export function useRideFlow(
     fare
   }: SyncStatusToServerParams) => {
     try {
+      // Filtra somente valores válidos dentro do driver
+      const filteredDriver = Object.fromEntries(
+        Object.entries({
+          ...driver
+        }).filter(([_, v]) => v !== undefined && v !== null)
+      )
+      // Monta o payload sem incluir campos undefined
+      const payload: any = Object.fromEntries(
+        Object.entries({
+          status,
+          cancel_reason: reason,
+          proof_pickup_photo: proofPickupPhoto,
+          proof_dropoff_photo: proofDropoffPhoto,
+          waiting_start_at: waitingStartAt,
+          waiting_end_at: waitingEndAt,
+          completed_at: completedAt,
+          canceled_at: canceledAt,
+          fare
+        }).filter(([_, v]) => v !== undefined && v !== null)
+      )
+
+      // Só adiciona driver se existir **e não estiver vazio**
+      if (filteredDriver && Object.keys(filteredDriver).length > 0) {
+        payload.driver = filteredDriver
+      }
+
+      console.log('🚀 payload =>:', payload)
+      console.log('🚀 filteredDriver  =>:', filteredDriver)
+
       await updateRide.mutateAsync({
         id: rideId,
-        ride: {
-          status,
-          driver: driver ?? undefined,
-          cancel_reason: reason ?? undefined,
-          proof_pickup_photo: proofPickupPhoto ?? undefined,
-          proof_dropoff_photo: proofDropoffPhoto ?? undefined,
-          waiting_start_at: waitingStartAt ?? undefined,
-          waiting_end_at: waitingEndAt ?? undefined,
-          completed_at: completedAt ?? undefined,
-          canceled_at: canceledAt ?? undefined,
-          fare: fare ?? undefined
-        }
+        ride: payload
       })
     } catch (error: any) {
       console.error('❌ Erro ao sincronizar status com servidor:', error)

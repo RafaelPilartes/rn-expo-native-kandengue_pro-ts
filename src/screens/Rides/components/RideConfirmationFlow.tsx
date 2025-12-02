@@ -169,7 +169,7 @@ export const RideConfirmationFlow: React.FC<RideConfirmationFlowProps> = ({
           {ridePhoto ? (
             <View className="items-center">
               <Image
-                source={{ uri: ridePhoto }}
+                source={{ uri: ridePhoto ?? '' }}
                 className="w-64 h-64 rounded-2xl border-2 border-primary-200"
                 resizeMode="cover"
               />
@@ -259,7 +259,7 @@ export const RideConfirmationFlow: React.FC<RideConfirmationFlowProps> = ({
           <View className="items-center mb-4">
             <Text className="text-gray-600 text-sm mb-2">Foto da entrega:</Text>
             <Image
-              source={{ uri: ridePhoto }}
+              source={{ uri: ridePhoto ?? '' }}
               className="w-20 h-20 rounded-lg border border-gray-300"
               resizeMode="cover"
             />

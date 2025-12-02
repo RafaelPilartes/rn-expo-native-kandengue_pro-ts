@@ -25,6 +25,10 @@ const ROUTES = {
     HISTORY: 'HistoryScreen',
     HISTORY_DETAILS: 'HistoryDetailsScreen'
   },
+  MapStack: {
+    HISTORY: 'MapScreen',
+    HISTORY_DETAILS: 'MapDetailsScreen'
+  },
   ProfileStack: {
     PROFILE: 'ProfileScreen',
     EDIT: 'EditProfileScreen',

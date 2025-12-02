@@ -1,5 +1,5 @@
 // src/screens/EditProfile.tsx
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react'
 import {
   View,
   Text,
@@ -7,50 +7,50 @@ import {
   Image,
   ScrollView,
   Alert,
-  ActivityIndicator,
-} from 'react-native';
-import { Camera, Mail, Phone, User } from 'lucide-react-native';
-import { useNavigation } from '@react-navigation/native';
-import { useAuthStore } from '@/storage/store/useAuthStore';
-import PrimaryButton from '@/components/ui/button/PrimaryButton';
-import { useDriversViewModel } from '@/viewModels/DriverViewModel';
-import { useImagePicker } from '@/hooks/useImagePicker';
-import { ImagePickerPresets } from '@/services/picker/imagePickerPresets';
-import { useFileUploadViewModel } from '@/viewModels/FileUploadViewModel';
-import PageHeader from '@/components/PageHeader';
-import { InputField } from '@/components/ui/input/InputField';
+  ActivityIndicator
+} from 'react-native'
+import { Camera, Mail, Phone, User } from 'lucide-react-native'
+import { useNavigation } from '@react-navigation/native'
+import { useAuthStore } from '@/storage/store/useAuthStore'
+import PrimaryButton from '@/components/ui/button/PrimaryButton'
+import { useDriversViewModel } from '@/viewModels/DriverViewModel'
+import { useImagePicker } from '@/hooks/useImagePicker'
+import { ImagePickerPresets } from '@/services/picker/imagePickerPresets'
+import { useFileUploadViewModel } from '@/viewModels/FileUploadViewModel'
+import PageHeader from '@/components/PageHeader'
+import { InputField } from '@/components/ui/input/InputField'
 
 export default function EditProfileScreen() {
-  const navigation = useNavigation<any>();
+  const navigation = useNavigation<any>()
 
-  const { driver, setDriver } = useAuthStore();
-  const { updateDriver, fetchOneDriverByField } = useDriversViewModel();
+  const { driver, setDriver } = useAuthStore()
+  const { updateDriver, fetchOneDriverByField } = useDriversViewModel()
   const {
     uploadProfileImage,
     isUploadingProfile: isUploadingProfileImage,
-    uploadProfileError: uploadProfileErrorImage,
-  } = useFileUploadViewModel();
+    uploadProfileError: uploadProfileErrorImage
+  } = useFileUploadViewModel()
 
   const {
     pickImage,
     isUploading: isSelectingImage,
     error: imageError,
-    clearError,
-  } = useImagePicker();
+    clearError
+  } = useImagePicker()
 
-  const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const [selectedFile, setSelectedFile] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+  const [selectedFile, setSelectedFile] = useState<string | null>(null)
 
   // Estado local do formulário
   const [formData, setFormData] = useState({
     photo: driver?.photo || '',
     name: driver?.name || '',
     email: driver?.email || '',
-    phone: driver?.phone || '',
-  });
+    phone: driver?.phone || ''
+  })
 
-  const [hasChanges, setHasChanges] = useState(false);
+  const [hasChanges, setHasChanges] = useState(false)
 
   // 🔹 VERIFICAR: mudanças no formulário
   useEffect(() => {
@@ -58,137 +58,137 @@ export default function EditProfileScreen() {
       formData.photo !== driver?.photo ||
       formData.name !== driver?.name ||
       formData.email !== driver?.email ||
-      formData.phone !== driver?.phone;
+      formData.phone !== driver?.phone
 
-    setHasChanges(hasChanges);
-  }, [formData, driver]);
+    setHasChanges(hasChanges)
+  }, [formData, driver])
 
   // 🔹 VALIDAR: formulário
   const validateForm = (): boolean => {
-    setError(null);
+    setError(null)
 
     if (!formData.name.trim()) {
-      setError('O nome é obrigatório');
-      return false;
+      setError('O nome é obrigatório')
+      return false
     }
 
     if (!formData.email.trim()) {
-      setError('O email é obrigatório');
-      return false;
+      setError('O email é obrigatório')
+      return false
     }
 
     if (!/\S+@\S+\.\S+/.test(formData.email)) {
-      setError('O email é inválido');
-      return false;
+      setError('O email é inválido')
+      return false
     }
 
     if (!formData.phone.trim()) {
-      setError('O telefone é obrigatório');
-      return false;
+      setError('O telefone é obrigatório')
+      return false
     }
 
-    return true;
-  };
+    return true
+  }
 
   // 🔹 ATUALIZAR: campo específico
   const handleFieldChange = (field: keyof typeof formData, value: string) => {
     setFormData(prev => ({
       ...prev,
-      [field]: value,
-    }));
-  };
+      [field]: value
+    }))
+  }
 
   // 🔹 UPLOAD: de imagem
   const handleImagePicker = async () => {
-    clearError();
+    clearError()
 
     try {
       const imageUri = await pickImage(
         ImagePickerPresets.PROFILE.config,
-        ImagePickerPresets.PROFILE.validation,
-      );
+        ImagePickerPresets.PROFILE.validation
+      )
 
       if (imageUri) {
-        setSelectedFile(imageUri);
+        setSelectedFile(imageUri)
         setFormData(prev => ({
           ...prev,
-          photo: imageUri,
-        }));
+          photo: imageUri
+        }))
       }
     } catch (error) {
-      console.error('Erro ao abrir image picker:', error);
-      Alert.alert('Erro', 'Não foi possível abrir a galeria');
+      console.error('Erro ao abrir image picker:', error)
+      Alert.alert('Erro', 'Não foi possível abrir a galeria')
     }
-  };
+  }
 
   // 🔹 LIMPAR: imagem selecionada
   const handleClearPhoto = () => {
-    setSelectedFile(null);
+    setSelectedFile(null)
     setFormData(prev => ({
       ...prev,
-      photo: driver?.photo || '', // Volta para a foto original
-    }));
-  };
+      photo: driver?.photo || '' // Volta para a foto original
+    }))
+  }
 
   // 🔹 UPLOAD: de imagem - FUNÇÃO ADICIONADA
   const handleUploadPhoto = async (): Promise<string> => {
-    if (!selectedFile) return formData.photo || '';
+    if (!selectedFile) return formData.photo || ''
 
     try {
-      console.log('📤 Iniciando upload da imagem...');
+      console.log('📤 Iniciando upload da imagem...')
 
       const { url, path } = await uploadProfileImage({
         fileUri: selectedFile,
-        userId: driver?.id || '',
-      });
+        userId: driver?.id || ''
+      })
 
       if (!url || !path) {
         const errorMsg =
-          uploadProfileErrorImage?.message || 'Erro ao carregar ficheiro';
-        console.error('❌ Upload falhou:', errorMsg);
-        Alert.alert('Erro', errorMsg);
-        throw new Error('Upload inválido');
+          uploadProfileErrorImage?.message || 'Erro ao carregar ficheiro'
+        console.error('❌ Upload falhou:', errorMsg)
+        Alert.alert('Erro', errorMsg)
+        throw new Error('Upload inválido')
       }
 
-      console.log('✅ Upload concluído:', url);
-      return url;
+      console.log('✅ Upload concluído:', url)
+      return url
     } catch (err) {
-      console.error('❌ Erro no upload:', err);
-      Alert.alert('Erro', 'Erro ao carregar ficheiro');
-      throw err;
+      console.error('❌ Erro no upload:', err)
+      Alert.alert('Erro', 'Erro ao carregar ficheiro')
+      throw err
     }
-  };
+  }
 
   // 🔹 SALVAR: alterações do perfil
   const handleUpdateProfile = async () => {
-    if (!validateForm()) return;
+    if (!validateForm()) return
     if (!driver?.id) {
-      setError('ID do motorista não encontrado');
-      return;
+      setError('ID do motorista não encontrado')
+      return
     }
 
     // Antes de atualizar, verificar se email não pertence a outro driver
     if (formData.email !== driver?.email) {
       const existingDriver = await fetchOneDriverByField(
         'email',
-        formData.email,
-      );
+        formData.email
+      )
       if (existingDriver && existingDriver.id !== driver?.id) {
-        setError('Este email já está em uso por outro motorista');
-        return;
+        setError('Este email já está em uso por outro motorista')
+        return
       }
     }
 
-    setIsLoading(true);
-    setError(null);
+    setIsLoading(true)
+    setError(null)
 
     try {
-      let finalPhotoUrl = formData.photo;
+      let finalPhotoUrl = formData.photo
 
       // 🔹 FAZER UPLOAD se há nova imagem selecionada
       if (selectedFile && selectedFile !== driver?.photo) {
-        console.log('🔄 Fazendo upload da nova imagem...');
-        finalPhotoUrl = await handleUploadPhoto();
+        console.log('🔄 Fazendo upload da nova imagem...')
+        finalPhotoUrl = await handleUploadPhoto()
       }
 
       // 🔹 PREPARAR dados para atualização
@@ -196,35 +196,35 @@ export default function EditProfileScreen() {
         name: formData.name.trim(),
         email: formData.email.trim().toLowerCase(),
         phone: formData.phone.trim(),
-        updated_at: new Date(),
-      };
+        updated_at: new Date()
+      }
 
       // 🔹 ADICIONAR foto apenas se mudou
       if (finalPhotoUrl !== driver?.photo) {
-        updateData.photo = finalPhotoUrl;
+        updateData.photo = finalPhotoUrl
       }
 
       // 🔹 ATUALIZAR no backend
       const updatedDriver = await updateDriver.mutateAsync({
         id: driver.id,
-        driver: updateData,
-      });
+        driver: updateData
+      })
 
       // 🔹 ATUALIZAR no estado global
-      setDriver(updatedDriver);
+      setDriver(updatedDriver)
 
-      console.log('✅ Perfil atualizado com sucesso!');
+      console.log('✅ Perfil atualizado com sucesso!')
 
       Alert.alert('Sucesso', 'Perfil atualizado com sucesso!', [
-        { text: 'OK', onPress: () => navigation.goBack() },
-      ]);
+        { text: 'OK', onPress: () => navigation.goBack() }
+      ])
     } catch (error) {
-      console.error('Erro ao atualizar o perfil:', error);
-      Alert.alert('Erro', 'Ocorreu um erro ao atualizar o perfil');
+      console.error('Erro ao atualizar o perfil:', error)
+      Alert.alert('Erro', 'Ocorreu um erro ao atualizar o perfil')
     } finally {
-      setIsLoading(false);
+      setIsLoading(false)
     }
-  };
+  }
 
   return (
     <View className="flex-1 bg-gray-50">
@@ -246,7 +246,11 @@ export default function EditProfileScreen() {
               <View className="w-28 h-28 rounded-full bg-gray-200 items-center justify-center overflow-hidden border-4 border-white shadow-lg">
                 {formData.photo ? (
                   <Image
-                    source={{ uri: formData.photo }}
+                    source={{
+                      uri:
+                        formData.photo ??
+                        'https://cdn-icons-png.flaticon.com/512/3541/3541871.png'
+                    }}
                     className="w-full h-full"
                     resizeMode="cover"
                   />
@@ -382,5 +386,5 @@ export default function EditProfileScreen() {
         )}
       </ScrollView>
     </View>
-  );
+  )
 }

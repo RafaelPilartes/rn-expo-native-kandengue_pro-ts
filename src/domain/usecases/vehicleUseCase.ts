@@ -1,44 +1,44 @@
 // src/domain/usecases/vehiclesUseCase.ts
-import { vehicleRepository } from '@/modules/Api';
-import { VehicleEntity } from '@/core/entities/Vehicle';
-import type { ListResponseType } from '@/interfaces/IApiResponse';
+import { vehicleRepository } from '@/modules/Api'
+import { VehicleEntity } from '@/core/entities/Vehicle'
+import type { ListResponseType } from '@/interfaces/IApiResponse'
 
 export class VehicleUseCase {
-  private repository = vehicleRepository;
+  private repository = vehicleRepository
 
   async getAll(
     limit?: number,
     offset?: number,
     searchTerm?: string,
-    filters?: Partial<VehicleEntity>,
+    filters?: Partial<VehicleEntity>
   ): Promise<ListResponseType<VehicleEntity[]>> {
     try {
-      return await this.repository.getAll(limit, offset, searchTerm, filters);
+      return await this.repository.getAll(limit, offset, searchTerm, filters)
     } catch (error: any) {
-      console.error('Erro ao buscar veículos:', error);
-      throw new Error(error.message || 'Erro ao buscar veículos');
+      console.error('Erro ao buscar veículos:', error)
+      throw new Error(error.message || 'Erro ao buscar veículos')
     }
   }
 
   async getById(id: string): Promise<VehicleEntity | null> {
     try {
-      return await this.repository.getById(id);
+      return await this.repository.getById(id)
     } catch (error: any) {
-      console.error(`Erro ao buscar veículo ${id}:`, error);
-      throw new Error(error.message || 'Erro ao buscar veículo');
+      console.error(`Erro ao buscar veículo ${id}:`, error)
+      throw new Error(error.message || 'Erro ao buscar veículo')
     }
   }
 
   // get one by custom field
   async getOneByField(
     field: string,
-    value: any,
+    value: any
   ): Promise<VehicleEntity | null> {
     try {
-      return await this.repository.getOneByField(field, value);
+      return await this.repository.getOneByField(field, value)
     } catch (error: any) {
-      console.error(`Erro ao buscar vehicle por ${field}-${value}:`, error);
-      throw new Error(error.message || 'Erro ao buscar vehicle');
+      console.error(`Erro ao buscar vehicle por ${field}-${value}:`, error)
+      throw new Error(error.message || 'Erro ao buscar vehicle')
     }
   }
 
@@ -47,53 +47,123 @@ export class VehicleUseCase {
     field: string,
     value: any,
     limit?: number,
-    offset?: number,
+    offset?: number
   ): Promise<ListResponseType<VehicleEntity[]>> {
     try {
       const { data, pagination } = await this.repository.getAllByField(
         field,
         value,
         limit,
-        offset,
-      );
+        offset
+      )
 
-      return { data, pagination };
+      return { data, pagination }
     } catch (error: any) {
       console.error(
         `Erro ao buscar veículo pelo campo ${field} com valor ${value}:`,
-        error,
-      );
-      throw new Error(error.message || 'Erro ao buscar veículo');
+        error
+      )
+      throw new Error(error.message || 'Erro ao buscar veículo')
     }
   }
 
   async create(vehicle: Omit<VehicleEntity, 'id'>): Promise<VehicleEntity> {
     try {
-      return await this.repository.create(vehicle);
+      return await this.repository.create(vehicle)
     } catch (error: any) {
-      console.error('Erro ao criar veículo:', error);
-      throw new Error(error.message || 'Erro ao criar veículo');
+      console.error('Erro ao criar veículo:', error)
+      throw new Error(error.message || 'Erro ao criar veículo')
     }
   }
 
   async update(
     id: string,
-    vehicle: Partial<VehicleEntity>,
+    vehicle: Partial<VehicleEntity>
   ): Promise<VehicleEntity> {
     try {
-      return await this.repository.update(id, vehicle);
+      return await this.repository.update(id, vehicle)
     } catch (error: any) {
-      console.error(`Erro ao atualizar veículo ${id}:`, error);
-      throw new Error(error.message || 'Erro ao atualizar veículo');
+      console.error(`Erro ao atualizar veículo ${id}:`, error)
+      throw new Error(error.message || 'Erro ao atualizar veículo')
     }
   }
 
   async delete(id: string): Promise<void> {
     try {
-      return await this.repository.delete(id);
+      return await this.repository.delete(id)
     } catch (error: any) {
-      console.error(`Erro ao deletar veículo ${id}:`, error);
-      throw new Error(error.message || 'Erro ao deletar veículo');
+      console.error(`Erro ao deletar veículo ${id}:`, error)
+      throw new Error(error.message || 'Erro ao deletar veículo')
+    }
+  }
+
+  listenVehicleRealtime(
+    id: string,
+    onUpdate: (vehicle: VehicleEntity) => void,
+    onError?: (err: Error) => void
+  ): () => void {
+    try {
+      return this.repository.listenById(id, onUpdate, onError)
+    } catch (error: any) {
+      console.error(`Erro ao escutar veiculo ${id} em tempo real:`, error)
+      throw new Error(error.message || 'Erro ao escutar veiculo em tempo real')
+    }
+  }
+
+  listenByField(
+    field: keyof VehicleEntity,
+    value: string,
+    onUpdate: (vehicle: VehicleEntity | null) => void,
+    onError?: (err: Error) => void
+  ) {
+    try {
+      return this.repository.listenByField(field, value, onUpdate, onError)
+    } catch (error: any) {
+      console.error(`Erro ao escutar veiculo pelo campo ${field}:`, error)
+      throw new Error(error.message || 'Erro ao escutar veiculo pelo campo')
+    }
+  }
+
+  listenAllByField(
+    field: keyof VehicleEntity,
+    value: any,
+    onUpdate: (vehicles: VehicleEntity[]) => void,
+    onError?: (err: Error) => void,
+    options: {
+      limit?: number
+      orderBy?: keyof VehicleEntity
+      orderDirection?: 'asc' | 'desc'
+    } = {}
+  ) {
+    try {
+      return this.repository.listenAllByField(
+        field,
+        value,
+        onUpdate,
+        onError,
+        options
+      )
+    } catch (error: any) {
+      console.error(`Erro ao escutar veiculos pelo campo ${field}:`, error)
+      throw new Error(error.message || 'Erro ao escutar veiculos pelo campo')
+    }
+  }
+
+  listenAll(
+    onUpdate: (vehicles: VehicleEntity[]) => void,
+    onError?: (err: Error) => void,
+    options: {
+      filters?: Partial<VehicleEntity>
+      limit?: number
+      orderBy?: keyof VehicleEntity
+      orderDirection?: 'asc' | 'desc'
+    } = {}
+  ) {
+    try {
+      return this.repository.listenAll(onUpdate, onError, options)
+    } catch (error: any) {
+      console.error('Erro ao escutar veiculos:', error)
+      throw new Error(error.message || 'Erro ao escutar veiculos')
     }
   }
 }

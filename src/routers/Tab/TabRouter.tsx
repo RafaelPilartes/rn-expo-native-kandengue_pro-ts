@@ -13,6 +13,7 @@ import ROUTES from '@/constants/routes'
 import { makeTabOptions } from '@/utils/makeTabOptions'
 import { useAuthViewModel } from '@/viewModels/AuthViewModel'
 import LoadingScreen from '@/screens/Loading'
+import MapRouter from '../navigation/MapRouter'
 
 const Tab = createBottomTabNavigator<MainTabParamList>()
 
@@ -21,7 +22,11 @@ const hiddenHomeTabRoutes = [
   ROUTES.Rides.FINISHED,
   ROUTES.HomeStack.NOTIFICATIONS
 ]
+
+const hiddenMapTabRoutes = [ROUTES.MapStack.HISTORY_DETAILS]
+
 const hiddenHistoryTabRoutes = [ROUTES.HistoryStack.HISTORY_DETAILS]
+
 const hiddenProfileTabRoutes = [
   ROUTES.ProfileStack.EDIT,
   ROUTES.ProfileStack.DOCUMENTS,
@@ -59,11 +64,11 @@ export default function TabRouter() {
           marginTop: 8 // Espaçamento acima do ícone
         }
       }}
-      initialRouteName="HomeTab"
+      initialRouteName={ROUTES.MainTab.HOME}
       backBehavior="firstRoute"
     >
       <Tab.Screen
-        name="HomeTab"
+        name={ROUTES.MainTab.HOME}
         component={HomeRouter}
         options={({ route }) =>
           makeTabOptions(
@@ -77,19 +82,22 @@ export default function TabRouter() {
       />
       {/* Map */}
       <Tab.Screen
-        name="MapTab"
-        component={MapScreen}
-        options={{
-          tabBarLabel: 'Mapa',
-          tabBarIcon: ({ color }) => (
-            <MapIcon width={24} height={24} color={color} />
-          )
-        }}
+        name={ROUTES.MainTab.MAP}
+        component={MapRouter}
+        options={({ route }) =>
+          makeTabOptions(
+            route,
+            ROUTES.MapStack.HISTORY,
+            hiddenMapTabRoutes,
+            'Mapa',
+            MapIcon
+          ) as BottomTabNavigationOptions
+        }
       />
 
       {/* History */}
       <Tab.Screen
-        name="HistoryTab"
+        name={ROUTES.MainTab.HISTORY}
         component={HistoryRouter}
         options={({ route }) =>
           makeTabOptions(
@@ -102,7 +110,7 @@ export default function TabRouter() {
         }
       />
       <Tab.Screen
-        name="ProfileTab"
+        name={ROUTES.MainTab.PROFILE}
         component={ProfileRouter}
         options={({ route }) =>
           makeTabOptions(

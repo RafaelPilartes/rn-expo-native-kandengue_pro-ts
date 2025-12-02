@@ -54,17 +54,19 @@ export default function CreatePasswordScreen({ route }: CreatePasswordProps) {
   const handleSubmit = async () => {
     // Validações básicas
     let valid = true
+    const trimPassword = password.trim()
+    const trimConfirmPassword = confirmPassword.trim()
     const newErrors = { password: '', confirmPassword: '' }
 
-    if (!password) {
+    if (!trimPassword) {
       newErrors.password = `${t('auth:validate_password_required')}`
       valid = false
-    } else if (password.length < 6) {
+    } else if (trimPassword.length < 6) {
       newErrors.password = `${t('auth:validate_password_characters')}`
       valid = false
     }
 
-    if (password !== confirmPassword) {
+    if (trimPassword !== trimConfirmPassword) {
       newErrors.confirmPassword = `${t('auth:validate_password_no_match')}`
       valid = false
     }
@@ -85,7 +87,7 @@ export default function CreatePasswordScreen({ route }: CreatePasswordProps) {
         name: fullName,
         email: email,
         phone: phoneNumber,
-        password: password
+        password: trimPassword
       })
 
       console.log('authResponse.driver ==> ', authResponse.driver)

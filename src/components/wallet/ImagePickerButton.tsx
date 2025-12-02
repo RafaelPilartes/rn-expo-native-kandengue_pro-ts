@@ -1,20 +1,20 @@
 // src/components/wallet/ImagePickerButton.tsx
-import React from 'react';
+import React from 'react'
 import {
   View,
   Text,
   TouchableOpacity,
   Image,
-  ActivityIndicator,
-} from 'react-native';
-import { Upload, X } from 'lucide-react-native';
+  ActivityIndicator
+} from 'react-native'
+import { Upload, X } from 'lucide-react-native'
 
 interface ImagePickerButtonProps {
-  imageUri: string | null;
-  onPickImage: () => void;
-  onClearImage: () => void;
-  isLoading?: boolean;
-  label?: string;
+  imageUri: string | null
+  onPickImage: () => void
+  onClearImage: () => void
+  isLoading?: boolean
+  label?: string
 }
 
 export const ImagePickerButton: React.FC<ImagePickerButtonProps> = ({
@@ -22,7 +22,7 @@ export const ImagePickerButton: React.FC<ImagePickerButtonProps> = ({
   onPickImage,
   onClearImage,
   isLoading = false,
-  label = 'Carregar comprovativo',
+  label = 'Carregar comprovativo'
 }) => {
   return (
     <TouchableOpacity
@@ -38,7 +38,7 @@ export const ImagePickerButton: React.FC<ImagePickerButtonProps> = ({
       ) : imageUri ? (
         <View className="w-full h-full rounded-lg relative">
           <Image
-            source={{ uri: imageUri }}
+            source={{ uri: imageUri ?? '' }}
             className="w-full h-full rounded-lg"
             resizeMode="cover"
           />
@@ -56,5 +56,5 @@ export const ImagePickerButton: React.FC<ImagePickerButtonProps> = ({
         </View>
       )}
     </TouchableOpacity>
-  );
-};
+  )
+}

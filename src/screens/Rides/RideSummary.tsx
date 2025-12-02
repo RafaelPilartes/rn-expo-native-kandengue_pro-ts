@@ -35,6 +35,7 @@ import { Text } from 'react-native'
 import { RideConfirmationFlow } from './components/RideConfirmationFlow'
 import { calculateHeading } from '@/helpers/bearing'
 import { converter } from '@/utils/converter'
+import { RideFareInterface } from '@/interfaces/IRideFare'
 
 type RideSummaryScreenRouteParams = {
   id: string
@@ -254,25 +255,15 @@ export default function RideSummaryScreen() {
         setShowOTPModal(false)
 
         // Navegar para tela de conclusão
-        navigation.dispatch(
-          CommonActions.reset({
-            index: 1, // índice da tela que ficará no topo
-            routes: [
-              {
-                name: ROUTES.Rides.FINISHED,
-                params: {
-                  details: {
-                    rideId: currentRide.id,
-                    pickup: location.pickup,
-                    dropoff: location.dropoff,
-                    distance: distance,
-                    fare: fareDetails
-                  }
-                }
-              }
-            ]
-          })
-        )
+        navigation.replace(ROUTES.Rides.FINISHED, {
+          details: {
+            rideId: currentRide.id,
+            pickup: location.pickup,
+            dropoff: location.dropoff,
+            distance: distance,
+            fare: fareDetails as RideFareInterface
+          }
+        })
       } else {
         setIsLoadingCompleteRide(false)
         Alert.alert('Erro', 'Código OTP inválido')
@@ -356,7 +347,7 @@ export default function RideSummaryScreen() {
                   dropoffDescription={currentRide?.dropoff?.name || ''}
                 />
 
-                <View style={{ position: 'absolute', bottom: 180, left: 28 }}>
+                <View style={{ position: 'absolute', bottom: 220, left: 28 }}>
                   <MyLocationButton
                     isLocating={isLoadingUserLocation}
                     onPress={centerOnUser}

@@ -17,3 +17,5 @@ export const AppConfigInfo = {
   androidPackageName: Constants.expoConfig?.android?.package,
   iosBundleIdentifier: Constants.expoConfig?.ios?.bundleIdentifier
 }
+
+export const MIN_AMOUNT = 800

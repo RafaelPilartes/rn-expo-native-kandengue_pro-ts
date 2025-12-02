@@ -20,45 +20,16 @@ import { useVehiclesViewModel } from '@/viewModels/VehicleViewModel'
 import { VehicleInterface } from '@/interfaces/IVehicle'
 import { useAuthStore } from '@/storage/store/useAuthStore'
 import PageHeader from '@/components/PageHeader'
+import { useAppProvider } from '@/providers/AppProvider'
+import { getVehicleTypeLabel } from '@/utils/gettersLabels'
 
 export default function DriverProfile() {
   const navigation = useNavigation<any>()
 
   const { logout } = useAuthViewModel()
-  const { fetchAllVehiclesByField } = useVehiclesViewModel()
+  const { vehicle } = useAppProvider()
 
   const { driver } = useAuthStore()
-
-  const [vehicle, setVehicle] = useState<VehicleInterface | null>(null)
-  const [isLoading, setIsLoading] = useState(true)
-
-  useEffect(() => {
-    const fetchVehicle = async () => {
-      if (!driver?.id) return
-      await fetchAllVehiclesByField('user_id', driver?.id)
-        .then(response => {
-          // filter isDefault vehicles
-          const filteredVehicles = response?.data.filter(
-            (vehicle: VehicleInterface) => vehicle.isDefault
-          )
-
-          console.log('response', response)
-          console.log('filteredVehicles', filteredVehicles)
-
-          if (filteredVehicles) {
-            console.log('filteredVehicles[0]', filteredVehicles[0])
-            setVehicle(filteredVehicles[0])
-          }
-        })
-        .catch(error => {
-          console.error('Erro ao buscar veículo:', error)
-        })
-        .finally(() => {
-          setIsLoading(false)
-        })
-    }
-    fetchVehicle()
-  }, [driver?.id])
 
   const handleLogout = async () => {
     await logout.mutateAsync()
@@ -83,11 +54,14 @@ export default function DriverProfile() {
   )
 
   return (
-    <View className="flex-1 bg-gray-50 p-safe">
+    <View className="flex-1 bg-gray-50 m-safe">
       {/* Header */}
       <PageHeader title="Minha Conta" canGoBack={false} />
 
-      <ScrollView className="flex-1">
+      <ScrollView
+        className="flex-1"
+        contentContainerStyle={{ padding: 15, paddingBottom: 68 }}
+      >
         {/* Driver Info */}
         <View className="items-center py-6 bg-white mb-3 rounded-b-3xl">
           <Image
@@ -103,7 +77,9 @@ export default function DriverProfile() {
           </Text>
           <Text className="text-gray-500 text-sm">
             Estafeta •{' '}
-            {vehicle?.plate ? vehicle.plate : 'Nenhum veículo definido'}
+            {vehicle?.plate
+              ? `${getVehicleTypeLabel(vehicle.type)} ${vehicle.brand} - ${vehicle.plate}`
+              : 'Nenhum veículo definido'}
           </Text>
         </View>
 

@@ -1,23 +1,23 @@
 // src/screens/Map/index.tsx
-import React, { useEffect, useRef, useState } from 'react';
-import { View } from 'react-native';
-import MapView, { Marker } from 'react-native-maps';
-import { SafeAreaView } from 'react-native-safe-area-context';
-import { useNavigation } from '@react-navigation/native';
-import { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import React, { useEffect, useRef, useState } from 'react'
+import { View } from 'react-native'
+import MapView, { Marker } from 'react-native-maps'
+import { SafeAreaView } from 'react-native-safe-area-context'
+import { useNavigation } from '@react-navigation/native'
+import { NativeStackNavigationProp } from '@react-navigation/native-stack'
 
 // Components
-import { AddressDisplay } from './components/AddressDisplay';
-import { MyLocationButton } from './components/MyLocationButton';
+import { AddressDisplay } from './components/AddressDisplay'
+import { MyLocationButton } from './components/MyLocationButton'
 
 // Hooks e Providers
-import { MapError } from '@/components/map/MapError';
-import { useAppProvider } from '@/providers/AppProvider';
-import { Alert } from 'react-native';
-import { useLocation } from '@/hooks/useLocation';
+import { MapError } from '@/components/map/MapError'
+import { useAppProvider } from '@/providers/AppProvider'
+import { Alert } from 'react-native'
+import { useLocation } from '@/hooks/useLocation'
 
 export default function MapScreen() {
-  const { handleGoBack } = useAppProvider();
+  const { handleGoBack } = useAppProvider()
 
   const {
     location,
@@ -25,15 +25,15 @@ export default function MapScreen() {
     requestCurrentLocation,
     error: locationError,
     address,
-    isGettingAddress,
-  } = useLocation();
-  const mapRef = useRef<MapView | null>(null);
+    isGettingAddress
+  } = useLocation()
+  const mapRef = useRef<MapView | null>(null)
 
   const centerOnUser = async () => {
-    const coords = location ?? (await requestCurrentLocation());
+    const coords = location ?? (await requestCurrentLocation())
     if (!coords) {
-      Alert.alert('Erro', 'Não foi possível obter localização.');
-      return;
+      Alert.alert('Erro', 'Não foi possível obter localização.')
+      return
     }
 
     mapRef.current?.animateToRegion(
@@ -41,27 +41,27 @@ export default function MapScreen() {
         latitude: coords.latitude,
         longitude: coords.longitude,
         latitudeDelta: 0.01,
-        longitudeDelta: 0.01,
+        longitudeDelta: 0.01
       },
-      800,
-    );
-  };
+      800
+    )
+  }
 
   useEffect(() => {
     if (location) {
-      centerOnUser();
+      centerOnUser()
     }
-  }, [location]);
+  }, [location])
 
   if (locationError) {
-    console.log('🚨 Erro ao carregar mapa:', locationError);
+    console.log('🚨 Erro ao carregar mapa:', locationError)
     return (
       <MapError
         error={locationError}
         onRetry={centerOnUser}
         onGoBack={handleGoBack}
       />
-    );
+    )
   }
 
   // UI principal
@@ -84,7 +84,7 @@ export default function MapScreen() {
             latitude: location?.latitude || -8.839987,
             longitude: location?.longitude || 13.289437,
             latitudeDelta: 0.08,
-            longitudeDelta: 0.01,
+            longitudeDelta: 0.01
           }}
           showsUserLocation={false}
           showsMyLocationButton={false}
@@ -110,5 +110,5 @@ export default function MapScreen() {
         />
       </View>
     </SafeAreaView>
-  );
+  )
 }

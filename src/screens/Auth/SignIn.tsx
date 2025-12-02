@@ -91,7 +91,7 @@ export default function LoginScreen() {
       // 1️⃣ Login via Firebase
       const { driver } = await login.mutateAsync({
         email: email.toLowerCase().trim(),
-        password
+        password: password.trim()
       })
 
       if (!driver) {
@@ -230,7 +230,7 @@ export default function LoginScreen() {
               <InputPasswordField
                 label={`${t('auth:input_password_label')}`}
                 placeholder={`${t('auth:input_password_placeholder')}`}
-                value={password}
+                value={password.trim()}
                 onChangeText={setPassword}
                 error={errors.password}
                 onSubmitEditing={handleLogin}

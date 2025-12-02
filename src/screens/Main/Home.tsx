@@ -23,6 +23,7 @@ export default function HomeScreen() {
     rides,
     ridesCount,
     wallet,
+    vehicle,
     handleIsOnline,
     handleToDocuments,
     handleToWallet,
@@ -108,7 +109,7 @@ export default function HomeScreen() {
     )
   }
   return (
-    <SafeAreaView className="flex-1 bg-gray-100 m-safe">
+    <SafeAreaView className="flex-1 bg-gray-100">
       {/* Header */}
       <Header
         driver={currentDriverData}
@@ -117,7 +118,7 @@ export default function HomeScreen() {
       />
 
       {/* Seção de Localização */}
-      <View className="mx-5 px-4 py-3 bg-white rounded-2xl">
+      <View className="mx-5 px-4 py-3 bg-white rounded-2xl mb-2">
         <View className="flex-row items-start justify-between">
           {/* Localização */}
           <View className="flex-row items-start flex-1 gap-1">
@@ -200,7 +201,8 @@ export default function HomeScreen() {
       {/* Alertas de Status */}
       <StatusAlerts
         driver={currentDriverData}
-        balance={wallet?.balance || 0}
+        wallet={wallet}
+        vehicle={vehicle}
         onToDocuments={handleToDocuments}
         onToWallet={handleToWallet}
       />
@@ -208,12 +210,16 @@ export default function HomeScreen() {
       {/* Estatísticas */}
       <Statistics balance={wallet?.balance || 0} totalRides={ridesCount} />
       {/* Lista de Corridas */}
-      <RideList
-        driver={currentDriverData}
-        rides={rides}
-        onToDocuments={handleToDocuments}
-        onDetailsRide={handleDetailsRide}
-      />
+      {wallet && (
+        <RideList
+          driver={currentDriverData}
+          rides={rides}
+          onToDocuments={handleToDocuments}
+          onDetailsRide={handleDetailsRide}
+          wallet={wallet}
+          vehicle={vehicle}
+        />
+      )}
     </SafeAreaView>
   )
 }

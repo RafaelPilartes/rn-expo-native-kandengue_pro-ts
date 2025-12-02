@@ -1,13 +1,13 @@
 // src/screens/driver/Vehicles.tsx
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react'
 import {
   View,
   Text,
   TouchableOpacity,
   ScrollView,
   Image,
-  Alert,
-} from 'react-native';
+  Alert
+} from 'react-native'
 import {
   Plus,
   Car,
@@ -15,52 +15,53 @@ import {
   Clock,
   XCircle,
   Edit3,
-  Trash2,
-} from 'lucide-react-native';
-import VehicleModal from './components/VehicleModal';
-import PageHeader from '@/components/PageHeader';
-import { VehicleInterface } from '@/interfaces/IVehicle';
-import { useVehiclesViewModel } from '@/viewModels/VehicleViewModel';
-import { useAuthStore } from '@/storage/store/useAuthStore';
-import { VehicleType } from '@/types/enum';
-import { useFileUploadViewModel } from '@/viewModels/FileUploadViewModel';
-import { BaseLoadingPage } from '@/components/loadingPage';
+  Trash2
+} from 'lucide-react-native'
+import VehicleModal from './components/VehicleModal'
+import PageHeader from '@/components/PageHeader'
+import { VehicleInterface } from '@/interfaces/IVehicle'
+import { useVehiclesViewModel } from '@/viewModels/VehicleViewModel'
+import { useAuthStore } from '@/storage/store/useAuthStore'
+import { VehicleType } from '@/types/enum'
+import { useFileUploadViewModel } from '@/viewModels/FileUploadViewModel'
+import { BaseLoadingPage } from '@/components/loadingPage'
+import { SafeAreaView } from 'react-native-safe-area-context'
 
 export default function VehiclesScreen() {
-  const { driver } = useAuthStore();
+  const { driver } = useAuthStore()
   const {
     fetchAllVehiclesByField,
     createVehicle,
     updateVehicle,
-    deleteVehicle,
-  } = useVehiclesViewModel();
+    deleteVehicle
+  } = useVehiclesViewModel()
 
   const {
     uploadSomeImageForUser,
     isUploadingSomeImageForUser: isUploadingImageImage,
-    uploadSomeImageForUserError: uploadImageErrorImage,
-  } = useFileUploadViewModel();
+    uploadSomeImageForUserError: uploadImageErrorImage
+  } = useFileUploadViewModel()
 
-  const [vehicles, setVehicles] = useState<VehicleInterface[]>([]);
-  const [isFetchingVehicles, setIsFetchingVehicles] = useState(true);
-  const [showModal, setShowModal] = useState(false);
+  const [vehicles, setVehicles] = useState<VehicleInterface[]>([])
+  const [isFetchingVehicles, setIsFetchingVehicles] = useState(true)
+  const [showModal, setShowModal] = useState(false)
   const [vehicleToEdit, setVehicleToEdit] = useState<VehicleInterface | null>(
-    null,
-  );
-  const [isSubmitting, setIsSubmitting] = useState(false);
+    null
+  )
+  const [isSubmitting, setIsSubmitting] = useState(false)
 
   // 🔹 Status do veículo
   const renderStatus = (status: VehicleInterface['status']) => {
     const statusConfig = {
       validated: { icon: CheckCircle2, color: '#10B981', label: 'Aprovado' },
       under_analysis: { icon: Clock, color: '#F59E0B', label: 'Pendente' },
-      rejected: { icon: XCircle, color: '#EF4444', label: 'Rejeitado' },
-    };
+      rejected: { icon: XCircle, color: '#EF4444', label: 'Rejeitado' }
+    }
 
     const config =
       statusConfig[status as keyof typeof statusConfig] ||
-      statusConfig.under_analysis;
-    const IconComponent = config.icon;
+      statusConfig.under_analysis
+    const IconComponent = config.icon
 
     return (
       <View className="flex-row items-center">
@@ -72,60 +73,60 @@ export default function VehiclesScreen() {
           {config.label}
         </Text>
       </View>
-    );
-  };
+    )
+  }
 
   // 🔹 UPLOAD: de imagem - FUNÇÃO ADICIONADA
   const handleUploadImage = async (imageToUpload: string): Promise<string> => {
-    if (!imageToUpload) return imageToUpload || '';
+    if (!imageToUpload) return imageToUpload || ''
 
     try {
-      console.log('📤 Iniciando upload da imagem...');
+      console.log('📤 Iniciando upload da imagem...')
 
       const { url, path } = await uploadSomeImageForUser({
         fileUri: imageToUpload,
         userId: driver?.id || '',
-        imageType: 'vehicles',
-      });
+        imageType: 'vehicles'
+      })
 
       if (!url || !path) {
         const errorMsg =
-          uploadImageErrorImage?.message || 'Erro ao carregar ficheiro';
-        console.error('❌ Upload falhou:', errorMsg);
-        Alert.alert('Erro', errorMsg);
-        throw new Error('Upload inválido');
+          uploadImageErrorImage?.message || 'Erro ao carregar ficheiro'
+        console.error('❌ Upload falhou:', errorMsg)
+        Alert.alert('Erro', errorMsg)
+        throw new Error('Upload inválido')
       }
 
-      console.log('✅ Upload concluído:', url);
-      return url;
+      console.log('✅ Upload concluído:', url)
+      return url
     } catch (err) {
-      console.error('❌ Erro no upload:', err);
-      Alert.alert('Erro', 'Erro ao carregar ficheiro');
-      throw err;
+      console.error('❌ Erro no upload:', err)
+      Alert.alert('Erro', 'Erro ao carregar ficheiro')
+      throw err
     }
-  };
+  }
 
   // 🔹 Manipular salvamento do veículo
   const handleSaveVehicle = async (vehicleData: Partial<VehicleInterface>) => {
-    setIsSubmitting(true);
+    setIsSubmitting(true)
 
     try {
-      let finalImageUrl = vehicleToEdit?.image;
+      let finalImageUrl = vehicleToEdit?.image
 
       // 🔹 FAZER UPLOAD se há nova imagem selecionada
       if (vehicleData.image && vehicleData.image !== vehicleToEdit?.image) {
-        console.log('🔄 Fazendo upload da nova imagem...');
-        finalImageUrl = await handleUploadImage(vehicleData.image);
+        console.log('🔄 Fazendo upload da nova imagem...')
+        finalImageUrl = await handleUploadImage(vehicleData.image)
       }
 
       // 🔹 PREPARAR dados para atualização
       const updateData: Partial<VehicleInterface> = {
-        ...vehicleData,
-      };
+        ...vehicleData
+      }
 
       // 🔹 ADICIONAR foto apenas se mudou
       if (finalImageUrl !== vehicleToEdit?.image) {
-        updateData.image = finalImageUrl;
+        updateData.image = finalImageUrl
       }
 
       if (vehicleToEdit?.id) {
@@ -135,9 +136,9 @@ export default function VehiclesScreen() {
           vehicle: {
             ...updateData,
             status: 'under_analysis',
-            isDefault: false,
-          },
-        });
+            isDefault: false
+          }
+        })
       } else {
         // Criar novo veículo
         const createdVehicle: Omit<VehicleInterface, 'id'> = {
@@ -149,28 +150,28 @@ export default function VehiclesScreen() {
           color: vehicleData.color as string,
           plate: vehicleData.plate as string,
           status: 'under_analysis',
-          isDefault: false,
-        };
-        await createVehicle.mutateAsync(createdVehicle);
+          isDefault: false
+        }
+        await createVehicle.mutateAsync(createdVehicle)
       }
 
-      setShowModal(false);
-      setVehicleToEdit(null);
+      setShowModal(false)
+      setVehicleToEdit(null)
 
       Alert.alert(
         'Sucesso',
-        vehicleToEdit ? 'Veículo atualizado!' : 'Veículo adicionado!',
-      );
+        vehicleToEdit ? 'Veículo atualizado!' : 'Veículo adicionado!'
+      )
     } catch (error) {
-      console.error('Erro ao salvar veículo:', error);
-      Alert.alert('Erro', 'Não foi possível salvar o veículo');
+      console.error('Erro ao salvar veículo:', error)
+      Alert.alert('Erro', 'Não foi possível salvar o veículo. Tente novamente.')
     } finally {
       if (driver) {
-        fetchAllVehicles();
+        fetchAllVehicles()
       }
-      setIsSubmitting(false);
+      setIsSubmitting(false)
     }
-  };
+  }
 
   // 🔹 Excluir veículo
   const handleDeleteVehicle = (vehicle: VehicleInterface) => {
@@ -184,52 +185,52 @@ export default function VehiclesScreen() {
           style: 'destructive',
           onPress: async () => {
             try {
-              await deleteVehicle.mutateAsync(vehicle.id!);
+              await deleteVehicle.mutateAsync(vehicle.id!)
               if (driver) {
-                fetchAllVehicles();
+                fetchAllVehicles()
               }
-              Alert.alert('Sucesso', 'Veículo excluído!');
+              Alert.alert('Sucesso', 'Veículo excluído!')
             } catch (error) {
-              Alert.alert('Erro', 'Não foi possível excluir o veículo');
+              Alert.alert('Erro', 'Não foi possível excluir o veículo')
             }
-          },
-        },
-      ],
-    );
-  };
+          }
+        }
+      ]
+    )
+  }
 
   // 🔹 Abrir modal para editar
   const handleEditVehicle = (vehicle: VehicleInterface) => {
-    setVehicleToEdit(vehicle);
-    setShowModal(true);
-  };
+    setVehicleToEdit(vehicle)
+    setShowModal(true)
+  }
 
   // 🔹 Abrir modal para adicionar
   const handleAddVehicle = () => {
-    setVehicleToEdit(null);
-    setShowModal(true);
-  };
+    setVehicleToEdit(null)
+    setShowModal(true)
+  }
 
   // fetch all vehicles
   const fetchAllVehicles = async () => {
     try {
       const vehiclesResponse = await fetchAllVehiclesByField(
         'user_id',
-        driver?.id as string,
-      );
-      setVehicles(vehiclesResponse?.data || []);
+        driver?.id as string
+      )
+      setVehicles(vehiclesResponse?.data || [])
     } catch (error) {
-      console.error('Error fetching vehicles:', error);
+      console.error('Error fetching vehicles:', error)
     } finally {
-      setIsFetchingVehicles(false);
+      setIsFetchingVehicles(false)
     }
-  };
+  }
 
   useEffect(() => {
     if (driver) {
-      fetchAllVehicles();
+      fetchAllVehicles()
     }
-  }, [driver]);
+  }, [driver])
 
   if (isFetchingVehicles) {
     return (
@@ -237,11 +238,11 @@ export default function VehiclesScreen() {
         title="Meus Veículos"
         primaryText={'Buscando veículos...'}
       />
-    );
+    )
   }
 
   return (
-    <View className="relative flex-1 bg-gray-50 ">
+    <View className="relative flex-1 bg-gray-50 m-safe">
       {/* Header */}
       <PageHeader title="Meus Veículos" canGoBack={true} />
 
@@ -258,7 +259,7 @@ export default function VehiclesScreen() {
                 <View className="mr-4">
                   {vehicle.image ? (
                     <Image
-                      source={{ uri: vehicle.image }}
+                      source={{ uri: vehicle.image ?? '' }}
                       className="w-20 h-20 rounded-xl"
                     />
                   ) : (
@@ -351,7 +352,7 @@ export default function VehiclesScreen() {
       {/* Botão Adicionar (sempre visível) */}
       <TouchableOpacity
         onPress={handleAddVehicle}
-        className="absolute bottom-12 left-6 p-5 flex-row items-center justify-center bg-red-600 rounded-full shadow-lg"
+        className="absolute bottom-10 left-6 p-5 flex-row items-center justify-center bg-red-600 rounded-full shadow-lg"
       >
         <Plus size={22} color="white" />
       </TouchableOpacity>
@@ -360,13 +361,13 @@ export default function VehiclesScreen() {
       <VehicleModal
         visible={showModal}
         onClose={() => {
-          setShowModal(false);
-          setVehicleToEdit(null);
+          setShowModal(false)
+          setVehicleToEdit(null)
         }}
         onSave={handleSaveVehicle}
         vehicleToEdit={vehicleToEdit}
         isEditing={isSubmitting}
       />
     </View>
-  );
+  )
 }

@@ -23,9 +23,7 @@ import {
   History,
   ArrowUpRight,
   ArrowDownLeft,
-  Calendar,
-  DollarSign,
-  TrendingUp
+  Link2Off
 } from 'lucide-react-native'
 
 // Components
@@ -94,7 +92,10 @@ export default function WalletScreen() {
 
   // 🔹 Carregar transações da carteira
   const loadTransactions = async () => {
-    if (!wallet?.id) return
+    if (!wallet?.id) {
+      setIsLoadingTransactions(false)
+      return
+    }
 
     setIsLoadingTransactions(true)
     try {
@@ -137,6 +138,9 @@ export default function WalletScreen() {
     if (wallet?.id) {
       loadTransactions()
       loadTopupRequests()
+    } else {
+      setIsLoadingTransactions(false)
+      setIsLoadingWalletTopupRequests(false)
     }
   }, [wallet?.id])
 
@@ -268,7 +272,7 @@ export default function WalletScreen() {
   // 🔹 Calcular estatísticas
   const calculateStatistics = () => {
     const totalIncome = transactions
-      .filter(t => t.type === 'credit')
+      .filter(t => t.type === 'credit' && t.category === 'ride_fee')
       .reduce((sum, t) => sum + (t.amount || 0), 0)
 
     const totalExpense = transactions
@@ -326,6 +330,20 @@ export default function WalletScreen() {
         )
       }
 
+      if (!wallet?.id) {
+        return (
+          <View className="items-center justify-center py-16 px-4">
+            <Link2Off size={64} color="#D1D5DB" />
+            <Text className="text-lg font-medium text-gray-500 mt-4 text-center">
+              Ainda nenhuma carteira cadastrada
+            </Text>
+            <Text className="text-gray-400 text-center mt-2">
+              Por favor, aguarde ou entre em contato com o suporte
+            </Text>
+          </View>
+        )
+      }
+
       return (
         <FlatList
           data={transactions}
@@ -364,6 +382,20 @@ export default function WalletScreen() {
         <View className="flex-1 items-center justify-center py-8">
           <ActivityIndicator size="large" color="#EF4444" />
           <Text className="text-gray-600 mt-4">Carregando solicitações...</Text>
+        </View>
+      )
+    }
+
+    if (!wallet?.id) {
+      return (
+        <View className="items-center justify-center py-16 px-4">
+          <Link2Off size={64} color="#D1D5DB" />
+          <Text className="text-lg font-medium text-gray-500 mt-4 text-center">
+            Ainda nenhuma carteira cadastrada
+          </Text>
+          <Text className="text-gray-400 text-center mt-2">
+            Por favor, aguarde ou entre em contato com o suporte
+          </Text>
         </View>
       )
     }
@@ -413,30 +445,32 @@ export default function WalletScreen() {
           AOA {formatMoney(wallet?.balance || 0)}
         </Text>
 
-        <View className="flex-row items-center justify-center mt-6 gap-3">
-          {/* Botão Carregar Saldo */}
-          <TouchableOpacity
-            onPress={() => setModalVisible(true)}
-            disabled={isLoadingWalletTopupRequests}
-            className="bg-primary-200 px-5 py-3 rounded-full flex-row items-center"
-          >
-            <PlusCircle size={20} color="white" />
-            <Text className="ml-2 text-white font-semibold text-base">
-              Carregar Saldo
-            </Text>
-          </TouchableOpacity>
+        {wallet?.id && (
+          <View className="flex-row items-center justify-center mt-6 gap-3">
+            {/* Botão Carregar Saldo */}
+            <TouchableOpacity
+              onPress={() => setModalVisible(true)}
+              disabled={isLoadingWalletTopupRequests}
+              className="bg-primary-200 px-5 py-3 rounded-full flex-row items-center"
+            >
+              <PlusCircle size={20} color="white" />
+              <Text className="ml-2 text-white font-semibold text-base">
+                Carregar Saldo
+              </Text>
+            </TouchableOpacity>
 
-          {/* Botão Estatísticas */}
-          <TouchableOpacity
-            onPress={() => setStatisticsModalVisible(true)}
-            className="px-4 py-3 border border-primary-200 rounded-full flex-row items-center"
-          >
-            <BarChart3 size={18} color="#EF4444" />
-            <Text className="ml-2 text-primary-200 font-semibold">
-              Estatísticas
-            </Text>
-          </TouchableOpacity>
-        </View>
+            {/* Botão Estatísticas */}
+            <TouchableOpacity
+              onPress={() => setStatisticsModalVisible(true)}
+              className="px-4 py-3 border border-primary-200 rounded-full flex-row items-center"
+            >
+              <BarChart3 size={18} color="#EF4444" />
+              <Text className="ml-2 text-primary-200 font-semibold">
+                Estatísticas
+              </Text>
+            </TouchableOpacity>
+          </View>
+        )}
       </View>
 
       {/* Tabs */}
@@ -485,7 +519,7 @@ export default function WalletScreen() {
 
       {/* Modal de Carregamento */}
       <Modal visible={modalVisible} transparent animationType="slide">
-        <View className="flex-1 bg-black/40 justify-end">
+        <View className="flex-1 bg-black/40 justify-end m-safe">
           <View className="bg-white p-6 rounded-t-3xl max-h-[90%]">
             <View className="flex-row justify-between items-center mb-6">
               <Text className="text-xl font-bold text-gray-800">
@@ -539,7 +573,8 @@ export default function WalletScreen() {
             </TouchableOpacity>
 
             <Text className="text-gray-500 text-xs text-center mt-4">
-              O saldo será creditado após aprovação do comprovativo
+              O valor deve corresponjder ao comprovativo. O saldo será creditado
+              após aprovação do comprovativo
             </Text>
           </View>
         </View>
@@ -547,7 +582,7 @@ export default function WalletScreen() {
 
       {/* Modal de Estatísticas */}
       <Modal visible={statisticsModalVisible} transparent animationType="slide">
-        <View className="flex-1 bg-black/40 justify-end">
+        <View className="flex-1 bg-black/40 justify-end m-safe">
           <View className="bg-white p-6 rounded-t-3xl max-h-[80%]">
             <View className="flex-row justify-between items-center mb-6">
               <Text className="text-xl font-bold text-gray-800">
@@ -653,7 +688,7 @@ export default function WalletScreen() {
 
       {/* Modal de Detalhes da Solicitação */}
       <Modal visible={detailsModalVisible} transparent animationType="slide">
-        <View className="flex-1 bg-black/40 justify-end">
+        <View className="flex-1 bg-black/40 justify-end m-safe">
           <View className="bg-white p-6 rounded-t-3xl max-h-[80%]">
             {selectedRequest && (
               <>
@@ -724,7 +759,7 @@ export default function WalletScreen() {
                           Comprovativo
                         </Text>
                         <Image
-                          source={{ uri: selectedRequest.proof_url }}
+                          source={{ uri: selectedRequest.proof_url ?? '' }}
                           className="w-full h-40 rounded-lg"
                           resizeMode="contain"
                         />

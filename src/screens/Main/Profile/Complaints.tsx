@@ -1,13 +1,13 @@
 // src/screens/Complaints.tsx
-import React, { useState } from 'react';
+import React, { useState } from 'react'
 import {
   View,
   Text,
   TextInput,
   TouchableOpacity,
   ScrollView,
-  Alert,
-} from 'react-native';
+  Alert
+} from 'react-native'
 import {
   Send,
   AlertTriangle,
@@ -16,24 +16,23 @@ import {
   Package,
   MapPin,
   CreditCard,
-  Smartphone,
-} from 'lucide-react-native';
-import { useNavigation } from '@react-navigation/native';
-import PageHeader from '@/components/PageHeader';
-import { useComplaintsViewModel } from '@/viewModels/ComplaintViewModel';
-import { useAuthStore } from '@/storage/store/useAuthStore';
-import { ComplaintEntity } from '@/core/entities/Complaint';
+  Smartphone
+} from 'lucide-react-native'
+import { useNavigation } from '@react-navigation/native'
+import PageHeader from '@/components/PageHeader'
+import { useComplaintsViewModel } from '@/viewModels/ComplaintViewModel'
+import { useAuthStore } from '@/storage/store/useAuthStore'
+import { ComplaintEntity } from '@/core/entities/Complaint'
 import type {
   ComplaintType,
   ComplaintPriority,
-  ContactPreference,
-} from '@/core/interfaces/IComplaintRepository';
+  ContactPreference
+} from '@/core/interfaces/IComplaintRepository'
 
 export default function ComplaintsScreen() {
-  const navigation = useNavigation<any>();
-  const { driver } = useAuthStore();
-  const { createComplaint, isLoadingUpdateComplaint } =
-    useComplaintsViewModel();
+  const navigation = useNavigation<any>()
+  const { driver } = useAuthStore()
+  const { createComplaint, isLoadingUpdateComplaint } = useComplaintsViewModel()
 
   const [formData, setFormData] = useState({
     type: '' as ComplaintType,
@@ -41,8 +40,8 @@ export default function ComplaintsScreen() {
     description: '',
     priority: 'medium' as ComplaintPriority,
     contact_preference: 'email' as ContactPreference,
-    ride_id: '', // Opcional - pode ser preenchido se vier de uma corrida específica
-  });
+    ride_id: '' // Opcional - pode ser preenchido se vier de uma corrida específica
+  })
 
   // Tipos de reclamação baseados na interface
   const complaintTypes: Array<{ id: ComplaintType; label: string; icon: any }> =
@@ -51,88 +50,88 @@ export default function ComplaintsScreen() {
       {
         id: 'driver_behavior',
         label: 'Comportamento do Motorista',
-        icon: User,
+        icon: User
       },
       {
         id: 'payment_issue',
         label: 'Problema com Pagamento',
-        icon: CreditCard,
+        icon: CreditCard
       },
       {
         id: 'app_technical',
         label: 'Problema Técnico no App',
-        icon: Smartphone,
+        icon: Smartphone
       },
       {
         id: 'safety_concern',
         label: 'Preocupação com Segurança',
-        icon: AlertTriangle,
+        icon: AlertTriangle
       },
-      { id: 'other', label: 'Outro', icon: MapPin },
-    ];
+      { id: 'other', label: 'Outro', icon: MapPin }
+    ]
 
   // Prioridades baseadas na interface
   const priorities: Array<{
-    id: ComplaintPriority;
-    label: string;
-    color: string;
+    id: ComplaintPriority
+    label: string
+    color: string
   }> = [
     {
       id: 'low',
       label: 'Baixa',
-      color: 'bg-green-100 text-green-800 green-300',
+      color: 'bg-green-100 text-green-800 green-300'
     },
     {
       id: 'medium',
       label: 'Média',
-      color: 'bg-yellow-100 text-yellow-800 yellow-300',
+      color: 'bg-yellow-100 text-yellow-800 yellow-300'
     },
     {
       id: 'high',
       label: 'Alta',
-      color: 'bg-orange-100 text-orange-800 orange-300',
-    },
-  ];
+      color: 'bg-orange-100 text-orange-800 orange-300'
+    }
+  ]
 
   // Opções de contato baseadas na interface
   const contactOptions: Array<{ id: ContactPreference; label: string }> = [
     { id: 'email', label: 'Email' },
     { id: 'phone', label: 'Telefone' },
     { id: 'whatsapp', label: 'WhatsApp' },
-    { id: 'app_notification', label: 'Notificação no App' },
-  ];
+    { id: 'app_notification', label: 'Notificação no App' }
+  ]
 
   const handleTypeSelect = (type: ComplaintType) => {
-    setFormData(prev => ({ ...prev, type }));
-  };
+    setFormData(prev => ({ ...prev, type }))
+  }
 
   const handlePrioritySelect = (priority: ComplaintPriority) => {
-    setFormData(prev => ({ ...prev, priority }));
-  };
+    setFormData(prev => ({ ...prev, priority }))
+  }
 
   const handleContactSelect = (contact_preference: ContactPreference) => {
-    setFormData(prev => ({ ...prev, contact_preference }));
-  };
+    setFormData(prev => ({ ...prev, contact_preference }))
+  }
 
   const handleSubmit = async () => {
     if (!driver?.id) {
-      Alert.alert('Erro', 'Usuário não identificado. Faça login novamente.');
-      return;
+      Alert.alert('Erro', 'Usuário não identificado. Faça login novamente.')
+      return
     }
 
     if (!formData.type) {
-      Alert.alert('Atenção', 'Por favor, selecione o tipo de problema.');
-      return;
+      Alert.alert('Atenção', 'Por favor, selecione o tipo de problema.')
+      return
     }
 
     if (!formData.subject.trim()) {
-      Alert.alert('Atenção', 'Por favor, informe o assunto.');
-      return;
+      Alert.alert('Atenção', 'Por favor, informe o assunto.')
+      return
     }
 
     if (!formData.description.trim()) {
-      Alert.alert('Atenção', 'Por favor, descreva o problema.');
-      return;
+      Alert.alert('Atenção', 'Por favor, descreva o problema.')
+      return
     }
 
     try {
@@ -144,20 +143,20 @@ export default function ComplaintsScreen() {
         description: formData.description.trim(),
         priority: formData.priority,
         contact_preference: formData.contact_preference,
-        status: 'open' as const,
-      };
+        status: 'open' as const
+      }
 
       // Validar usando a entidade
-      const complaintEntity = new ComplaintEntity(complaintData);
+      const complaintEntity = new ComplaintEntity(complaintData)
 
-      const validation = complaintEntity.validate();
+      const validation = complaintEntity.validate()
       if (!validation.isValid) {
-        Alert.alert('Erro de Validação', validation.errors.join('\n'));
-        return;
+        Alert.alert('Erro de Validação', validation.errors.join('\n'))
+        return
       }
 
       // Enviar para o backend
-      await createComplaint.mutateAsync(complaintEntity.toJSON());
+      await createComplaint.mutateAsync(complaintEntity.toJSON())
 
       Alert.alert(
         'Reclamação Enviada',
@@ -165,10 +164,10 @@ export default function ComplaintsScreen() {
         [
           {
             text: 'OK',
-            onPress: () => navigation.goBack(),
-          },
-        ],
-      );
+            onPress: () => navigation.goBack()
+          }
+        ]
+      )
 
       // Reset form
       setFormData({
@@ -177,20 +176,20 @@ export default function ComplaintsScreen() {
         description: '',
         priority: 'medium' as ComplaintPriority,
         contact_preference: 'email' as ContactPreference,
-        ride_id: '',
-      });
+        ride_id: ''
+      })
     } catch (error: any) {
-      console.error('Erro ao enviar reclamação:', error);
+      console.error('Erro ao enviar reclamação:', error)
       Alert.alert(
         'Erro',
         error.message ||
-          'Não foi possível enviar sua reclamação. Tente novamente.',
-      );
+          'Não foi possível enviar sua reclamação. Tente novamente.'
+      )
     }
-  };
+  }
 
   return (
-    <View className="flex-1 bg-gray-50">
+    <View className="flex-1 bg-gray-50 m-safe">
       {/* Header */}
       <PageHeader title="Enviar Reclamação" canGoBack={true} />
 
@@ -203,8 +202,8 @@ export default function ComplaintsScreen() {
 
           <View className="flex-row flex-wrap -mx-1">
             {complaintTypes.map(type => {
-              const IconComponent = type.icon;
-              const isSelected = formData.type === type.id;
+              const IconComponent = type.icon
+              const isSelected = formData.type === type.id
 
               return (
                 <TouchableOpacity
@@ -234,7 +233,7 @@ export default function ComplaintsScreen() {
                     </View>
                   </View>
                 </TouchableOpacity>
-              );
+              )
             })}
           </View>
         </View>
@@ -298,7 +297,7 @@ export default function ComplaintsScreen() {
 
           <View className="flex-row flex-wrap -mx-1">
             {priorities.map(priority => {
-              const isSelected = formData.priority === priority.id;
+              const isSelected = formData.priority === priority.id
 
               return (
                 <TouchableOpacity
@@ -326,7 +325,7 @@ export default function ComplaintsScreen() {
                     </Text>
                   </View>
                 </TouchableOpacity>
-              );
+              )
             })}
           </View>
         </View>
@@ -339,7 +338,7 @@ export default function ComplaintsScreen() {
 
           <View className="flex-row flex-wrap -mx-1">
             {contactOptions.map(option => {
-              const isSelected = formData.contact_preference === option.id;
+              const isSelected = formData.contact_preference === option.id
 
               return (
                 <TouchableOpacity
@@ -363,7 +362,7 @@ export default function ComplaintsScreen() {
                     </Text>
                   </View>
                 </TouchableOpacity>
-              );
+              )
             })}
           </View>
         </View>
@@ -388,7 +387,7 @@ export default function ComplaintsScreen() {
                   description: formData.description,
                   priority: formData.priority,
                   contact_preference: formData.contact_preference,
-                  status: 'open',
+                  status: 'open'
                 }).getEstimatedResolutionTime()}
               </Text>
             </Text>
@@ -433,5 +432,5 @@ export default function ComplaintsScreen() {
         </View>
       </ScrollView>
     </View>
-  );
+  )
 }
