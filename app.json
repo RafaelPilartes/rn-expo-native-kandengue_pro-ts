@@ -30,9 +30,9 @@
         "NSBluetoothPeripheralUsageDescription": "Bluetooth access is required to interact with nearby devices.",
         "NSCalendarsUsageDescription": "Calendar access is required for scheduling features.",
         "NSRemindersUsageDescription": "Reminders access is needed for task scheduling.",
-        "NSCameraUsageDescription": "Camera access is needed for taking photos.",
         "NSUserTrackingUsageDescription": "Tracking permission is needed for analytics and personalized experience.",
-        "NSSpeechRecognitionUsageDescription": "Speech recognition is required to support voice features."
+        "NSSpeechRecognitionUsageDescription": "Speech recognition is required to support voice features.",
+        "NSUserNotificationUsageDescription": "Notifications permission is needed for push notifications."
       },
       "config": {
         "googleMapsApiKey": "AIzaSyCcaxxnCRThBiRzzjF4SHO-yo6qtV8q7iM"
