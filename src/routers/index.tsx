@@ -185,7 +185,7 @@ export default function AppRouter() {
         // 2) Sincroniza Zustand com o resultado
         await syncAuthState()
 
-        // Pequeno delay para smooth UX (opcional)
+        // Pequeno delay para smooth UX
         await new Promise(res => setTimeout(res, 650))
       } catch (err) {
         console.error('❌ Erro durante inicialização:', err)

@@ -263,6 +263,23 @@ export class FirebaseFileDAO {
     }
   }
 
+  async uploadMultiple(
+    fileUris: string[],
+    folder: string
+  ): Promise<UploadResult[]> {
+    console.log('📁 UPLOAD MÚLTIPLO INICIADO')
+    const uploadPromises = fileUris.map(uri => this.uploadSimple(uri, folder))
+
+    try {
+      const results = await Promise.all(uploadPromises)
+      console.log('✅ Upload múltiplo concluído com sucesso')
+      return results
+    } catch (error: any) {
+      console.error('💥 Erro no upload múltiplo:', error)
+      throw new Error(error.message || 'Falha no upload múltiplo')
+    }
+  }
+
   /**
    * ✅ GERAR NOME DE ARQUIVO
    */

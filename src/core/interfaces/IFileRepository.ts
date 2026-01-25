@@ -31,4 +31,6 @@ export interface IFileRepository {
     photoType: 'pickup' | 'dropoff'
   ): Promise<UploadResult>
   deleteFile(path: string): Promise<void>
+  uploadMultiple(fileUris: string[], folder: string): Promise<UploadResult[]>
+  getFileURL(path: string): Promise<string>
 }
