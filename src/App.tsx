@@ -1,4 +1,4 @@
-import { useEffect } from 'react'
+import React, { useEffect } from 'react'
 import { StatusBar } from 'expo-status-bar'
 
 import '@/styles/global.css'
@@ -17,6 +17,7 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { LocationProvider } from './context/LocationContext'
 import { TrackRideProvider } from './context/TrackRideContext'
 import { SafeAreaProvider } from 'react-native-safe-area-context'
+import { NetworkStatusBanner } from './components/NetworkStatusBanner'
 
 const queryClient = new QueryClient()
 
@@ -55,6 +56,7 @@ function App() {
                   <TrackRideProvider>
                     <NetworkProvider>
                       <StatusBar style="dark" />
+                      <NetworkStatusBanner />
                       <AppRouter />
                     </NetworkProvider>
                   </TrackRideProvider>
