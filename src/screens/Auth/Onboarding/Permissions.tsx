@@ -24,11 +24,8 @@ import {
   LocationPermissionResponse,
   requestLocationPermission
 } from '@/services/permissions/locationPermission'
-import {
-  checkNotificationPermission,
-  NotificationPermissionResponse,
-  requestNotificationPermission
-} from '@/services/permissions/notificationPermission'
+import LocationDisclosureModal from '@/components/modals/LocationDisclosureModal'
+import { checkNotificationPermission, requestNotificationPermission, NotificationPermissionResponse } from '@/services/permissions/notificationPermission'
 
 type PermissionStatus = 'pending' | 'granted' | 'denied' | 'blocked'
 
@@ -50,6 +47,8 @@ const Permissions = () => {
 
   const [permissions, setPermissions] = useState<PermissionItem[]>([])
   const [isLoading, setIsLoading] = useState(false)
+
+  const [showLocationDisclosure, setShowLocationDisclosure] = useState(false)
 
   // 🔹 Verificar status atual das permissões
   const checkAllPermissions = async () => {
@@ -102,6 +101,17 @@ const Permissions = () => {
   const requestPermission = async (
     permissionId: 'location' | 'notifications'
   ) => {
+    if (permissionId === 'location') {
+      setShowLocationDisclosure(true)
+      return
+    }
+
+    await processPermissionRequest(permissionId)
+  }
+
+  const processPermissionRequest = async (
+    permissionId: 'location' | 'notifications'
+  ) => {
     try {
       setIsLoading(true)
 
@@ -127,6 +137,15 @@ const Permissions = () => {
     } finally {
       setIsLoading(false)
     }
+  }
+
+  const handleAcceptLocationDisclosure = async () => {
+    setShowLocationDisclosure(false)
+    await processPermissionRequest('location')
+  }
+
+  const handleDeclineLocationDisclosure = () => {
+    setShowLocationDisclosure(false)
   }
 
   // 🔹 Feedback visual quando permissão é concedida
@@ -263,6 +282,12 @@ const Permissions = () => {
 
       {/* line linear gradient */}
       <LineGradient />
+
+      <LocationDisclosureModal
+        visible={showLocationDisclosure}
+        onAccept={handleAcceptLocationDisclosure}
+        onDecline={handleDeclineLocationDisclosure}
+      />
     </View>
   )
 }
