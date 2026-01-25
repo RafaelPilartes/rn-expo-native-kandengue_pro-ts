@@ -26,6 +26,15 @@ const RideList: React.FC<RideListProps> = ({
   vehicle,
   wallet
 }) => {
+  const renderItem = React.useCallback(
+    ({ item }: { item: RideInterface }) => (
+      <RideCard ride={item} onPressDetails={() => onDetailsRide(item)} />
+    ),
+    [onDetailsRide]
+  )
+
+  const ItemSeparator = React.useCallback(() => <View className="h-3" />, [])
+
   // 🔹 Estado quando driver está offline
   if (!driver?.is_online && driver?.status === 'active') {
     return (
@@ -96,13 +105,8 @@ const RideList: React.FC<RideListProps> = ({
                 keyExtractor={item => item.id as string}
                 contentContainerStyle={{ paddingBottom: 16 }}
                 showsVerticalScrollIndicator={false}
-                renderItem={({ item }) => (
-                  <RideCard
-                    ride={item}
-                    onPressDetails={() => onDetailsRide(item)}
-                  />
-                )}
-                ItemSeparatorComponent={() => <View className="h-3" />}
+                renderItem={renderItem}
+                ItemSeparatorComponent={ItemSeparator}
               />
             )}
           </>

@@ -1,3 +1,4 @@
+import React from 'react';
 import { RideInterface } from '@/interfaces/IRide';
 import { formatFullDate } from '@/utils/formatDate';
 import { formatMoney } from '@/utils/formattedNumber';
@@ -9,7 +10,7 @@ interface RideCardProps {
   onPressDetails: () => void;
 }
 
-const RideCard: React.FC<RideCardProps> = ({ ride, onPressDetails }) => {
+const RideCard: React.FC<RideCardProps> = React.memo(({ ride, onPressDetails }) => {
   return (
     <View className="bg-white p-4 rounded-2xl mb-2 shadow-sm border border-gray-100">
       {/* Header do pedido */}
@@ -71,21 +72,6 @@ const RideCard: React.FC<RideCardProps> = ({ ride, onPressDetails }) => {
         </View>
       </View>
 
-      {/* 
-      Informações adicionais
-      {(ride.details?.item?.type || ride.details?.item?.description) && (
-        <View className="mb-4 p-3 bg-gray-50 rounded-lg">
-          <Text className="text-sm font-medium text-gray-700 mb-1">
-            📦 {ride.details?.item?.type || 'Pacote'}
-          </Text>
-          {ride.details?.item?.description && (
-            <Text className="text-xs text-gray-600" numberOfLines={2}>
-              {ride.details.item.description}
-            </Text>
-          )}
-        </View>
-      )} */}
-
       {/* Botão Ver detalhes */}
       <View className="flex-row justify-end">
         <TouchableOpacity
@@ -99,6 +85,6 @@ const RideCard: React.FC<RideCardProps> = ({ ride, onPressDetails }) => {
       </View>
     </View>
   );
-};
+});
 
 export default RideCard;
