@@ -2,6 +2,7 @@
 import React, { createContext, useState, useRef } from 'react'
 import * as Location from 'expo-location'
 import { getAddressFromCoords } from '@/services/google/googleApi'
+import { BACKGROUND_LOCATION_TASK } from '@/services/location/BackgroundLocationTask'
 
 type Coords = { latitude: number; longitude: number }
 
@@ -43,8 +44,19 @@ export const LocationProvider = ({
   // --------------------------------------------------------
   const requestPermission = async () => {
     try {
-      const { status } = await Location.requestForegroundPermissionsAsync()
-      return status === 'granted'
+      const { status: fgStatus } = await Location.requestForegroundPermissionsAsync()
+      if (fgStatus !== 'granted') {
+          setError('Permissão de localização em uso negada.')
+          return false
+      }
+
+      const { status: bgStatus } = await Location.requestBackgroundPermissionsAsync()
+      if (bgStatus !== 'granted') {
+          console.warn('Permissão de background negada. O app funcionará apenas em foreground.')
+          // Não retornamos false aqui pois o app pode funcionar sem background, mas é bom avisar
+      }
+      
+      return true
     } catch (e) {
       setError('Erro ao solicitar permissão de localização.')
       return false
@@ -87,7 +99,7 @@ export const LocationProvider = ({
 
     const ok = await requestPermission()
     if (!ok) {
-      setError('Permissão negada.')
+      // setError já definido no requestPermission se falhar foreground
       setIsLoading(false)
       return null
     }
@@ -123,12 +135,12 @@ export const LocationProvider = ({
 
     const ok = await requestPermission()
     if (!ok) {
-      setError('Permissão negada para tracking.')
       return
     }
 
     setIsTracking(true)
 
+    // A) Foreground Watch (para UI imediata)
     watchRef.current = await Location.watchPositionAsync(
       {
         accuracy: Location.Accuracy.High,
@@ -144,16 +156,47 @@ export const LocationProvider = ({
         fetchAddress(coords)
       }
     )
+
+    // B) Background Updates
+    try {
+        const hasStarted = await Location.hasStartedLocationUpdatesAsync(BACKGROUND_LOCATION_TASK)
+        if (!hasStarted) {
+            await Location.startLocationUpdatesAsync(BACKGROUND_LOCATION_TASK, {
+                accuracy: Location.Accuracy.High,
+                timeInterval: 5000, // 5 segundos
+                distanceInterval: 5, // 5 metros
+                showsBackgroundLocationIndicator: true,
+                foregroundService: {
+                    notificationTitle: "Kandengue Pro",
+                    notificationBody: "Rastreando sua corrida em segundo plano..."
+                }
+            })
+        }
+    } catch (e) {
+        console.warn("Erro ao iniciar background location updates:", e)
+    }
   }
 
   // --------------------------------------------------------
   // 5) Parar tracking
   // --------------------------------------------------------
-  const stopTracking = () => {
+  const stopTracking = async () => {
+    // A) Stop Foreground Watch
     if (watchRef.current) {
       watchRef.current.remove()
       watchRef.current = null
     }
+    
+    // B) Stop Background Updates
+    try {
+        const hasStarted = await Location.hasStartedLocationUpdatesAsync(BACKGROUND_LOCATION_TASK)
+        if (hasStarted) {
+            await Location.stopLocationUpdatesAsync(BACKGROUND_LOCATION_TASK)
+        }
+    } catch (e) {
+        console.warn("Erro ao parar background location updates:", e)
+    }
+
     setIsTracking(false)
   }
 

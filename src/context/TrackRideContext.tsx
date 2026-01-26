@@ -2,7 +2,7 @@
 import React, { createContext, useEffect, useRef, useState } from 'react'
 import { useAuthStore } from '@/storage/store/useAuthStore'
 import { useLocation } from '@/hooks/useLocation'
-import { useRideTrackingsViewModel } from '@/viewModels/RideTrackingViewModel'
+
 import { LiveLocationType } from '@/types/ride'
 import { useRidesViewModel } from '@/viewModels/RideViewModel'
 import { RideInterface } from '@/interfaces/IRide'
@@ -24,55 +24,13 @@ export const TrackRideProvider = ({
 }) => {
   const { driver, currentMissionId, setCurrentMissionId } = useAuthStore()
   const { location, startTracking, stopTracking, isTracking } = useLocation()
-  const {
-    createRideTracking,
-    updateRideTracking,
-    fetchOneRideTrackingByField
-  } = useRideTrackingsViewModel()
+
   const { fetchRideById, fetchAllRidesByField } = useRidesViewModel()
 
   const [currentRide, setCurrentRide] = useState<RideInterface | null>(null)
   const [isLoading, setIsLoading] = useState(true)
 
-  const lastUpdateRef = useRef<number>(0) // throttle controller
-
-  const appendTracking = async (rideId: string) => {
-    if (!location) return
-
-    // throttle (1 update a cada 5 segundos)
-    const now = Date.now()
-    if (now - lastUpdateRef.current < 5000) return
-    lastUpdateRef.current = now
-
-    const tracking = await fetchOneRideTrackingByField('ride_id', rideId)
-    console.log(tracking)
-
-    const newPath: LiveLocationType = {
-      latitude: location?.latitude,
-      longitude: location?.longitude,
-      timestamp: new Date()
-    }
-
-    if (!tracking) {
-      await createRideTracking.mutateAsync({
-        ride_id: rideId,
-        path: [newPath]
-      })
-      return
-    }
-
-    const newTempPath = [...tracking.path, newPath]
-
-    if (tracking) {
-      await updateRideTracking.mutateAsync({
-        id: tracking.id,
-        rideTracking: {
-          path: newTempPath
-        }
-      })
-      return
-    }
-  }
+  // const lastUpdateRef = useRef<number>(0) // throttle controller moved to background task
 
   const resolveCurrentRide = async () => {
     setIsLoading(true)
@@ -157,9 +115,7 @@ export const TrackRideProvider = ({
       stopTracking()
       return
     }
-
-    appendTracking(currentMissionId)
-  }, [location])
+  }, [currentMissionId])
 
   return (
     <TrackRideContext.Provider
