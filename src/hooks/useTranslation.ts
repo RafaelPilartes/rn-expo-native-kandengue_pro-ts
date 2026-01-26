@@ -1,4 +1,4 @@
-import { useMemo } from 'react';
+import { useMemo, useCallback } from 'react';
 import { useTranslation as useOriginalTranslation } from 'react-i18next';
 import { I18nNamespace } from '@/types/i18next';
 import { useAppStore } from '@/storage/store/useAppStore';
@@ -9,10 +9,10 @@ export const useTranslation = (ns?: I18nNamespace | I18nNamespace[]) => {
 
   const { setLanguage } = useAppStore();
 
-  const toggleLanguage = (lng: string) => {
+  const toggleLanguage = useCallback((lng: string) => {
     i18n.changeLanguage(lng);
     setLanguage(lng as LanguageEnum);
-  };
+  }, [i18n, setLanguage]);
 
   return useMemo(
     () => ({
@@ -22,6 +22,6 @@ export const useTranslation = (ns?: I18nNamespace | I18nNamespace[]) => {
       currentLanguage: i18n.language,
       changeLanguage: (lng: LanguageEnum) => toggleLanguage(lng),
     }),
-    [t, i18n, ready],
+    [t, i18n, ready, toggleLanguage],
   );
 };

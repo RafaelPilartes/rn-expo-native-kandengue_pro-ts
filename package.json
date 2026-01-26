@@ -33,6 +33,7 @@
     "expo-dev-client": "~6.0.18",
     "expo-file-system": "~19.0.19",
     "expo-location": "~19.0.7",
+    "expo-splash-screen": "~31.0.13",
     "expo-status-bar": "~3.0.8",
     "i18next": "^25.6.3",
     "lucide-react-native": "^0.555.0",
