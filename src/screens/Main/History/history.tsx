@@ -89,7 +89,7 @@ export default function History() {
   }
 
   return (
-    <View className="flex-1 bg-gray-50/50 p-safe">
+    <View className="flex-1 bg-gray-50 p-safe">
       <PageHeader title="Histórico de Corridas" canGoBack={false} />
 
       {/* New Premium Dashboard */}

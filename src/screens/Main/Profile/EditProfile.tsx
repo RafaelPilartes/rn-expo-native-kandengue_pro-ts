@@ -227,7 +227,7 @@ export default function EditProfileScreen() {
   }
 
   return (
-    <View className="flex-1 bg-gray-50">
+    <View className="flex-1 bg-gray-50 m-safe">
       {/* Header */}
       <PageHeader title="Editar Perfil" canGoBack={true} />
 

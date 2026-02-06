@@ -1,13 +1,13 @@
 // src/screens/TermsConditionsScreen.tsx
-import React, { useState } from 'react';
+import React, { useState } from 'react'
 import {
   View,
   Text,
   ScrollView,
   TouchableOpacity,
   Linking,
-  Alert,
-} from 'react-native';
+  Alert
+} from 'react-native'
 import {
   FileText,
   Shield,
@@ -17,276 +17,189 @@ import {
   AlertTriangle,
   ChevronDown,
   ChevronUp,
-  CheckCircle,
   ExternalLink,
-} from 'lucide-react-native';
-import { useNavigation } from '@react-navigation/native';
-import PageHeader from '@/components/PageHeader';
+  CheckCircle
+} from 'lucide-react-native'
+import PageHeader from '@/components/PageHeader'
 
 export default function TermsConditionsScreen() {
-  const navigation = useNavigation<any>();
   const [expandedSections, setExpandedSections] = useState<Set<string>>(
-    new Set(),
-  );
+    new Set(['acceptance'])
+  )
 
   const toggleSection = (section: string) => {
-    const newSections = new Set(expandedSections);
+    const newSections = new Set(expandedSections)
     if (newSections.has(section)) {
-      newSections.delete(section);
+      newSections.delete(section)
     } else {
-      newSections.add(section);
+      newSections.add(section)
     }
-    setExpandedSections(newSections);
-  };
+    setExpandedSections(newSections)
+  }
 
-  const isSectionExpanded = (section: string) => expandedSections.has(section);
+  const isSectionExpanded = (section: string) => expandedSections.has(section)
 
   const handleContactLegal = () => {
-    Linking.openURL('mailto:legal@kandengueatrevido.com').catch(() =>
-      Alert.alert('Erro', 'Não foi possível abrir o email.'),
-    );
-  };
+    Linking.openURL('mailto:comercial@kandengueatrevido.ao').catch(() =>
+      Alert.alert('Erro', 'Não foi possível abrir o email.')
+    )
+  }
 
   const termsSections = [
     {
       id: 'acceptance',
       icon: CheckCircle,
       title: '1. Aceitação dos Termos',
-      content: `Ao utilizar o aplicativo Kandengue Atrevido, você concorda com estes Termos e Condições. Se não concordar com qualquer parte destes termos, não utilize nossos serviços.
+      content: `Ao utilizar o aplicativo Kandengue Atrevido, operado pela MUXIMA TECH - COMÉRCIO E SERVIÇOS, LDA, você concorda inteiramente com estes Termos e Condições.
 
-• Idade mínima: 18 anos
-• Capacidade legal para celebrar contratos
-• Aceitação integral dos termos aqui descritos`,
+Se você não concordar com qualquer parte destes termos, você não deve utilizar o nosso serviço.`
     },
     {
       id: 'services',
       icon: MapPin,
-      title: '2. Serviços Prestados',
-      content: `O Kandengue Atrevido é uma plataforma que conecta:
+      title: '2. Descrição do Serviço',
+      content: `O Kandengue Atrevido é uma plataforma tecnológica que facilita a conexão entre:
       
-• Passageiros a motoristas particulares
-• Clientes a serviços de entrega
-• Usuários a prestadores de serviços logísticos
+• Passageiros que buscam serviços de transporte.
+• Motoristas parceiros independentes.
+• Usuários que necessitam de serviços de entrega.
 
-NÃO SOMOS: prestadores diretos de serviços de transporte, empregadores de motoristas ou responsáveis diretos pelas entregas.`,
+A MUXIMA TECH atua exclusivamente como intermediária e não fornece serviços de transporte diretamente.`
     },
     {
       id: 'registration',
       icon: User,
       title: '3. Cadastro e Conta',
-      content: `Para usar nossos serviços, você precisa:
+      content: `Para utilizar o serviço, você deve:
 
-• Fornecer informações verdadeiras e atualizadas
-• Manter a segurança da sua conta
-• Não compartilhar credenciais de login
-• Ser responsável por todas as atividades na sua conta
+• Ter pelo menos 18 anos de idade.
+• Fornecer informações precisas, atuais e completas.
+• Manter a segurança de sua senha e identificação da conta.
 
-Podemos suspender contas que:
-• Violarem estes termos
-• Apresentarem comportamento fraudulento
-• Comprometerem a segurança da plataforma`,
+A MUXIMA TECH reserva-se o direito de suspender contas que violem estes termos ou apresentem comportamento suspeito.`
     },
     {
       id: 'payments',
       icon: CreditCard,
-      title: '4. Pagamentos e Tarifas',
-      content: `• Os valores das corridas são calculados com base em distância, tempo e demanda
-• Aceitamos: dinheiro, cartão de crédito/débito, carteira digital
-• Taxas de serviço: 15% sobre o valor da corrida
-• Fundo de garantia: 5% para proteção de disputas
-• Pagamentos são processados de forma segura
-• Reembolsos: analisados caso a caso dentro de 7 dias úteis`,
+      title: '4. Pagamentos',
+      content: `• As tarifas são calculadas automaticamente pelo aplicativo baseadas em distância e tempo estimado.
+• O pagamento pode ser feito via dinheiro, carteira digital ou outros métodos integrados.
+• Taxas de cancelamento podem ser aplicadas conforme a política vigente.`
     },
     {
       id: 'responsibilities',
       icon: Shield,
       title: '5. Responsabilidades',
-      content: `DO USUÁRIO:
-• Verificar informações antes de confirmar
-• Tratar motoristas/entregadores com respeito
-• Pagar pelos serviços utilizados
-• Comunicar problemas imediatamente
+      content: `O Usuário concorda em:
+• Não utilizar o serviço para fins ilícitos.
+• Não transportar materiais perigosos ou proibidos.
+• Tratar motoristas e outros usuários com respeito e cortesia.
 
-DA PLATAFORMA:
-• Manter o app funcionando
-• Processar pagamentos com segurança
-• Mediar disputas entre usuários
-• Proteger dados pessoais`,
-    },
-    {
-      id: 'prohibited',
-      icon: AlertTriangle,
-      title: '6. Condutas Proibidas',
-      content: `É expressamente proibido:
-
-• Transportar itens ilegais ou perigosos
-• Assediar outros usuários
-• Tentar burlar o sistema de pagamento
-• Usar o app para atividades criminosas
-• Danificar propriedade de terceiros
-• Fornecer informações falsas
-
-Violações resultam em suspensão permanente.`,
+A violação destas regras pode resultar no banimento permanente da plataforma.`
     },
     {
       id: 'liability',
-      icon: FileText,
-      title: '7. Limitação de Responsabilidade',
-      content: `NÃO NOS RESPONSABILIZAMOS POR:
-
-• Atrasos causados por trânsito ou fatores externos
-• Comportamento de motoristas/entregadores
-• Itens esquecidos em veículos
-• Danos a objetos frágeis durante transporte
-• Problemas técnicos momentâneos
-
-NOSSA RESPONSABILIDADE MÁXIMA: valor da corrida em questão.`,
-    },
-    {
-      id: 'privacy',
-      icon: Shield,
-      title: '8. Privacidade e Dados',
-      content: `• Coletamos dados necessários para o serviço
-• Usamos localização apenas durante o uso ativo
-• Compartilhamos dados apenas com motoristas/entregadores envolvidos
-• Mantemos dados por período legalmente exigido
-• Você pode solicitar exclusão de dados a qualquer momento
-
-Consulte nossa Política de Privacidade completa.`,
-    },
-    {
-      id: 'modifications',
-      icon: FileText,
-      title: '9. Modificações dos Termos',
-      content: `• Podemos atualizar estes termos periodicamente
-• Notificaremos sobre mudanças significativas
-• Uso continuado após mudanças significa aceitação
-• Versão atual: 2.1 (Janeiro 2024)
-• Histórico de alterações disponível no site`,
-    },
-    {
-      id: 'jurisdiction',
-      icon: MapPin,
-      title: '10. Lei Aplicável e Foro',
-      content: `• Lei aplicável: Legislação Angolana
-• Foro eleito: Comarca de Luanda
-• Disputas: Tentativa de mediação antes de ação judicial
-• Idioma oficial: Português
-• Vigência: Imediata após publicação`,
-    },
-  ];
+      icon: AlertTriangle,
+      title: '6. Limitação de Responsabilidade',
+      content: `A MUXIMA TECH não se responsabiliza por:
+• Danos indiretos, incidentais ou consequentes.
+• Atrasos ou falhas decorrentes de causas fora de nosso controle razoável.
+• A qualidade ou segurança do serviço de transporte prestado pelo motorista parceiro (embora realizemos verificações de segurança).`
+    }
+  ]
 
   return (
-    <View className="flex-1 bg-gray-50">
-      {/* Header */}
-      <PageHeader title="Termos e Condições" canGoBack={true} />
+    <View className="flex-1 bg-gray-50 p-safe">
+      <PageHeader title="Termos de Uso" canGoBack={true} />
 
-      <ScrollView contentContainerStyle={{ paddingBottom: 30 }}>
-        {/* Introdução */}
-        <View className="bg-white px-6 py-6 border-b border-gray-200">
-          <View className="items-center mb-4">
-            <FileText size={48} color="#E0212D" />
+      <ScrollView
+        contentContainerStyle={{ paddingBottom: 40 }}
+        showsVerticalScrollIndicator={false}
+      >
+        {/* Intro */}
+        <View className="bg-white px-6 pb-8 border-b border-gray-100 items-center">
+          <View className="w-16 h-16 bg-gray-50 rounded-full items-center justify-center mb-4 border border-gray-100">
+            <FileText size={28} color="#374151" />
           </View>
-
-          <Text className="text-2xl font-bold text-gray-900 text-center mb-3">
-            Termos e Condições de Uso
+          <Text className="text-xl font-bold text-gray-900 text-center mb-2">
+            Termos e Condições
           </Text>
-
-          <Text className="text-gray-600 text-center leading-6">
-            Leia atentamente estes termos antes de utilizar nossos serviços.
-            Eles constituem um contrato legal entre você e o Kandengue Atrevido.
+          <Text className="text-gray-500 text-center leading-relaxed text-sm max-w-xs">
+            Última atualização: Novembro, 2025
+            {'\n'}Por favor, leia atentamente antes de usar.
           </Text>
-
-          <View className="bg-yellow-50 p-3 rounded-lg mt-4">
-            <Text className="text-yellow-800 text-sm text-center">
-              ⚠️ Última atualização: 15 de Janeiro de 2024
-            </Text>
-          </View>
         </View>
 
-        {/* Seções dos Termos */}
-        <View className="px-6 mt-6">
+        {/* Sections */}
+        <View className="px-5 mt-6">
           {termsSections.map(section => {
-            const IconComponent = section.icon;
-            const isExpanded = isSectionExpanded(section.id);
+            const IconComponent = section.icon
+            const isExpanded = isSectionExpanded(section.id)
 
             return (
-              <View key={section.id} className="mb-3">
+              <View key={section.id} className="mb-4">
                 <TouchableOpacity
-                  className="bg-white rounded-2xl shadow-sm p-5"
+                  className={`bg-white rounded-2xl p-5 border border-gray-100 shadow-sm ${isExpanded ? 'border-gray-300' : ''}`}
                   onPress={() => toggleSection(section.id)}
+                  activeOpacity={0.7}
                 >
-                  <View className="flex-row justify-between items-start">
-                    <View className="flex-row items-start flex-1">
+                  <View className="flex-row justify-between items-center">
+                    <View className="flex-row items-center flex-1">
                       <IconComponent
-                        size={20}
-                        color="#E0212D"
-                        className="mt-1 mr-3"
+                        size={18}
+                        color={isExpanded ? '#111827' : '#6B7280'}
+                        className="mr-3"
                       />
-                      <Text className="text-lg font-semibold text-gray-900 flex-1">
+                      <Text
+                        className={`text-base font-bold flex-1 mr-2 ${isExpanded ? 'text-gray-900' : 'text-gray-700'}`}
+                      >
                         {section.title}
                       </Text>
                     </View>
                     {isExpanded ? (
-                      <ChevronUp size={20} color="#6B7280" />
+                      <ChevronUp size={20} color="#374151" />
                     ) : (
-                      <ChevronDown size={20} color="#6B7280" />
+                      <ChevronDown size={20} color="#9CA3AF" />
                     )}
                   </View>
 
                   {isExpanded && (
-                    <Text className="text-gray-700 leading-6 mt-4">
+                    <Text className="text-gray-600 mt-4 leading-7 text-sm">
                       {section.content}
                     </Text>
                   )}
                 </TouchableOpacity>
               </View>
-            );
+            )
           })}
         </View>
 
-        {/* Aceitação */}
-        <View className="px-6 mt-6">
-          <View className="bg-green-50 rounded-2xl p-5">
-            <Text className="text-green-800 font-semibold text-center mb-2">
-              ✅ Ao usar nosso aplicativo, você concorda com todos estes termos.
-            </Text>
-            <Text className="text-green-700 text-sm text-center">
-              Se tiver dúvidas, entre em contato com nosso departamento
-              jurídico.
-            </Text>
-          </View>
-        </View>
-
-        {/* Contato Legal */}
-        <View className="px-6 mt-6">
+        {/* Contact Legal */}
+        <View className="px-5 mt-4">
           <TouchableOpacity
-            className="bg-white rounded-2xl shadow p-5 flex-row items-center justify-between"
+            className="flex-row items-center justify-between bg-white border border-gray-200 rounded-xl p-4"
             onPress={handleContactLegal}
           >
             <View>
-              <Text className="font-semibold text-gray-900">
-                Dúvidas Legais?
+              <Text className="font-bold text-gray-900 text-sm">
+                Dúvidas sobre os termos?
               </Text>
-              <Text className="text-gray-600 text-sm mt-1">
-                Entre em contato com nosso departamento jurídico
+              <Text className="text-gray-500 text-xs mt-0.5">
+                Fale com nosso jurídico
               </Text>
             </View>
-            <ExternalLink size={20} color="#6B7280" />
+            <ExternalLink size={16} color="#374151" />
           </TouchableOpacity>
         </View>
 
         {/* Footer */}
-        <View className="px-6 mt-6">
-          <View className="items-center">
-            <Text className="text-gray-500 text-center text-sm">
-              Kandengue Atrevido
-              {'\n'}Luanda, Angola
-              {'\n'}© 2024 Todos os direitos reservados
-            </Text>
-          </View>
+        <View className="px-6 mt-8 mb-4">
+          <Text className="text-gray-400 text-center text-xs">
+            MUXIMA TECH - COMÉRCIO E SERVIÇOS, LDA
+            {'\n'}Luanda, Angola
+          </Text>
         </View>
       </ScrollView>
     </View>
-  );
+  )
 }

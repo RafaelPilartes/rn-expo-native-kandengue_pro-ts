@@ -1,25 +1,25 @@
 // src/components/HomeHeader.tsx
-import React from 'react';
-import { View, Text, Image, TouchableOpacity, Switch } from 'react-native';
-import { ArrowLeft, Bell } from 'lucide-react-native';
-import { DriverInterface } from '@/interfaces/IDriver';
-import { useNavigation } from '@react-navigation/native';
+import React from 'react'
+import { View, Text, Image, TouchableOpacity, Switch } from 'react-native'
+import { ArrowLeft, Bell } from 'lucide-react-native'
+import { DriverInterface } from '@/interfaces/IDriver'
+import { useNavigation } from '@react-navigation/native'
 
 interface HeaderProps {
-  title: string;
-  subtitle?: string;
-  canGoBack: boolean;
+  title: string
+  subtitle?: string
+  canGoBack: boolean
 }
 
 const PageHeader: React.FC<HeaderProps> = ({
   title,
   subtitle,
-  canGoBack = true,
+  canGoBack = true
 }) => {
-  const navigation = useNavigation<any>();
+  const navigation = useNavigation<any>()
 
   return (
-    <View className="px-4 py-5 relative bg-white shadow flex-row items-start">
+    <View className="px-4 py-5 relative bg-white flex-row items-start">
       {canGoBack && (
         <TouchableOpacity
           onPress={() => navigation.goBack()}
@@ -35,7 +35,7 @@ const PageHeader: React.FC<HeaderProps> = ({
         {subtitle && <Text className="text-sm text-gray-600">{subtitle}</Text>}
       </View>
     </View>
-  );
-};
+  )
+}
 
-export default PageHeader;
+export default PageHeader
