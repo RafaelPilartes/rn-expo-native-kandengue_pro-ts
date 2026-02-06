@@ -158,6 +158,12 @@ export const rideTypeOptions: OptionType[] = [
   { value: 'delivery', label: 'Entrega' }
 ]
 
+export const paymentMethodOptions: OptionType[] = [
+  { value: 'cash', label: 'Dinheiro' },
+  { value: 'card', label: 'Cartão' },
+  { value: 'mobile_money', label: 'Pagamento Digital' }
+]
+
 // ==============================================
 export const adminRoleOptions: OptionType[] = [
   { value: 'superadmin', label: 'Super Administrador' },

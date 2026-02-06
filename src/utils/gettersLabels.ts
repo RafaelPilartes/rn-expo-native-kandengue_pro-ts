@@ -8,6 +8,7 @@ import {
   genderOptions,
   notificationCategoryOptions,
   notificationTypeOptions,
+  paymentMethodOptions,
   requestStatusOptions,
   rideStatusOptions,
   rideTypeOptions,
@@ -24,6 +25,7 @@ import type {
   GenderType,
   NotificationCategory,
   NotificationType,
+  PaymentMethodType,
   RequestStatus,
   RideStatusType,
   RideType,
@@ -78,6 +80,11 @@ export function getRideStatusLabel(status: RideStatusType): string {
 export function getRideTypeLabel(type: RideType): string {
   const found = rideTypeOptions.find(option => option.value === type)
   return found ? found.label : type
+}
+
+export const getPaymentMethodLabel = (value: PaymentMethodType): string => {
+  const found = paymentMethodOptions.find(option => option.value === value)
+  return found ? found.label : value
 }
 
 export const getDocumentTypeLabel = (value: DocumentType): string => {

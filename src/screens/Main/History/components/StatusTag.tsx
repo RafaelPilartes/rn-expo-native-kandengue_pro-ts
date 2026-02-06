@@ -1,6 +1,6 @@
 // src/components/StatusTag.tsx
-import React from 'react';
-import { View, Text, StyleSheet } from 'react-native';
+import React from 'react'
+import { View, Text, StyleSheet } from 'react-native'
 import {
   CheckCircle,
   XCircle,
@@ -8,8 +8,8 @@ import {
   Play,
   MapPin,
   UserCheck,
-  LucideIcon,
-} from 'lucide-react-native';
+  LucideIcon
+} from 'lucide-react-native'
 
 type StatusType =
   | 'pending'
@@ -19,15 +19,15 @@ type StatusType =
   | 'picked_up'
   | 'arrived_dropoff'
   | 'completed'
-  | 'canceled';
+  | 'canceled'
 
 interface StatusConfig {
-  icon: LucideIcon;
-  color: string;
-  bgColor: string;
-  textColor: string;
-  borderColor: string;
-  label: string;
+  icon: LucideIcon
+  color: string
+  bgColor: string
+  textColor: string
+  borderColor: string
+  label: string
 }
 
 const statusConfig: Record<StatusType, StatusConfig> = {
@@ -37,7 +37,7 @@ const statusConfig: Record<StatusType, StatusConfig> = {
     bgColor: '#FEF3C7',
     borderColor: '#FDE68A',
     textColor: '#B45309',
-    label: 'Pendente',
+    label: 'Pendente'
   },
   idle: {
     icon: Clock,
@@ -45,7 +45,7 @@ const statusConfig: Record<StatusType, StatusConfig> = {
     bgColor: '#F3F4F6',
     borderColor: '#D1D5DB',
     textColor: '#1F2937',
-    label: 'Disponível',
+    label: 'Disponível'
   },
   driver_on_the_way: {
     icon: Play,
@@ -53,7 +53,7 @@ const statusConfig: Record<StatusType, StatusConfig> = {
     bgColor: '#DBEAFE',
     borderColor: '#BFDBFE',
     textColor: '#1E40AF',
-    label: 'A caminho',
+    label: 'A caminho'
   },
   arrived_pickup: {
     icon: MapPin,
@@ -61,7 +61,7 @@ const statusConfig: Record<StatusType, StatusConfig> = {
     bgColor: '#EDE9FE',
     borderColor: '#DDD6FE',
     textColor: '#5B21B6',
-    label: 'No local',
+    label: 'No local'
   },
   picked_up: {
     icon: UserCheck,
@@ -69,7 +69,7 @@ const statusConfig: Record<StatusType, StatusConfig> = {
     bgColor: '#D1FAE5',
     borderColor: '#A7F3D0',
     textColor: '#065F46',
-    label: 'Passageiro',
+    label: 'Passageiro'
   },
   arrived_dropoff: {
     icon: MapPin,
@@ -77,7 +77,7 @@ const statusConfig: Record<StatusType, StatusConfig> = {
     bgColor: '#FEE2E2',
     borderColor: '#FECACA',
     textColor: '#991B1B',
-    label: 'Chegou',
+    label: 'Chegou'
   },
   completed: {
     icon: CheckCircle,
@@ -85,7 +85,7 @@ const statusConfig: Record<StatusType, StatusConfig> = {
     bgColor: '#D1FAE5',
     borderColor: '#A7F3D0',
     textColor: '#065F46',
-    label: 'Concluída',
+    label: 'Concluída'
   },
   canceled: {
     icon: XCircle,
@@ -93,48 +93,48 @@ const statusConfig: Record<StatusType, StatusConfig> = {
     bgColor: '#FEE2E2',
     borderColor: '#FECACA',
     textColor: '#991B1B',
-    label: 'Cancelada',
-  },
-};
+    label: 'Cancelada'
+  }
+}
 
 type Props = {
-  status: StatusType;
-};
+  status: StatusType
+}
 
 export default function StatusTag({ status }: Props) {
-  const config = statusConfig[status];
-  const IconComponent = config.icon;
+  const config = statusConfig[status]
+  const IconComponent = config.icon
 
   return (
     <View
       style={[
         styles.container,
         {
-          backgroundColor: config.bgColor,
-          borderColor: config.borderColor,
-        },
+          backgroundColor: config.bgColor
+          // borderColor: config.borderColor, // Removed border for cleaner look
+        }
       ]}
     >
-      <IconComponent size={12} color={config.color} />
+      <IconComponent size={10} color={config.textColor} />
       <Text style={[styles.label, { color: config.textColor }]}>
         {config.label}
       </Text>
     </View>
-  );
+  )
 }
 
 const styles = StyleSheet.create({
   container: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingHorizontal: 12,
+    paddingHorizontal: 10,
     paddingVertical: 4,
-    borderRadius: 999,
-    borderWidth: 1,
+    borderRadius: 8 // Softer radius
+    // borderWidth: 1, // Removed border
   },
   label: {
-    fontSize: 12,
-    fontWeight: '500',
-    marginLeft: 4,
-  },
-});
+    fontSize: 11,
+    fontWeight: '600',
+    marginLeft: 4
+  }
+})

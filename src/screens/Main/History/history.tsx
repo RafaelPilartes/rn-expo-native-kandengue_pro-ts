@@ -8,6 +8,7 @@ import RideItem from './components/RideItem'
 import RideDetailsBottomSheet from './components/RideDetailsSheetModal'
 
 // Hooks e Types
+// Hooks e Types
 import { useRidesViewModel } from '@/viewModels/RideViewModel'
 import { useAuthStore } from '@/storage/store/useAuthStore'
 import { RideInterface } from '@/interfaces/IRide'
@@ -15,65 +16,7 @@ import { formatMoney } from '@/utils/formattedNumber'
 import { BaseLoadingPage } from '@/components/loadingPage'
 import PageHeader from '@/components/PageHeader'
 import { useAppProvider } from '@/providers/AppProvider'
-
-type Section = {
-  title: string
-  data: RideInterface[]
-}
-
-// 🔹 Agrupar corridas por período
-const groupRidesByPeriod = (rides: RideInterface[]): Section[] => {
-  const today = new Date()
-  const oneWeekAgo = new Date(today.getTime() - 7 * 24 * 60 * 60 * 1000)
-  const oneMonthAgo = new Date(today.getTime() - 30 * 24 * 60 * 60 * 1000)
-
-  const todayRides: RideInterface[] = []
-  const thisWeekRides: RideInterface[] = []
-  const earlierRides: RideInterface[] = []
-
-  rides.forEach(ride => {
-    if (!ride.created_at) return
-
-    const rideDate = new Date(ride.created_at)
-
-    if (rideDate.toDateString() === today.toDateString()) {
-      todayRides.push(ride)
-    } else if (rideDate >= oneWeekAgo) {
-      thisWeekRides.push(ride)
-    } else if (rideDate >= oneMonthAgo) {
-      earlierRides.push(ride)
-    } else {
-      earlierRides.push(ride)
-    }
-  })
-
-  const sections: Section[] = []
-
-  if (todayRides.length > 0) {
-    sections.push({ title: 'Hoje', data: todayRides })
-  }
-
-  if (thisWeekRides.length > 0) {
-    sections.push({ title: 'Esta Semana', data: thisWeekRides })
-  }
-
-  if (earlierRides.length > 0) {
-    sections.push({ title: 'Anteriormente', data: earlierRides })
-  }
-
-  return sections
-}
-
-// 🔹 Calcular totais
-const calculateTotals = (rides: RideInterface[]) => {
-  const totalEarnings = rides
-    .filter(ride => ride.status === 'completed')
-    .reduce((sum, ride) => sum + (ride.fare?.payouts?.driver_earnings || 0), 0)
-
-  const totalRides = rides.length
-
-  return { totalEarnings, totalRides }
-}
+import { calculateTotals, groupRidesByPeriod } from './utils/historyHelpers'
 
 export default function History() {
   const { driver } = useAuthStore()
@@ -83,7 +26,13 @@ export default function History() {
   const [rides, setRides] = useState<RideInterface[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [selectedRide, setSelectedRide] = useState<RideInterface | null>(null)
-  const [sections, setSections] = useState<Section[]>([])
+
+  // Use useMemo for totals to avoid recalculation on every render
+  const { totalEarnings, totalRides } = React.useMemo(
+    () => calculateTotals(rides),
+    [rides]
+  )
+  const sections = React.useMemo(() => groupRidesByPeriod(rides), [rides])
 
   const snapPoints = React.useMemo(() => ['55%', '70%'], [])
   const bottomSheetModalRef = useRef<BottomSheetModal>(null)
@@ -111,14 +60,6 @@ export default function History() {
   useEffect(() => {
     fetchRides()
   }, [])
-
-  // 🔹 Agrupar corridas quando mudam
-  useEffect(() => {
-    const groupedSections = groupRidesByPeriod(rides)
-    setSections(groupedSections)
-  }, [rides])
-
-  const { totalEarnings, totalRides } = calculateTotals(rides)
 
   const handlePresentModalPress = useCallback((ride: RideInterface) => {
     setSelectedRide(ride)
@@ -148,36 +89,40 @@ export default function History() {
   }
 
   return (
-    <View className="flex-1 bg-gray-50 p-safe">
+    <View className="flex-1 bg-gray-50/50 p-safe">
       <PageHeader title="Histórico de Corridas" canGoBack={false} />
 
-      {/* Total de corridas e total ganho */}
-      <View className="px-4 mb-2 mt-4 flex-row items-center justify-between gap-4">
-        {/* Total ganho */}
-        <View className="flex-1 flex-col justify-center items-center py-6 bg-white rounded-lg border border-gray-200/40">
-          <Text className="text-2xl font-bold text-gray-700">
-            AOA {formatMoney(totalEarnings, 0)}
-          </Text>
-          <Text className="text-sm text-gray-500">Total ganho em corridas</Text>
-        </View>
-
-        {/* Total de corridas */}
-        <View className="flex-1 flex-col justify-center items-center py-6 bg-white rounded-lg border border-gray-200/40">
-          <Text className="text-2xl font-semibold text-gray-700">
-            {totalRides}
-          </Text>
-          <Text className="text-sm text-gray-500">Total de corridas</Text>
+      {/* New Premium Dashboard */}
+      <View className="px-4 mt-4 mb-2">
+        <View className="bg-white p-5 rounded-2xl shadow-sm border border-gray-100 flex-row items-center justify-between">
+          <View>
+            <Text className="text-sm text-gray-500 font-medium mb-1">
+              Ganhos Totais
+            </Text>
+            <Text className="text-3xl font-bold text-gray-900 tracking-tight">
+              AOA {formatMoney(totalEarnings, 0)}
+            </Text>
+          </View>
+          <View className="items-end">
+            <View className="bg-blue-50 px-3 py-1.5 rounded-full mb-1">
+              <Text className="text-blue-700 font-bold text-xs">
+                {totalRides} corridas
+              </Text>
+            </View>
+            <Text className="text-xs text-gray-400">Total realizado</Text>
+          </View>
         </View>
       </View>
 
       {rides.length === 0 ? (
         <View className="flex-1 justify-center items-center px-4">
-          <Text className="text-gray-500 text-lg text-center mb-4">📝</Text>
-          <Text className="text-gray-500 text-center text-lg font-medium mb-2">
-            Nenhuma corrida encontrada
+          <Text className="text-gray-300 text-6xl mb-4">📝</Text>
+          <Text className="text-gray-800 text-center text-xl font-bold mb-2">
+            Nenhuma corrida ainda
           </Text>
-          <Text className="text-gray-400 text-center">
-            Suas corridas aparecerão aqui quando você completar entregas
+          <Text className="text-gray-500 text-center max-w-[250px] leading-relaxed">
+            Suas corridas aparecerão aqui assim que você completar a primeira
+            entrega.
           </Text>
         </View>
       ) : (
@@ -191,24 +136,26 @@ export default function History() {
             />
           )}
           renderSectionHeader={({ section: { title } }) => (
-            <Text className="text-base font-semibold text-gray-700 px-4 mt-4 mb-2">
-              {title}
-            </Text>
+            <View className="px-4 mt-6 mb-3 flex-row items-center">
+              <View className="w-1 h-4 bg-red-500 rounded-full mr-2" />
+              <Text className="text-lg font-bold text-gray-800 tracking-tight">
+                {title}
+              </Text>
+            </View>
           )}
-          contentContainerStyle={{ paddingBottom: 20 }}
+          contentContainerStyle={{ paddingBottom: 100 }}
           showsVerticalScrollIndicator={false}
+          stickySectionHeadersEnabled={false}
         />
       )}
 
-      {/* Componente BottomSheet unificado */}
-      {selectedRide && (
-        <RideDetailsBottomSheet
-          ref={bottomSheetModalRef}
-          selectedRide={selectedRide}
-          snapPoints={snapPoints}
-          onChange={handleSheetChanges}
-        />
-      )}
+      {/* Componente BottomSheet unificado - Always mounted for performance */}
+      <RideDetailsBottomSheet
+        ref={bottomSheetModalRef}
+        selectedRide={selectedRide}
+        snapPoints={snapPoints}
+        onChange={handleSheetChanges}
+      />
     </View>
   )
 }
