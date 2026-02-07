@@ -1,26 +1,26 @@
-import { createNativeStackNavigator } from '@react-navigation/native-stack';
-import { ProfileStackParamList } from '@/types/navigation';
-import ProfileScreen from '@/screens/Main/Profile/Profile';
-import ROUTES from '@/constants/routes';
-import EditProfileScreen from '@/screens/Main/Profile/EditProfile';
-import AboutScreen from '@/screens/Main/Profile/About';
-import FaqScreen from '@/screens/Main/Profile/Faq';
-import ComplaintsScreen from '@/screens/Main/Profile/Complaints';
-import HelpScreen from '@/screens/Main/Profile/Help';
-import PrivacyPolicyScreen from '@/screens/Main/Profile/PrivacyPolicy';
-import TermsConditionsScreen from '@/screens/Main/Profile/TermsConditions';
-import VehiclesScreen from '@/screens/Main/Profile/Vehicles/Vehicles';
-import DocumentsScreen from '@/screens/Main/Profile/Documents';
-import WalletScreen from '@/screens/Main/Profile/Wallet';
+import { createNativeStackNavigator } from '@react-navigation/native-stack'
+import { ProfileStackParamList } from '@/types/navigation'
+import ProfileScreen from '@/screens/Main/Profile/Profile'
+import ROUTES from '@/constants/routes'
+import EditProfileScreen from '@/screens/Main/Profile/EditProfile'
+import AboutScreen from '@/screens/Main/Profile/About'
+import FaqScreen from '@/screens/Main/Profile/Faq'
+import ComplaintsScreen from '@/screens/Main/Profile/Complaints'
+import HelpScreen from '@/screens/Main/Profile/Help'
+import PrivacyPolicyScreen from '@/screens/Main/Profile/PrivacyPolicy'
+import TermsConditionsScreen from '@/screens/Main/Profile/TermsConditions'
+import VehiclesScreen from '@/screens/Main/Profile/Vehicles/Vehicles'
+import DocumentsScreen from '@/screens/Main/Profile/Documents'
+import WalletScreen from '@/screens/Main/Profile/Wallet/Wallet'
 
-const Stack = createNativeStackNavigator<ProfileStackParamList>();
+const Stack = createNativeStackNavigator<ProfileStackParamList>()
 
 export default function ProfileRouter() {
   return (
     <Stack.Navigator
       screenOptions={{
         headerShown: false,
-        gestureEnabled: true,
+        gestureEnabled: true
       }}
     >
       <Stack.Screen
@@ -59,5 +59,5 @@ export default function ProfileRouter() {
         component={TermsConditionsScreen}
       />
     </Stack.Navigator>
-  );
+  )
 }

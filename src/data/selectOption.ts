@@ -23,6 +23,14 @@ export const TransactionTypeOptions: OptionType[] = [
   { value: 'refund', label: 'Devolução' }
 ]
 
+export const transactionCategoryOptions: OptionType[] = [
+  { value: 'wallet_topup', label: 'Carregamento de Carteira' },
+  { value: 'ride_fee', label: 'Taxa de Corrida' },
+  { value: 'pension', label: 'Pensão' },
+  { value: 'bonus', label: 'Bónus' },
+  { value: 'refund', label: 'Reembolso' }
+]
+
 export const walletTopupMethodOptions: OptionType[] = [
   { value: 'bank_transfer', label: 'Transferência Bancária' },
   { value: 'automated', label: 'Automático' },

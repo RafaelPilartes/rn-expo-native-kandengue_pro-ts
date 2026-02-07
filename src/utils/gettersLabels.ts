@@ -17,7 +17,8 @@ import {
   userStatusOptions,
   vehicleStatusOptions,
   vehicleTypeOptions,
-  walletTopupMethodOptions
+  walletTopupMethodOptions,
+  transactionCategoryOptions
 } from '../data/selectOption'
 import type {
   AdminRole,
@@ -31,6 +32,7 @@ import type {
   RideType,
   StatusEnumType,
   TransactionType,
+  TransactionCategoryType,
   UserStatus,
   VehicleStatusEnumType,
   VehicleType,
@@ -56,6 +58,15 @@ export const getWalletTopupMethodTypeLabel = (
 
 export const getTransactionTypeLabel = (value: TransactionType): string => {
   const found = TransactionTypeOptions.find(option => option.value === value)
+  return found ? found.label : value
+}
+
+export const getTransactionCategoryLabel = (
+  value: TransactionCategoryType
+): string => {
+  const found = transactionCategoryOptions.find(
+    option => option.value === value
+  )
   return found ? found.label : value
 }
 
