@@ -102,15 +102,10 @@ export const MapProvider = ({ children }: { children: React.ReactNode }) => {
     const coords = location ?? (await getCurrentLocation())
     if (!coords || !mapRef.current) return
 
-    mapRef.current.animateToRegion(
-      {
-        latitude: coords.latitude,
-        longitude: coords.longitude,
-        latitudeDelta: 0.01,
-        longitudeDelta: 0.01
-      },
-      800
-    )
+    mapRef.current?.setCameraPosition?.({
+      coordinates: coords,
+      zoom: 15
+    })
   }
 
   // -----------------------------------------------------
@@ -162,15 +157,10 @@ export const MapProvider = ({ children }: { children: React.ReactNode }) => {
   const handleMapReady = useCallback(() => {
     setMapReady(true)
     if (location) {
-      mapRef.current?.animateToRegion(
-        {
-          latitude: location.latitude,
-          longitude: location.longitude,
-          latitudeDelta: 0.01,
-          longitudeDelta: 0.01
-        },
-        800
-      )
+      mapRef.current?.setCameraPosition?.({
+        coordinates: location,
+        zoom: 15
+      })
     }
   }, [location])
 

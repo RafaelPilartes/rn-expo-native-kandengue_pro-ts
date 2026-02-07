@@ -3,8 +3,6 @@ import React, { useEffect, useRef, useState } from 'react'
 import { View, Platform } from 'react-native'
 import MapView, { Marker } from '@/components/map/MapView'
 import { SafeAreaView } from 'react-native-safe-area-context'
-import { useNavigation } from '@react-navigation/native'
-import { NativeStackNavigationProp } from '@react-navigation/native-stack'
 
 // Components
 import { AddressDisplay } from './components/AddressDisplay'
@@ -37,7 +35,7 @@ export default function MapScreen() {
     }
 
     mapRef.current?.setCameraPosition?.({
-      center: coords,
+      coordinates: coords,
       zoom: 15
     })
   }
@@ -89,7 +87,7 @@ export default function MapScreen() {
           ref={mapRef}
           style={{ flex: 1 }}
           cameraPosition={{
-            center: {
+            coordinates: {
               latitude: location?.latitude || -8.839987,
               longitude: location?.longitude || 13.289437
             },

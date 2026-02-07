@@ -1,34 +1,37 @@
 // src/screens/Map/components/MapError.tsx
-import React from 'react';
-import { View, Text, TouchableOpacity } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
-import MapView from 'react-native-maps';
-import { BackButton } from '@/components/ui/button/BackButton';
+import React from 'react'
+import { View, Text, TouchableOpacity } from 'react-native'
+import { SafeAreaView } from 'react-native-safe-area-context'
+import MapView from '@/components/map/MapView'
+import { BackButton } from '@/components/ui/button/BackButton'
 
 interface MapErrorProps {
-  error: string;
-  onRetry: () => void;
-  onGoBack: () => void;
+  error: string
+  onRetry: () => void
+  onGoBack: () => void
 }
 
 export const MapError: React.FC<MapErrorProps> = ({
   error,
   onRetry,
-  onGoBack,
+  onGoBack
 }) => {
   return (
     <SafeAreaView className="flex-1 bg-white">
       {/* Mapa de fundo (estático) */}
       <MapView
         style={{ flex: 1 }}
-        initialRegion={{
-          latitude: -8.839987,
-          longitude: 13.289437,
-          latitudeDelta: 0.06,
-          longitudeDelta: 0.01,
+        cameraPosition={{
+          coordinates: {
+            latitude: -8.839987,
+            longitude: 13.289437
+          },
+          zoom: 13
         }}
-        scrollEnabled={false}
-        zoomEnabled={false}
+        uiSettings={{
+          compassEnabled: false,
+          myLocationButtonEnabled: false
+        }}
       />
 
       {/* Overlay de erro */}
@@ -60,5 +63,5 @@ export const MapError: React.FC<MapErrorProps> = ({
         </View>
       </View>
     </SafeAreaView>
-  );
-};
+  )
+}

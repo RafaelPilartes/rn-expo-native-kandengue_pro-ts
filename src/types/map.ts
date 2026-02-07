@@ -1,5 +1,3 @@
-import MapView from '../components/map/MapView'
-
 // src/types/map.ts
 export type Coords = { latitude: number; longitude: number }
 

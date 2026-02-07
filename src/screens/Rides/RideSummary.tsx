@@ -1,7 +1,7 @@
 // src/screens/Ride/RideSummaryScreen.tsx
 import React, { useEffect, useRef, useState, useMemo } from 'react'
 import { StyleSheet, Alert, Linking, Platform } from 'react-native'
-import MapView from 'react-native-maps'
+import MapView from '@/components/map/MapView'
 
 import { useRideSummary } from '@/hooks/useRideSummary'
 import { DriverRideSheet } from './components/Cards/DriverRideCard'
@@ -44,7 +44,7 @@ export default function RideSummaryScreen() {
     requestCurrentLocation
   } = useLocation()
 
-  const mapRef = useRef<MapView | null>(null)
+  const mapRef = useRef<any>(null)
   const bottomSheetRef = useRef<BottomSheetModal>(null)
 
   // Estados modais
@@ -74,15 +74,10 @@ export default function RideSummaryScreen() {
       return
     }
 
-    mapRef.current?.animateToRegion(
-      {
-        latitude: coords.latitude,
-        longitude: coords.longitude,
-        latitudeDelta: 0.01,
-        longitudeDelta: 0.01
-      },
-      800
-    )
+    mapRef.current?.setCameraPosition?.({
+      coordinates: coords,
+      zoom: 15
+    })
   }
 
   const {
@@ -284,14 +279,13 @@ export default function RideSummaryScreen() {
       targetLocation = location.dropoff
     }
 
-    const region = {
-      latitude: targetLocation.latitude,
-      longitude: targetLocation.longitude,
-      latitudeDelta: 0.02,
-      longitudeDelta: 0.02
-    }
-
-    mapRef.current.animateToRegion(region, 1000)
+    mapRef.current?.setCameraPosition?.({
+      coordinates: {
+        latitude: targetLocation.latitude,
+        longitude: targetLocation.longitude
+      },
+      zoom: 14
+    })
   }, [rideStatus, location, userLocation])
 
   useEffect(() => {

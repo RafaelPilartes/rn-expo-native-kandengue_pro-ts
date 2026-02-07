@@ -1,6 +1,6 @@
 import React, { memo } from 'react'
-import { StyleSheet, View } from 'react-native'
-import MapView, { Marker, Polyline } from 'react-native-maps'
+import { StyleSheet, Platform } from 'react-native'
+import MapView, { Marker } from '@/components/map/MapView'
 import { RideInterface } from '@/interfaces/IRide'
 import { CustomPlace } from '@/types/places'
 
@@ -10,7 +10,7 @@ type LatLng = {
 }
 
 type Props = {
-  mapRef: React.RefObject<MapView | null>
+  mapRef: React.RefObject<any>
   userLocation: LatLng | null
   currentRide: RideInterface | null
   location: {
@@ -34,85 +34,98 @@ const RideMapContainer = memo(
     routeCoordsDriver,
     markerHeading
   }: Props) => {
+    // Build markers array
+    const markers: Marker[] = []
+
+    // User location marker
+    if (userLocation) {
+      markers.push({
+        id: 'user-location',
+        coordinates: userLocation,
+        title: 'Sua Localização',
+        ...(Platform.OS === 'ios'
+          ? { subtitle: 'Motorista' }
+          : { snippet: 'Motorista' })
+        // Note: expo-maps doesn't support custom images yet, rotation, or anchor
+      })
+    }
+
+    // Pickup marker
+    if (currentRide) {
+      markers.push({
+        id: 'pickup',
+        coordinates: {
+          latitude: currentRide.pickup.latitude,
+          longitude: currentRide.pickup.longitude
+        },
+        title: 'Local de Recolha',
+        ...(Platform.OS === 'ios' ? {} : {})
+      })
+    }
+
+    // Dropoff marker
+    if (currentRide) {
+      markers.push({
+        id: 'dropoff',
+        coordinates: {
+          latitude: currentRide.dropoff.latitude,
+          longitude: currentRide.dropoff.longitude
+        },
+        title: 'Local de Entrega',
+        ...(Platform.OS === 'ios' ? {} : {})
+      })
+    }
+
+    // Build polylines array
+    const polylines: any[] = []
+
+    if (
+      (rideStatus === 'idle' || rideStatus === 'driver_on_the_way') &&
+      routeCoordsDriver.length > 0
+    ) {
+      polylines.push({
+        id: 'driver-route',
+        coordinates: routeCoordsDriver,
+        ...(Platform.OS === 'ios'
+          ? { color: '#007AFF', width: 4 }
+          : { color: '#007AFF', width: 4 })
+      })
+    }
+
+    if (routeCoords.length > 0) {
+      polylines.push({
+        id: 'main-route',
+        coordinates: routeCoords,
+        ...(Platform.OS === 'ios'
+          ? { color: '#03af5f', width: 4 }
+          : { color: '#03af5f', width: 4 })
+      })
+    }
+
     return (
       <MapView
         ref={mapRef}
         style={StyleSheet.absoluteFillObject}
-        initialRegion={{
-          latitude: currentRide
-            ? currentRide.pickup.latitude
-            : location.pickup.latitude,
-          longitude: currentRide
-            ? currentRide.pickup.longitude
-            : location.pickup.longitude,
-          latitudeDelta: 0.05,
-          longitudeDelta: 0.05
+        cameraPosition={{
+          coordinates: {
+            latitude: currentRide
+              ? currentRide.pickup.latitude
+              : location.pickup.latitude,
+            longitude: currentRide
+              ? currentRide.pickup.longitude
+              : location.pickup.longitude
+          },
+          zoom: 13
         }}
-        showsUserLocation={false}
-        showsMyLocationButton={false}
-      >
-        {/* Marker da localização atual */}
-        {userLocation && (
-          <Marker
-            coordinate={userLocation}
-            title="Sua Localização"
-            description="Motorista"
-            image={require('@/assets/markers/moto.png')}
-            rotation={markerHeading}
-            anchor={{ x: 0.5, y: 0.5 }}
-            flat={true}
-          />
-        )}
-
-        {/* Rota do motorista para a recolha */}
-        {(rideStatus === 'idle' || rideStatus === 'driver_on_the_way') && (
-          <>
-            {routeCoordsDriver.length > 0 && (
-              <Polyline
-                coordinates={routeCoordsDriver}
-                strokeColor="#007AFF"
-                strokeWidth={4}
-                lineDashPattern={[0]}
-              />
-            )}
-          </>
-        )}
-
-        {/* Ponto pickup */}
-        {currentRide && (
-          <Marker
-            coordinate={{
-              latitude: currentRide.pickup.latitude,
-              longitude: currentRide.pickup.longitude
-            }}
-            image={require('@/assets/markers/pickup.png')}
-            title="Local de Recolha"
-            description={currentRide.pickup?.name}
-          />
-        )}
-
-        {/* Ponto dropoff */}
-        {currentRide && (
-          <Marker
-            coordinate={{
-              latitude: currentRide.dropoff.latitude,
-              longitude: currentRide.dropoff.longitude
-            }}
-            image={require('@/assets/markers/dropoff.png')}
-            title="Local de Entrega"
-            description={currentRide.dropoff?.name}
-          />
-        )}
-
-        {/* Rota */}
-        {routeCoords.length > 0 && (
-          <Polyline
-            coordinates={routeCoords}
-            strokeColor="#03af5f"
-            strokeWidth={4}
-          />
-        )}
-      </MapView>
+        markers={markers}
+        polylines={polylines}
+        uiSettings={{
+          myLocationButtonEnabled: false
+        }}
+        properties={{
+          isMyLocationEnabled: false
+        }}
+      />
     )
   }
 )
