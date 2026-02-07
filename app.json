@@ -6,7 +6,7 @@
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "light",
-    "newArchEnabled": true,
+    "newArchEnabled": false,
     "splash": {
       "image": "./assets/splash-icon.png",
       "resizeMode": "contain",
@@ -32,7 +32,8 @@
         "NSRemindersUsageDescription": "Reminders access is needed for task scheduling.",
         "NSUserTrackingUsageDescription": "Tracking permission is needed for analytics and personalized experience.",
         "NSSpeechRecognitionUsageDescription": "Speech recognition is required to support voice features.",
-        "NSUserNotificationUsageDescription": "Notifications permission is needed for push notifications."
+        "NSUserNotificationUsageDescription": "Notifications permission is needed for push notifications.",
+        "ITSAppUsesNonExemptEncryption": false
       },
       "config": {
         "googleMapsApiKey": "AIzaSyCcaxxnCRThBiRzzjF4SHO-yo6qtV8q7iM"
