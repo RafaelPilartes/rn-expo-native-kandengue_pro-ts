@@ -60,7 +60,7 @@ export const PhotoStep: React.FC<PhotoStepProps> = ({
             <View
               className="bg-white rounded-3xl p-2 mb-8"
               style={{
-                shadowColor: '#000',
+                shadowColor: '#2424244b',
                 shadowOffset: { width: 0, height: 4 },
                 shadowOpacity: 0.1,
                 shadowRadius: 2,
@@ -77,7 +77,7 @@ export const PhotoStep: React.FC<PhotoStepProps> = ({
                 onPress={onRemovePhoto}
                 className="absolute -top-4 -right-4 bg-red-600 p-2 rounded-full border-2 border-white"
                 style={{
-                  shadowColor: '#DC2626',
+                  shadowColor: '#dc2626bb',
                   shadowOffset: { width: 0, height: 2 },
                   shadowOpacity: 0.3,
                   shadowRadius: 4,

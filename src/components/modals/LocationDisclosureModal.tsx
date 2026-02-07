@@ -1,21 +1,21 @@
-import React from 'react';
-import { View, Text, Modal, StyleSheet, ScrollView } from 'react-native';
-import { useTranslation } from 'react-i18next';
-import { MapPin, Shield } from 'lucide-react-native';
-import PrimaryButton from '@/components/ui/button/PrimaryButton';
+import React from 'react'
+import { View, Text, Modal, StyleSheet, ScrollView } from 'react-native'
+import { useTranslation } from 'react-i18next'
+import { MapPin, Shield } from 'lucide-react-native'
+import PrimaryButton from '@/components/ui/button/PrimaryButton'
 
 interface LocationDisclosureModalProps {
-  visible: boolean;
-  onAccept: () => void;
-  onDecline: () => void;
+  visible: boolean
+  onAccept: () => void
+  onDecline: () => void
 }
 
 const LocationDisclosureModal = ({
   visible,
   onAccept,
-  onDecline,
+  onDecline
 }: LocationDisclosureModalProps) => {
-  const { t } = useTranslation(['onboarding', 'common']);
+  const { t } = useTranslation(['onboarding', 'common'])
 
   return (
     <Modal
@@ -60,8 +60,8 @@ const LocationDisclosureModal = ({
         </View>
       </View>
     </Modal>
-  );
-};
+  )
+}
 
 const styles = StyleSheet.create({
   centeredView: {
@@ -69,7 +69,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     backgroundColor: 'rgba(0, 0, 0, 0.5)',
-    padding: 20,
+    padding: 20
   },
   modalView: {
     backgroundColor: 'white',
@@ -77,19 +77,19 @@ const styles = StyleSheet.create({
     padding: 24,
     width: '100%',
     maxWidth: 400,
-    shadowColor: '#000',
+    shadowColor: '#2424244b',
     shadowOffset: {
       width: 0,
-      height: 2,
+      height: 2
     },
     shadowOpacity: 0.25,
     shadowRadius: 4,
     elevation: 5,
-    maxHeight: '80%',
+    maxHeight: '80%'
   },
   contentContainer: {
     alignItems: 'center',
-    paddingBottom: 20,
+    paddingBottom: 20
   },
   iconContainer: {
     marginBottom: 20,
@@ -99,7 +99,7 @@ const styles = StyleSheet.create({
     width: 64,
     height: 64,
     borderRadius: 32,
-    backgroundColor: '#EFF6FF',
+    backgroundColor: '#EFF6FF'
   },
   iconBadge: {
     position: 'absolute',
@@ -109,24 +109,24 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     padding: 4,
     borderWidth: 2,
-    borderColor: 'white',
+    borderColor: 'white'
   },
   title: {
     fontSize: 20,
     fontWeight: 'bold',
     color: '#1F2937',
     textAlign: 'center',
-    marginBottom: 12,
+    marginBottom: 12
   },
   message: {
     fontSize: 15,
     color: '#4B5563',
     textAlign: 'center',
-    lineHeight: 22,
+    lineHeight: 22
   },
   buttonContainer: {
-    width: '100%',
-  },
-});
+    width: '100%'
+  }
+})
 
-export default LocationDisclosureModal;
+export default LocationDisclosureModal

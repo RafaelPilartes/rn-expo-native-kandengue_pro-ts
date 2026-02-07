@@ -237,75 +237,86 @@ export default function VehiclesScreen() {
           vehicles.map(vehicle => (
             <TouchableOpacity
               key={vehicle.id}
-              activeOpacity={0.9}
+              activeOpacity={0.7}
               onPress={() => handleEditVehicle(vehicle)}
-              className="bg-white rounded-3xl p-4 mb-4 shadow-sm border border-gray-100"
+              className="bg-white rounded-3xl mb-4 overflow-hidden shadow-sm border border-gray-100"
+              style={{
+                shadowColor: '#2424244b',
+                shadowOffset: { width: 0, height: 2 },
+                shadowOpacity: 0.05,
+                shadowRadius: 8,
+                elevation: 2
+              }}
             >
-              {/* Header Card: Status & Default */}
-              <View className="flex-row justify-between items-center mb-3">
-                <View className="flex-row gap-2">
-                  {renderStatusBadge(vehicle.status)}
-                  {driver?.vehicle?.id === vehicle.id && (
-                    <View className="flex-row items-center bg-emerald-50 px-2 py-1 rounded-full border border-emerald-100">
-                      <CheckCircle2 size={10} color="#059669" fill="#059669" />
-                      <Text className="ml-1 text-[10px] font-bold text-emerald-700 uppercase">
-                        Em Uso
-                      </Text>
-                    </View>
-                  )}
-                </View>
-                {vehicle.isDefault && (
-                  <View className="flex-row items-center bg-blue-50 px-2 py-1 rounded-full border border-blue-100">
-                    <Star size={10} color="#2563EB" fill="#2563EB" />
-                    <Text className="ml-1 text-[10px] font-bold text-blue-700 uppercase">
-                      Principal
-                    </Text>
-                  </View>
-                )}
+              {/* Status Badge on Image */}
+              <View className="flex-row px-4 mt-4 relative">
+                {renderStatusBadge(vehicle.status)}
               </View>
 
-              <View className="flex-row items-center">
+              <View className="flex-row p-4 relative">
                 {/* Image */}
-                <View className="relative">
+                <View className=" mr-4">
                   {vehicle.image ? (
                     <Image
                       source={{ uri: vehicle.image }}
-                      className="w-20 h-20 rounded-2xl bg-gray-100"
+                      className="w-24 h-24 rounded-2xl bg-gray-100"
+                      resizeMode="cover"
                     />
                   ) : (
-                    <View className="w-20 h-20 rounded-2xl bg-gray-50 items-center justify-center border border-gray-100">
-                      <Car size={28} color="#9CA3AF" />
+                    <View className="w-24 h-24 rounded-2xl bg-gray-50 items-center justify-center border border-gray-100">
+                      <Car size={32} color="#9CA3AF" />
                     </View>
                   )}
                 </View>
 
                 {/* Info */}
-                <View className="flex-1 ml-4 justify-center">
-                  <Text className="text-lg font-bold text-gray-900 leading-tight">
-                    {vehicle.brand} {vehicle.model}
-                  </Text>
-                  <Text className="text-sm text-gray-500 font-medium mt-0.5 capitalize">
-                    {vehicle.color} • {vehicle.plate}
-                  </Text>
-                  <View className="flex-row mt-2">
-                    <Text className="text-xs bg-gray-100 text-gray-600 px-2 py-0.5 rounded capitalize">
-                      {vehicle.type === 'motorcycle' ? 'Moto' : 'Carro'}
+                <View className="flex-1 justify-between py-1">
+                  <View>
+                    <Text className="text-lg font-bold text-gray-900 leading-tight mb-1">
+                      {vehicle.brand} {vehicle.model}
+                    </Text>
+                    <Text className="text-sm text-gray-500 font-medium capitalize">
+                      {vehicle.color} • {vehicle.plate}
                     </Text>
                   </View>
-                </View>
 
-                {/* Edit Icon (Subtle) */}
-                <View className="h-20 justify-center pl-2">
-                  <MoreVertical size={20} color="#E5E7EB" />
+                  {/* Badges Row */}
+                  <View className="flex-row gap-2 mt-2">
+                    <View className="bg-gray-100 px-2 py-1 rounded-lg">
+                      <Text className="text-[10px] font-bold text-gray-600 uppercase">
+                        {vehicle.type === 'motorcycle' ? 'Moto' : 'Carro'}
+                      </Text>
+                    </View>
+                    {driver?.vehicle?.id === vehicle.id && (
+                      <View className="flex-row items-center bg-emerald-50 px-2 py-1 rounded-lg border border-emerald-100">
+                        <CheckCircle2
+                          size={10}
+                          color="#059669"
+                          fill="#059669"
+                        />
+                        <Text className="ml-1 text-[10px] font-bold text-emerald-700 uppercase">
+                          Em Uso
+                        </Text>
+                      </View>
+                    )}
+                    {vehicle.isDefault && (
+                      <View className="flex-row items-center bg-blue-50 px-2 py-1 rounded-lg border border-blue-100">
+                        <Star size={10} color="#2563EB" fill="#2563EB" />
+                        <Text className="ml-1 text-[10px] font-bold text-blue-700 uppercase">
+                          Principal
+                        </Text>
+                      </View>
+                    )}
+                  </View>
                 </View>
               </View>
 
               {/* Actions Footer */}
               {!vehicle.isDefault && (
-                <View className="mt-4 pt-3 border-t border-gray-50 flex-row justify-end">
+                <View className="px-4 pb-3 pt-2 border-t border-gray-100 flex-row justify-end">
                   <TouchableOpacity
                     onPress={() => handleDeleteVehicle(vehicle)}
-                    className="flex-row items-center px-3 py-1.5"
+                    className="flex-row items-center px-3 py-2 active:bg-red-50 rounded-xl"
                   >
                     <Trash2 size={14} color="#EF4444" />
                     <Text className="ml-1.5 text-xs font-semibold text-red-600">
@@ -352,10 +363,18 @@ export default function VehiclesScreen() {
         )}
       </ScrollView>
 
-      {/* FAB */}
+      {/* FAB - Enhanced */}
       <TouchableOpacity
         onPress={handleAddVehicle}
-        className="absolute bottom-10 left-6 p-5 flex-row items-center justify-center bg-red-600 rounded-full shadow-lg"
+        className="absolute bottom-8 right-6 w-16 h-16 items-center justify-center rounded-full shadow-lg"
+        style={{
+          backgroundColor: '#b31a24',
+          shadowColor: '#b31a24',
+          shadowOffset: { width: 0, height: 4 },
+          shadowOpacity: 0.3,
+          shadowRadius: 8,
+          elevation: 8
+        }}
       >
         <Plus size={28} color="white" />
       </TouchableOpacity>
