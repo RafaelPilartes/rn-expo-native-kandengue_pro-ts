@@ -1,8 +1,15 @@
 // src/contexts/LocationContext.tsx
-import React, { createContext, useState, useRef } from 'react'
+import React, { createContext, useState, useRef, useEffect } from 'react'
 import * as Location from 'expo-location'
 import { getAddressFromCoords } from '@/services/google/googleApi'
 import { BACKGROUND_LOCATION_TASK } from '@/services/location/BackgroundLocationTask'
+import {
+  TrackingMode,
+  TRACKING_CONFIGS,
+  determineTrackingMode
+} from '@/types/trackingTypes'
+import { useAuthStore } from '@/storage/store/useAuthStore'
+import { useDriversViewModel } from '@/viewModels/DriverViewModel'
 
 type Coords = { latitude: number; longitude: number }
 
@@ -10,15 +17,17 @@ interface LocationContextType {
   location: Coords | null
   address: string | null
   isTracking: boolean
+  trackingMode: TrackingMode
   error: string | null
   isLoading: boolean
   isGettingAddress: boolean
 
   requestCurrentLocation: () => Promise<Coords | null>
-  startTracking: () => Promise<void>
-  stopTracking: () => void
+  startTracking: (mode: TrackingMode) => Promise<void>
+  stopTracking: () => Promise<void>
   fetchAddress: (coords?: Coords) => Promise<void>
   clearError: () => void
+  getCurrentTrackingMode: () => TrackingMode
 }
 
 export const LocationContext = createContext<LocationContextType>(
@@ -33,29 +42,36 @@ export const LocationProvider = ({
   const [location, setLocation] = useState<Coords | null>(null)
   const [address, setAddress] = useState<string | null>(null)
   const [isTracking, setIsTracking] = useState(false)
+  const [trackingMode, setTrackingMode] = useState<TrackingMode>('OFFLINE')
   const [isGettingAddress, setIsGettingAddress] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
   const watchRef = useRef<Location.LocationSubscription | null>(null)
 
+  const { driver, currentMissionId } = useAuthStore()
+  const { updateDriver } = useDriversViewModel()
+
   // --------------------------------------------------------
-  // 1) Pedir permissão
+  // 1) Permission Request
   // --------------------------------------------------------
   const requestPermission = async () => {
     try {
-      const { status: fgStatus } = await Location.requestForegroundPermissionsAsync()
+      const { status: fgStatus } =
+        await Location.requestForegroundPermissionsAsync()
       if (fgStatus !== 'granted') {
-          setError('Permissão de localização em uso negada.')
-          return false
+        setError('Permissão de localização em uso negada.')
+        return false
       }
 
-      const { status: bgStatus } = await Location.requestBackgroundPermissionsAsync()
+      const { status: bgStatus } =
+        await Location.requestBackgroundPermissionsAsync()
       if (bgStatus !== 'granted') {
-          console.warn('Permissão de background negada. O app funcionará apenas em foreground.')
-          // Não retornamos false aqui pois o app pode funcionar sem background, mas é bom avisar
+        console.warn(
+          'Permissão de background negada. O app funcionará apenas em foreground.'
+        )
       }
-      
+
       return true
     } catch (e) {
       setError('Erro ao solicitar permissão de localização.')
@@ -91,7 +107,7 @@ export const LocationProvider = ({
   }
 
   // --------------------------------------------------------
-  // 3) Buscar localização uma única vez
+  // 3) Get Current Location (one-time)
   // --------------------------------------------------------
   const requestCurrentLocation = async (): Promise<Coords | null> => {
     setIsLoading(true)
@@ -99,14 +115,13 @@ export const LocationProvider = ({
 
     const ok = await requestPermission()
     if (!ok) {
-      // setError já definido no requestPermission se falhar foreground
       setIsLoading(false)
       return null
     }
 
     try {
       const pos = await Location.getCurrentPositionAsync({
-        accuracy: Location.Accuracy.Balanced // evita timeout no dev client
+        accuracy: Location.Accuracy.Balanced
       })
 
       const coords = {
@@ -127,25 +142,79 @@ export const LocationProvider = ({
   }
 
   // --------------------------------------------------------
-  // 4) Tracking em tempo real
+  // 4) Update Driver Location in Firestore
   // --------------------------------------------------------
-  const startTracking = async () => {
-    if (isTracking) return
-    setError(null)
+  const updateDriverLocation = async (coords: Coords) => {
+    if (!driver?.id) return
 
-    const ok = await requestPermission()
-    if (!ok) {
+    try {
+      await updateDriver.mutateAsync({
+        id: driver.id,
+        driver: {
+          current_location: {
+            latitude: coords.latitude,
+            longitude: coords.longitude,
+            updated_at: new Date()
+          }
+        }
+      })
+    } catch (error) {
+      console.error('❌ Erro ao atualizar localização do motorista:', error)
+    }
+  }
+
+  // --------------------------------------------------------
+  // 5) Start Periodic Snapshot (Availability Mode)
+  // --------------------------------------------------------
+  const startPeriodicSnapshot = async () => {
+    const config = TRACKING_CONFIGS.AVAILABILITY
+
+    if (!config.accuracy || !config.timeInterval || !config.distanceInterval) {
+      console.error('❌ Configuração de AVAILABILITY inválida')
       return
     }
 
-    setIsTracking(true)
+    console.log('📍 Iniciando rastreamento AVAILABILITY (30s snapshots)')
 
-    // A) Foreground Watch (para UI imediata)
     watchRef.current = await Location.watchPositionAsync(
       {
-        accuracy: Location.Accuracy.High,
-        timeInterval: 3000,
-        distanceInterval: 3
+        accuracy: config.accuracy,
+        timeInterval: config.timeInterval,
+        distanceInterval: config.distanceInterval
+      },
+      async pos => {
+        const coords = {
+          latitude: pos.coords.latitude,
+          longitude: pos.coords.longitude
+        }
+
+        setLocation(coords)
+
+        // Update driver location in Firestore
+        await updateDriverLocation(coords)
+      }
+    )
+  }
+
+  // --------------------------------------------------------
+  // 6) Start Precise Tracking (Ride Mode)
+  // --------------------------------------------------------
+  const startPreciseTracking = async () => {
+    const config = TRACKING_CONFIGS.RIDE
+
+    if (!config.accuracy || !config.timeInterval || !config.distanceInterval) {
+      console.error('❌ Configuração de RIDE inválida')
+      return
+    }
+
+    console.log('🚗 Iniciando rastreamento RIDE (5s precision)')
+
+    // A) Foreground Watch
+    watchRef.current = await Location.watchPositionAsync(
+      {
+        accuracy: config.accuracy,
+        timeInterval: config.timeInterval,
+        distanceInterval: config.distanceInterval
       },
       async pos => {
         const coords = {
@@ -157,53 +226,128 @@ export const LocationProvider = ({
       }
     )
 
-    // B) Background Updates
+    // B) Background Updates (for ride tracking)
     try {
-        const hasStarted = await Location.hasStartedLocationUpdatesAsync(BACKGROUND_LOCATION_TASK)
-        if (!hasStarted) {
-            await Location.startLocationUpdatesAsync(BACKGROUND_LOCATION_TASK, {
-                accuracy: Location.Accuracy.High,
-                timeInterval: 5000, // 5 segundos
-                distanceInterval: 5, // 5 metros
-                showsBackgroundLocationIndicator: true,
-                foregroundService: {
-                    notificationTitle: "Kandengue Pro",
-                    notificationBody: "Rastreando sua corrida em segundo plano..."
-                }
-            })
-        }
+      const hasStarted = await Location.hasStartedLocationUpdatesAsync(
+        BACKGROUND_LOCATION_TASK
+      )
+      if (!hasStarted) {
+        await Location.startLocationUpdatesAsync(BACKGROUND_LOCATION_TASK, {
+          accuracy: config.accuracy,
+          timeInterval: config.timeInterval,
+          distanceInterval: config.distanceInterval,
+          showsBackgroundLocationIndicator: true,
+          foregroundService: {
+            notificationTitle: 'Kandengue Pro',
+            notificationBody: 'Rastreando sua corrida em segundo plano...'
+          }
+        })
+      }
     } catch (e) {
-        console.warn("Erro ao iniciar background location updates:", e)
+      console.warn('Erro ao iniciar background location updates:', e)
     }
   }
 
   // --------------------------------------------------------
-  // 5) Parar tracking
+  // 7) Start Tracking (Mode-aware)
+  // --------------------------------------------------------
+  const startTracking = async (mode: TrackingMode) => {
+    if (isTracking && trackingMode === mode) {
+      console.log(`📍 Já rastreando no modo ${mode}`)
+      return
+    }
+
+    // Stop existing tracking first
+    if (isTracking) {
+      await stopTracking()
+    }
+
+    setError(null)
+
+    const ok = await requestPermission()
+    if (!ok) return
+
+    // Handle different modes
+    if (mode === 'AVAILABILITY') {
+      await startPeriodicSnapshot()
+      setIsTracking(true)
+      setTrackingMode('AVAILABILITY')
+    } else if (mode === 'RIDE') {
+      await startPreciseTracking()
+      setIsTracking(true)
+      setTrackingMode('RIDE')
+    } else {
+      // OFFLINE or INVISIBLE - no tracking
+      console.log(`🔕 Modo ${mode} - sem rastreamento`)
+      setTrackingMode(mode)
+      setIsTracking(false)
+    }
+  }
+
+  // --------------------------------------------------------
+  // 8) Stop Tracking
   // --------------------------------------------------------
   const stopTracking = async () => {
-    // A) Stop Foreground Watch
+    console.log('🛑 Parando rastreamento')
+
+    // Stop Foreground Watch
     if (watchRef.current) {
       watchRef.current.remove()
       watchRef.current = null
     }
-    
-    // B) Stop Background Updates
+
+    // Stop Background Updates
     try {
-        const hasStarted = await Location.hasStartedLocationUpdatesAsync(BACKGROUND_LOCATION_TASK)
-        if (hasStarted) {
-            await Location.stopLocationUpdatesAsync(BACKGROUND_LOCATION_TASK)
-        }
+      const hasStarted = await Location.hasStartedLocationUpdatesAsync(
+        BACKGROUND_LOCATION_TASK
+      )
+      if (hasStarted) {
+        await Location.stopLocationUpdatesAsync(BACKGROUND_LOCATION_TASK)
+      }
     } catch (e) {
-        console.warn("Erro ao parar background location updates:", e)
+      console.warn('Erro ao parar background location updates:', e)
     }
 
     setIsTracking(false)
+    setTrackingMode('OFFLINE')
   }
 
   // --------------------------------------------------------
-  // 6) Limpar erro
+  // 9) Get Current Tracking Mode (helper)
+  // --------------------------------------------------------
+  const getCurrentTrackingMode = (): TrackingMode => {
+    return trackingMode
+  }
+
+  // --------------------------------------------------------
+  // 10) Clear Error
   // --------------------------------------------------------
   const clearError = () => setError(null)
+
+  // --------------------------------------------------------
+  // 11) Auto-switch tracking mode based on driver state
+  // --------------------------------------------------------
+  useEffect(() => {
+    if (!driver) {
+      if (isTracking) stopTracking()
+      return
+    }
+
+    const mode = determineTrackingMode(
+      driver.is_online,
+      driver.is_invisible ?? false,
+      currentMissionId
+    )
+
+    console.log(`🔄 Modo de rastreamento determinado: ${mode}`)
+
+    if (mode === 'RIDE' || mode === 'AVAILABILITY') {
+      startTracking(mode)
+    } else {
+      // OFFLINE or INVISIBLE
+      if (isTracking) stopTracking()
+    }
+  }, [driver?.is_online, driver?.is_invisible, currentMissionId])
 
   return (
     <LocationContext.Provider
@@ -211,6 +355,7 @@ export const LocationProvider = ({
         location,
         address,
         isTracking,
+        trackingMode,
         error,
         isLoading,
         isGettingAddress,
@@ -219,7 +364,8 @@ export const LocationProvider = ({
         startTracking,
         stopTracking,
         fetchAddress,
-        clearError
+        clearError,
+        getCurrentTrackingMode
       }}
     >
       {children}

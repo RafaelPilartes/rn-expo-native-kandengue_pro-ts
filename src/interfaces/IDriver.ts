@@ -1,8 +1,11 @@
-import type { UserInterface } from './IUser';
-import type { VehicleInterface } from './IVehicle';
+import type { UserInterface } from './IUser'
+import type { VehicleInterface } from './IVehicle'
+import type { LocationType } from '@/types/geoLocation'
 
 export interface DriverInterface extends UserInterface {
-  vehicle?: VehicleInterface;
-  rating?: number;
-  is_online: boolean;
+  vehicle?: VehicleInterface
+  rating?: number
+  is_online: boolean
+  is_invisible: boolean // Privacy mode - online but not tracked/visible
+  current_location?: LocationType // Latest known position for matching
 }

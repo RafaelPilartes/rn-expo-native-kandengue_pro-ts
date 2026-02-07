@@ -1,18 +1,22 @@
 // src/hooks/useDriverState.ts
 import { useState, useEffect, useCallback } from 'react'
+import { Alert } from 'react-native'
 import { DriverInterface } from '@/interfaces/IDriver'
 import { useDriversViewModel } from '@/viewModels/DriverViewModel'
 import { useAuthStore } from '@/storage/store/useAuthStore'
+import { useLocation } from './useLocation'
 
 interface DriverStateReturn {
   currentDriverData: DriverInterface | null
   toggleOnline: () => Promise<void>
+  toggleInvisible: () => Promise<void>
   updateVehicle: (vehicle: any) => Promise<void>
 }
 
 export const useDriverState = (): DriverStateReturn => {
   const { driver } = useAuthStore()
   const { listenDriverRealtime, updateDriver } = useDriversViewModel()
+  const { requestCurrentLocation } = useLocation()
 
   const [currentDriverData, setCurrentDriverData] =
     useState<DriverInterface | null>(driver)
@@ -42,23 +46,113 @@ export const useDriverState = (): DriverStateReturn => {
     try {
       console.log(`🔄 Alterando status online para: ${newValue}`)
 
-      // Otimista update
+      if (newValue) {
+        // Going ONLINE - capture initial location
+        console.log('📍 Capturando localização inicial...')
+        const location = await requestCurrentLocation()
+
+        if (!location) {
+          Alert.alert(
+            'Erro',
+            'Não foi possível obter sua localização. Verifique as permissões.'
+          )
+          return
+        }
+
+        // Optimistic update
+        setCurrentDriverData(prev =>
+          prev
+            ? {
+                ...prev,
+                is_online: true,
+                current_location: {
+                  ...location,
+                  updated_at: new Date()
+                }
+              }
+            : prev
+        )
+
+        await updateDriver.mutateAsync({
+          id: currentDriverData.id,
+          driver: {
+            is_online: true,
+            current_location: {
+              ...location,
+              updated_at: new Date()
+            }
+          }
+        })
+
+        console.log('✅ Status online atualizado com localização inicial')
+      } else {
+        // Going OFFLINE
+        setCurrentDriverData(prev =>
+          prev ? { ...prev, is_online: false } : prev
+        )
+
+        await updateDriver.mutateAsync({
+          id: currentDriverData.id,
+          driver: { is_online: false }
+        })
+
+        console.log('✅ Status offline atualizado')
+      }
+    } catch (error) {
+      console.error('❌ Erro ao atualizar status online:', error)
+
+      // Revert optimistic update
       setCurrentDriverData(prev =>
-        prev ? { ...prev, is_online: newValue } : prev
+        prev ? { ...prev, is_online: !newValue } : prev
+      )
+    }
+  }, [currentDriverData, updateDriver, requestCurrentLocation])
+
+  // Ação: Toggle invisible mode
+  const toggleInvisible = useCallback(async (): Promise<void> => {
+    if (!currentDriverData?.id) {
+      console.error('❌ Driver ID não encontrado')
+      return
+    }
+
+    if (!currentDriverData.is_online) {
+      Alert.alert(
+        'Aviso',
+        'Você precisa estar online para ativar o modo invisível.'
+      )
+      return
+    }
+
+    const newValue = !currentDriverData.is_invisible
+
+    try {
+      console.log(`🕶️ Alterando modo invisível para: ${newValue}`)
+
+      // Optimistic update
+      setCurrentDriverData(prev =>
+        prev ? { ...prev, is_invisible: newValue } : prev
       )
 
       await updateDriver.mutateAsync({
         id: currentDriverData.id,
-        driver: { is_online: newValue }
+        driver: { is_invisible: newValue }
       })
 
-      console.log('✅ Status online atualizado com sucesso')
-    } catch (error) {
-      console.error('❌ Erro ao atualizar status online:', error)
+      console.log('✅ Modo invisível atualizado')
 
-      // Revert otimista update em caso de erro
+      // Show feedback to user
+      if (newValue) {
+        Alert.alert(
+          'Modo Invisível Ativado',
+          'Você está online mas não aparecerá no mapa para passageiros. Sua localização não será rastreada.'
+        )
+      }
+    } catch (error) {
+      console.error('❌ Erro ao alternar modo invisível:', error)
+
+      // Revert optimistic update
       setCurrentDriverData(prev =>
-        prev ? { ...prev, is_online: !newValue } : prev
+        prev ? { ...prev, is_invisible: !newValue } : prev
       )
     }
   }, [currentDriverData, updateDriver])
@@ -99,6 +193,7 @@ export const useDriverState = (): DriverStateReturn => {
   return {
     currentDriverData,
     toggleOnline,
+    toggleInvisible,
     updateVehicle
   }
 }
