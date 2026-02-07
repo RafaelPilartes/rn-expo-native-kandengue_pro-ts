@@ -57,15 +57,15 @@ export default function MapScreen() {
     )
   }
 
-  // Prepare markers array
+  // Prepare markers array (Motorista - Azul)
   const markers: Marker[] = location
     ? [
         {
           coordinates: location,
           title: 'Sua Localização',
           ...(Platform.OS === 'ios'
-            ? { tintColor: '#EF4444' }
-            : { color: '#EF4444' })
+            ? { tintColor: '#007AFF' }
+            : { color: '#007AFF' })
         }
       ]
     : []

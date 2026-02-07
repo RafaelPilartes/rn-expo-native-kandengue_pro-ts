@@ -27,7 +27,6 @@ export default function DriverProfile() {
   const navigation = useNavigation<any>()
 
   const { logout } = useAuthViewModel()
-  const { vehicle } = useAppProvider()
 
   const { driver } = useAuthStore()
 
@@ -77,8 +76,8 @@ export default function DriverProfile() {
           </Text>
           <Text className="text-gray-500 text-sm">
             Estafeta •{' '}
-            {vehicle?.plate
-              ? `${getVehicleTypeLabel(vehicle.type)} ${vehicle.brand} - ${vehicle.plate}`
+            {driver?.vehicle?.plate
+              ? `${getVehicleTypeLabel(driver.vehicle.type)} ${driver.vehicle.brand} - ${driver.vehicle.plate}`
               : 'Nenhum veículo definido'}
           </Text>
         </View>

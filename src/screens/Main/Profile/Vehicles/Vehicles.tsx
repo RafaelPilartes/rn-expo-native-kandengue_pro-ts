@@ -243,7 +243,17 @@ export default function VehiclesScreen() {
             >
               {/* Header Card: Status & Default */}
               <View className="flex-row justify-between items-center mb-3">
-                {renderStatusBadge(vehicle.status)}
+                <View className="flex-row gap-2">
+                  {renderStatusBadge(vehicle.status)}
+                  {driver?.vehicle?.id === vehicle.id && (
+                    <View className="flex-row items-center bg-emerald-50 px-2 py-1 rounded-full border border-emerald-100">
+                      <CheckCircle2 size={10} color="#059669" fill="#059669" />
+                      <Text className="ml-1 text-[10px] font-bold text-emerald-700 uppercase">
+                        Em Uso
+                      </Text>
+                    </View>
+                  )}
+                </View>
                 {vehicle.isDefault && (
                   <View className="flex-row items-center bg-blue-50 px-2 py-1 rounded-full border border-blue-100">
                     <Star size={10} color="#2563EB" fill="#2563EB" />

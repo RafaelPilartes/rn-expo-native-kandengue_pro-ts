@@ -79,15 +79,24 @@ const RideMapContainer = memo(
       })
     }
 
-    // Build polylines array
+    // Build polylines array - Option C: Dynamic Routes + Movement State
     const polylines: any[] = []
 
-    if (
-      (rideStatus === 'idle' || rideStatus === 'driver_on_the_way') &&
-      routeCoordsDriver.length > 0
-    ) {
+    // 1. Preview da rota completa (idle) - Verde claro
+    if (rideStatus === 'idle' && routeCoords.length > 0) {
       polylines.push({
-        id: 'driver-route',
+        id: 'preview-route',
+        coordinates: routeCoords,
+        ...(Platform.OS === 'ios'
+          ? { color: '#86efac', width: 3 } // Verde claro (preview)
+          : { color: '#86efac', width: 3 })
+      })
+    }
+
+    // 2. Rota do motorista → pickup (driver_on_the_way) - Azul
+    if (rideStatus === 'driver_on_the_way' && routeCoordsDriver.length > 0) {
+      polylines.push({
+        id: 'driver-to-pickup',
         coordinates: routeCoordsDriver,
         ...(Platform.OS === 'ios'
           ? { color: '#007AFF', width: 4 }
@@ -95,15 +104,19 @@ const RideMapContainer = memo(
       })
     }
 
-    if (routeCoords.length > 0) {
+    // 3. Rota do motorista → dropoff (picked_up) - Verde
+    if (rideStatus === 'picked_up' && routeCoords.length > 0) {
       polylines.push({
-        id: 'main-route',
+        id: 'driver-to-dropoff',
         coordinates: routeCoords,
         ...(Platform.OS === 'ios'
           ? { color: '#03af5f', width: 4 }
           : { color: '#03af5f', width: 4 })
       })
     }
+
+    // Nota: Não mostrar rotas quando motorista está parado
+    // (arrived_pickup, arrived_dropoff, completed) - foco nos markers
 
     return (
       <MapView

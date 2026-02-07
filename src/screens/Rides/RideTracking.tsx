@@ -22,7 +22,9 @@ export default function RideTrackingScreen() {
     {
       coordinates: { latitude: -8.839987, longitude: 13.289437 },
       title: 'Motoboy',
-      ...(Platform.OS === 'ios' ? { subtitle: status } : { snippet: status })
+      ...(Platform.OS === 'ios'
+        ? { tintColor: '#007AFF', subtitle: status }
+        : { color: '#007AFF', snippet: status })
     }
   ]
 
