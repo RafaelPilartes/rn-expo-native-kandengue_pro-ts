@@ -27,6 +27,7 @@ interface AppContextReturn {
 
   // Ações
   handleIsOnline: () => Promise<void>
+  handleToggleInvisible: () => Promise<void>
   handleToDocuments: () => void
   handleToWallet: () => void
   handleDetailsRide: (ride: RideInterface) => void
@@ -55,7 +56,8 @@ export const AppProvider: React.FC<AppProviderProps> = ({ children }) => {
   const { driver, setCurrentMissionId } = useAuthStore()
 
   // Estados via Custom Hooks
-  const { currentDriverData, toggleOnline, updateVehicle } = useDriverState()
+  const { currentDriverData, toggleOnline, toggleInvisible, updateVehicle } =
+    useDriverState()
   const { rides, ridesCount, fetchRideById } = useRidesState()
   const { wallet } = useWalletState()
   const { vehicle } = useVehicleState({
@@ -161,6 +163,7 @@ export const AppProvider: React.FC<AppProviderProps> = ({ children }) => {
 
     // Ações
     handleIsOnline: toggleOnline,
+    handleToggleInvisible: toggleInvisible,
     handleToDocuments,
     handleToWallet,
     handleDetailsRide,

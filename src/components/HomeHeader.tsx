@@ -1,26 +1,28 @@
 // src/components/HomeHeader.tsx
-import React from 'react';
-import { View, Text, Image, TouchableOpacity, Switch } from 'react-native';
-import { Bell, RefreshCw } from 'lucide-react-native';
-import { DriverInterface } from '@/interfaces/IDriver';
+import React from 'react'
+import { View, Text, Image, TouchableOpacity, Switch } from 'react-native'
+import { Bell, RefreshCw, Eye, EyeOff } from 'lucide-react-native'
+import { DriverInterface } from '@/interfaces/IDriver'
 
 interface HeaderProps {
-  driver: DriverInterface | null;
-  onToggleOnline: () => void;
-  onNotifications: () => void;
-  onRefresh?: () => void;
-  isRefreshing?: boolean;
+  driver: DriverInterface | null
+  onToggleOnline: () => void
+  onToggleInvisible: () => void
+  onNotifications: () => void
+  onRefresh?: () => void
+  isRefreshing?: boolean
 }
 
 const Header: React.FC<HeaderProps> = ({
   driver,
   onToggleOnline,
+  onToggleInvisible,
   onNotifications,
   onRefresh,
-  isRefreshing = false,
+  isRefreshing = false
 }) => {
-  const firstName = driver?.name.split(' ')[0] || '';
-  const lastName = driver?.name.split(' ')[1] || '';
+  const firstName = driver?.name.split(' ')[0] || ''
+  const lastName = driver?.name.split(' ')[1] || ''
 
   return (
     <View className="px-5 py-4 flex-row items-center justify-between mb-2 bg-white">
@@ -29,7 +31,7 @@ const Header: React.FC<HeaderProps> = ({
           source={{
             uri:
               driver?.photo ??
-              'https://cdn-icons-png.flaticon.com/512/3541/3541871.png',
+              'https://cdn-icons-png.flaticon.com/512/3541/3541871.png'
           }}
           className="w-12 h-12 rounded-full mr-3"
         />
@@ -37,6 +39,8 @@ const Header: React.FC<HeaderProps> = ({
           <Text className="text-lg font-semibold text-gray-800">
             Olá, {firstName} {lastName}
           </Text>
+
+          {/* Online/Offline Status */}
           <View className="flex-row items-center">
             <Text
               className={`text-sm font-medium ${
@@ -53,12 +57,34 @@ const Header: React.FC<HeaderProps> = ({
               className="ml-2"
             />
           </View>
+
+          {/* Invisible Mode Toggle */}
+          {driver?.is_online && (
+            <TouchableOpacity
+              onPress={onToggleInvisible}
+              className="flex-row items-center mt-1 py-1"
+              activeOpacity={0.7}
+            >
+              {driver?.is_invisible ? (
+                <EyeOff size={14} color="#9CA3AF" />
+              ) : (
+                <Eye size={14} color="#6B7280" />
+              )}
+              <Text
+                className={`ml-1.5 text-xs font-medium ${
+                  driver?.is_invisible ? 'text-gray-400' : 'text-gray-600'
+                }`}
+              >
+                {driver?.is_invisible ? 'Invisível' : 'Visível no mapa'}
+              </Text>
+            </TouchableOpacity>
+          )}
         </View>
       </View>
 
-      {/* Botões de ação */}
+      {/* Action Buttons */}
       <View className="flex-row items-center gap-2">
-        {/* Botão de atualizar */}
+        {/* Refresh button */}
         {onRefresh && (
           <TouchableOpacity
             onPress={onRefresh}
@@ -72,7 +98,7 @@ const Header: React.FC<HeaderProps> = ({
             />
           </TouchableOpacity>
         )}
-        {/* Notificação */}
+        {/* Notifications */}
         <TouchableOpacity
           onPress={onNotifications}
           activeOpacity={0.7}
@@ -83,7 +109,7 @@ const Header: React.FC<HeaderProps> = ({
         </TouchableOpacity>
       </View>
     </View>
-  );
-};
+  )
+}
 
-export default Header;
+export default Header

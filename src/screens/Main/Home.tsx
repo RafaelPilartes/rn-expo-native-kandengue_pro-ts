@@ -25,6 +25,7 @@ export default function HomeScreen() {
     wallet,
     vehicle,
     handleIsOnline,
+    handleToggleInvisible,
     handleToDocuments,
     handleToWallet,
     handleDetailsRide,
@@ -92,6 +93,7 @@ export default function HomeScreen() {
         <Header
           driver={currentDriverData}
           onToggleOnline={handleIsOnline}
+          onToggleInvisible={handleToggleInvisible}
           onNotifications={handleNotifications}
         />
 
@@ -114,6 +116,7 @@ export default function HomeScreen() {
       <Header
         driver={currentDriverData}
         onToggleOnline={handleIsOnline}
+        onToggleInvisible={handleToggleInvisible}
         onNotifications={handleNotifications}
       />
 
