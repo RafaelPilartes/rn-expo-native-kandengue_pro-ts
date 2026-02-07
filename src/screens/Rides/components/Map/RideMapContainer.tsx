@@ -37,20 +37,19 @@ const RideMapContainer = memo(
     // Build markers array
     const markers: Marker[] = []
 
-    // User location marker
+    // User location marker (Motorista - Azul)
     if (userLocation) {
       markers.push({
         id: 'user-location',
         coordinates: userLocation,
         title: 'Sua Localização',
         ...(Platform.OS === 'ios'
-          ? { subtitle: 'Motorista' }
-          : { snippet: 'Motorista' })
-        // Note: expo-maps doesn't support custom images yet, rotation, or anchor
+          ? { tintColor: '#007AFF', subtitle: 'Motorista' }
+          : { color: '#007AFF', snippet: 'Motorista' })
       })
     }
 
-    // Pickup marker
+    // Pickup marker (Verde)
     if (currentRide) {
       markers.push({
         id: 'pickup',
@@ -59,11 +58,13 @@ const RideMapContainer = memo(
           longitude: currentRide.pickup.longitude
         },
         title: 'Local de Recolha',
-        ...(Platform.OS === 'ios' ? {} : {})
+        ...(Platform.OS === 'ios'
+          ? { tintColor: '#03af5f' }
+          : { color: '#03af5f' })
       })
     }
 
-    // Dropoff marker
+    // Dropoff marker (Vermelho)
     if (currentRide) {
       markers.push({
         id: 'dropoff',
@@ -72,7 +73,9 @@ const RideMapContainer = memo(
           longitude: currentRide.dropoff.longitude
         },
         title: 'Local de Entrega',
-        ...(Platform.OS === 'ios' ? {} : {})
+        ...(Platform.OS === 'ios'
+          ? { tintColor: '#EF4444' }
+          : { color: '#EF4444' })
       })
     }
 
