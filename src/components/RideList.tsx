@@ -107,6 +107,10 @@ const RideList: React.FC<RideListProps> = ({
                 showsVerticalScrollIndicator={false}
                 renderItem={renderItem}
                 ItemSeparatorComponent={ItemSeparator}
+                removeClippedSubviews={true}
+                maxToRenderPerBatch={5}
+                windowSize={3}
+                initialNumToRender={5}
               />
             )}
           </>

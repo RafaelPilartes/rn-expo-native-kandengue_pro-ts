@@ -1,6 +1,6 @@
 // src/screens/Courier/HomeScreen.tsx
 import React, { useEffect, useState } from 'react'
-import { View, Text, Touchable, TouchableOpacity, Alert } from 'react-native'
+import { View, Text, TouchableOpacity, Alert, StyleSheet } from 'react-native'
 import { SafeAreaView } from 'react-native-safe-area-context'
 
 import { useAppProvider } from '@/providers/AppProvider'
@@ -121,79 +121,100 @@ export default function HomeScreen() {
       />
 
       {/* Seção de Localização */}
-      <View className="mx-5 px-4 py-3 bg-white rounded-2xl mb-2">
-        <View className="flex-row items-start justify-between">
+      <View
+        style={[
+          styles.locationCard,
+          { marginHorizontal: 20, marginBottom: 12 }
+        ]}
+      >
+        <View style={{ flexDirection: 'row', gap: 12 }}>
+          {/* Ícone */}
+          <View style={{ marginTop: 4 }}>
+            <MapPin size={20} color={address ? '#059669' : '#9CA3AF'} />
+          </View>
+
           {/* Localização */}
-          <View className="flex-row items-start flex-1 gap-1">
-            {/* Icone */}
-            <MapPin size={16} color={address ? '#EF4444' : '#9CA3AF'} />
-
-            {/* Localização */}
-            <View className="flex-1">
-              {isGettingAddress ? (
-                <Text className="text-sm text-gray-500">
-                  Obtendo localização...
-                </Text>
-              ) : address ? (
-                <Text
-                  className="text-sm text-gray-800 font-medium"
-                  numberOfLines={2}
-                  ellipsizeMode="tail"
-                >
-                  {address}
-                </Text>
-              ) : (
-                <Text className="text-sm text-gray-500">
-                  Localização não disponível
-                </Text>
-              )}
-
-              {/* Status da localização */}
-              <Text className="text-xs text-gray-400 mt-1">
-                {locationError ? 'Erro na localização' : 'GPS ativo'}
+          <View style={{ flex: 1 }}>
+            {isGettingAddress ? (
+              <Text className="text-sm text-gray-500">
+                Obtendo localização...
               </Text>
-            </View>
-          </View>
-
-          {/* Botões de ação */}
-          <View className="flex-row items-center gap-2">
-            {/* Atualizar localização */}
-            <TouchableOpacity
-              onPress={refreshAddress}
-              disabled={locationLoading || isGettingAddress}
-              className={`p-2 rounded-full ${
-                isGettingAddress ? 'bg-gray-200' : 'bg-gray-100'
-              }`}
-            >
-              <RefreshCw
-                size={16}
-                color={
-                  locationLoading || isGettingAddress ? '#9CA3AF' : '#6B7280'
-                }
-              />
-            </TouchableOpacity>
-
-            {/* Ver no mapa */}
-            {currentLocation && (
-              <TouchableOpacity
-                onPress={handleOpenMap}
-                className="p-2 rounded-full bg-gray-100"
+            ) : address ? (
+              <Text
+                className="text-base font-semibold text-gray-900 mb-1"
+                numberOfLines={2}
+                ellipsizeMode="tail"
               >
-                <Navigation size={16} color="#6B7280" />
-              </TouchableOpacity>
+                {address}
+              </Text>
+            ) : (
+              <Text className="text-sm text-gray-500">
+                Localização não disponível
+              </Text>
             )}
+
+            {/* Status da localização */}
+            <Text className="text-xs text-gray-500 mt-1">
+              {locationError ? 'Toque para atualizar' : '● GPS Ativo'}
+            </Text>
           </View>
+        </View>
+
+        {/* Separador */}
+        <View
+          style={{ height: 1, backgroundColor: '#F3F4F6', marginVertical: 16 }}
+        />
+
+        {/* Botões de ação - Touch targets >= 48px */}
+        <View style={{ flexDirection: 'row', gap: 12 }}>
+          {/* Atualizar localização */}
+          <TouchableOpacity
+            onPress={refreshAddress}
+            disabled={locationLoading || isGettingAddress}
+            style={[styles.actionButton, { flex: 1 }]}
+            activeOpacity={0.7}
+          >
+            <RefreshCw
+              size={18}
+              color={
+                locationLoading || isGettingAddress ? '#9CA3AF' : '#6B7280'
+              }
+            />
+            <Text className="text-sm font-semibold text-gray-700 ml-2">
+              Atualizar
+            </Text>
+          </TouchableOpacity>
+
+          {/* Ver no mapa */}
+          {currentLocation && (
+            <TouchableOpacity
+              onPress={handleOpenMap}
+              style={[styles.actionButtonPrimary, { flex: 1 }]}
+              activeOpacity={0.7}
+            >
+              <Navigation size={18} color="#b31a24" />
+              <Text className="text-sm font-semibold text-red-800 ml-2">
+                Ver Mapa
+              </Text>
+            </TouchableOpacity>
+          )}
         </View>
 
         {/* Erro de localização */}
         {locationError && !isGettingAddress && (
-          <View className="mt-2 flex-row items-center">
+          <View
+            style={{
+              marginTop: 12,
+              flexDirection: 'row',
+              alignItems: 'center'
+            }}
+          >
             <Text className="text-xs text-red-500 flex-1">{locationError}</Text>
             <TouchableOpacity
-              // onPress={handleRequestLocation}
-              className="ml-2"
+              onPress={refreshAddress}
+              style={{ marginLeft: 8 }}
             >
-              <Text className="text-xs text-primary-200 font-semibold">
+              <Text className="text-xs text-red-600 font-semibold">
                 Tentar novamente
               </Text>
             </TouchableOpacity>
@@ -226,3 +247,34 @@ export default function HomeScreen() {
     </SafeAreaView>
   )
 }
+
+const styles = StyleSheet.create({
+  locationCard: {
+    backgroundColor: '#FFFFFF',
+    borderRadius: 24,
+    padding: 20,
+    shadowColor: '#2424244b',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.04,
+    shadowRadius: 8,
+    elevation: 2
+  },
+  actionButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: '#F9FAFB',
+    paddingVertical: 14,
+    paddingHorizontal: 16,
+    borderRadius: 12
+  },
+  actionButtonPrimary: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: '#FEF2F2',
+    paddingVertical: 14,
+    paddingHorizontal: 16,
+    borderRadius: 12
+  }
+})
