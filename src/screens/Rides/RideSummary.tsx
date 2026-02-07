@@ -4,7 +4,7 @@ import { StyleSheet, Alert, Linking, Platform } from 'react-native'
 import MapView from 'react-native-maps'
 
 import { useRideSummary } from '@/hooks/useRideSummary'
-import { DriverRideSheet } from './components/DriverRideCard'
+import { DriverRideSheet } from './components/Cards/DriverRideCard'
 
 import { CustomPlace } from '@/types/places'
 import { SafeAreaView } from 'react-native-safe-area-context'
@@ -19,9 +19,9 @@ import { converter } from '@/utils/converter'
 import { RideFareInterface } from '@/interfaces/IRideFare'
 
 // New Components
-import { RideMapContainer } from './components/RideMapContainer'
-import { RideStatusManager } from './components/RideStatusManager'
-import { RideModals } from './components/RideModals'
+import { RideMapContainer } from './components/Map/RideMapContainer'
+import { RideStatusManager } from './components/Status/RideStatusManager'
+import { RideModals } from './components/Modals/RideModals'
 
 type RideSummaryScreenRouteParams = {
   id: string
