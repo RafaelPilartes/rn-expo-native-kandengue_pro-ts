@@ -13,6 +13,7 @@ import { useAppStore } from './storage/store/useAppStore'
 import { ThemeProvider } from './providers/ThemeProvider'
 import { NavigationContainer } from '@react-navigation/native'
 import { NetworkProvider } from './providers/NetworkProvider'
+import { AppProvider } from './providers/AppProvider'
 import { GestureHandlerRootView } from 'react-native-gesture-handler'
 import { BottomSheetModalProvider } from '@gorhom/bottom-sheet'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
@@ -49,8 +50,8 @@ function App() {
 
   useEffect(() => {
     if (ready && appIsReady) {
-       // Only hide splash screen once
-       SplashScreen.hideAsync()
+      // Only hide splash screen once
+      SplashScreen.hideAsync()
     }
   }, [ready, appIsReady])
 
@@ -59,9 +60,9 @@ function App() {
   // if changeLanguage is unstable. Alternatively, fix useTranslation hook.
   // But strictly speaking, if language changes in store, we want to reflect it in i18n.
   useEffect(() => {
-     if (ready && language) {
-        changeLanguage(language)
-     }
+    if (ready && language) {
+      changeLanguage(language)
+    }
   }, [ready, language]) // Removed changeLanguage from deps to be safe, though useTranslation fixes are better.
 
   if (!appIsReady || !ready) {
@@ -81,7 +82,9 @@ function App() {
                       <NetworkProvider>
                         <StatusBar style="dark" />
                         <NetworkStatusBanner />
-                        <AppRouter />
+                        <AppProvider>
+                          <AppRouter />
+                        </AppProvider>
                       </NetworkProvider>
                     </TrackRideProvider>
                   </LocationProvider>

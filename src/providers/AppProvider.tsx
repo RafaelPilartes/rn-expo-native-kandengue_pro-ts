@@ -1,5 +1,12 @@
-// src/providers/HomeProvider.ts
-import { useState, useEffect, useCallback, use } from 'react'
+// src/providers/AppProvider.tsx
+import React, {
+  createContext,
+  useContext,
+  useEffect,
+  useState,
+  useCallback,
+  ReactNode
+} from 'react'
 import { useNavigation } from '@react-navigation/native'
 import { NativeStackNavigationProp } from '@react-navigation/native-stack'
 import { HomeStackParamList, MainTabParamList } from '@/types/navigation'
@@ -36,7 +43,13 @@ interface AppContextReturn {
   navigationMainStack: NativeStackNavigationProp<MainTabParamList>
 }
 
-export const useAppProvider = (): AppContextReturn => {
+const AppContext = createContext<AppContextReturn | undefined>(undefined)
+
+interface AppProviderProps {
+  children: ReactNode
+}
+
+export const AppProvider: React.FC<AppProviderProps> = ({ children }) => {
   // Navegação
   const navigationHomeStack =
     useNavigation<NativeStackNavigationProp<HomeStackParamList>>()
@@ -308,7 +321,7 @@ export const useAppProvider = (): AppContextReturn => {
     navigationMainStack.goBack()
   }, [navigationMainStack])
 
-  return {
+  const value: AppContextReturn = {
     // Estado
     currentDriverData,
     rides,
@@ -328,4 +341,14 @@ export const useAppProvider = (): AppContextReturn => {
     navigationHomeStack,
     navigationMainStack
   }
+
+  return <AppContext.Provider value={value}>{children}</AppContext.Provider>
+}
+
+export const useAppProvider = (): AppContextReturn => {
+  const context = useContext(AppContext)
+  if (!context) {
+    throw new Error('useAppProvider deve ser usado dentro de um AppProvider')
+  }
+  return context
 }
