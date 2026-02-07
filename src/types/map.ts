@@ -1,23 +1,23 @@
-import MapView from 'react-native-maps';
+import MapView from '../components/map/MapView'
 
 // src/types/map.ts
-export type Coords = { latitude: number; longitude: number };
+export type Coords = { latitude: number; longitude: number }
 
 export interface MapContextType {
-  mapRef: React.RefObject<MapView | null>;
-  mapReady: boolean;
-  location: Coords | null;
-  address: string | null;
-  isLoading: boolean;
-  isTracking: boolean;
-  hasPermission: boolean;
-  error: string | null;
-  isGettingAddress: boolean;
+  mapRef: React.RefObject<any>
+  mapReady: boolean
+  location: Coords | null
+  address: string | null
+  isLoading: boolean
+  isTracking: boolean
+  hasPermission: boolean
+  error: string | null
+  isGettingAddress: boolean
 
-  getCurrentLocation: () => Promise<Coords | null>;
-  centerOnUser: () => Promise<void>;
-  startTracking: () => void;
-  stopTracking: () => void;
-  handleMapReady: () => void;
-  clearError: () => void;
+  getCurrentLocation: () => Promise<Coords | null>
+  centerOnUser: () => Promise<void>
+  startTracking: () => void
+  stopTracking: () => void
+  handleMapReady: () => void
+  clearError: () => void
 }

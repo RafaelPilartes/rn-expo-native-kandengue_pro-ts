@@ -1,7 +1,7 @@
 // src/screens/Map/index.tsx
 import React, { useEffect, useRef, useState } from 'react'
-import { View } from 'react-native'
-import MapView, { Marker } from 'react-native-maps'
+import { View, Platform } from 'react-native'
+import MapView, { Marker } from '@/components/map/MapView'
 import { SafeAreaView } from 'react-native-safe-area-context'
 import { useNavigation } from '@react-navigation/native'
 import { NativeStackNavigationProp } from '@react-navigation/native-stack'
@@ -27,7 +27,7 @@ export default function MapScreen() {
     address,
     isGettingAddress
   } = useLocation()
-  const mapRef = useRef<MapView | null>(null)
+  const mapRef = useRef<any>(null)
 
   const centerOnUser = async () => {
     const coords = location ?? (await requestCurrentLocation())
@@ -36,15 +36,10 @@ export default function MapScreen() {
       return
     }
 
-    mapRef.current?.animateToRegion(
-      {
-        latitude: coords.latitude,
-        longitude: coords.longitude,
-        latitudeDelta: 0.01,
-        longitudeDelta: 0.01
-      },
-      800
-    )
+    mapRef.current?.setCameraPosition?.({
+      center: coords,
+      zoom: 15
+    })
   }
 
   useEffect(() => {
@@ -64,6 +59,19 @@ export default function MapScreen() {
     )
   }
 
+  // Prepare markers array
+  const markers: Marker[] = location
+    ? [
+        {
+          coordinates: location,
+          title: 'Sua Localização',
+          ...(Platform.OS === 'ios'
+            ? { tintColor: '#EF4444' }
+            : { color: '#EF4444' })
+        }
+      ]
+    : []
+
   // UI principal
   return (
     <SafeAreaView className="flex-1 bg-white">
@@ -80,26 +88,22 @@ export default function MapScreen() {
         <MapView
           ref={mapRef}
           style={{ flex: 1 }}
-          initialRegion={{
-            latitude: location?.latitude || -8.839987,
-            longitude: location?.longitude || 13.289437,
-            latitudeDelta: 0.08,
-            longitudeDelta: 0.01
+          cameraPosition={{
+            center: {
+              latitude: location?.latitude || -8.839987,
+              longitude: location?.longitude || 13.289437
+            },
+            zoom: 13
           }}
-          showsUserLocation={false}
-          showsMyLocationButton={false}
-          showsCompass={true}
-          zoomControlEnabled={true}
-        >
-          {/* Marker da localização atual */}
-          {location && (
-            <Marker
-              coordinate={location}
-              title="Sua Localização"
-              pinColor="#EF4444"
-            />
-          )}
-        </MapView>
+          markers={markers}
+          uiSettings={{
+            compassEnabled: true,
+            ...(Platform.OS === 'ios' ? {} : { zoomControlsEnabled: true })
+          }}
+          properties={{
+            isMyLocationEnabled: false
+          }}
+        />
       </View>
 
       <View className="absolute bottom-6 left-4 z-10">

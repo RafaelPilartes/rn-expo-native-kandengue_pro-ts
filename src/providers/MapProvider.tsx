@@ -8,7 +8,7 @@ import React, {
 } from 'react'
 import { AppState } from 'react-native'
 import * as Location from 'expo-location'
-import MapView from 'react-native-maps'
+import MapView from '../components/map/MapView'
 import { getAddressFromCoords } from '@/services/google/googleApi'
 import { Coords, MapContextType } from '@/types/map'
 
@@ -24,7 +24,7 @@ export const MapProvider = ({ children }: { children: React.ReactNode }) => {
   const [isGettingAddress, setIsGettingAddress] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
-  const mapRef = useRef<MapView | null>(null)
+  const mapRef = useRef<any>(null)
   const watchRef = useRef<Location.LocationSubscription | null>(null)
   const appStateRef = useRef(AppState.currentState)
 
