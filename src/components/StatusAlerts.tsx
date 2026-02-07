@@ -51,7 +51,18 @@ const StatusAlerts: React.FC<StatusAlertsProps> = ({
     )
   }
 
-  if (!vehicle && driver?.status === 'active') {
+  if (!wallet && driver?.status === 'active') {
+    return (
+      <View className="bg-yellow-100 border border-yellow-300 mx-5 p-4 rounded-2xl mb-4">
+        <Text className="text-yellow-800">
+          Ainda nenhuma carteira cadastrada. Por favor, aguarde ou entre em
+          contato com o suporte.
+        </Text>
+      </View>
+    )
+  }
+
+  if (!driver?.vehicle && !vehicle && driver?.status === 'active') {
     return (
       <View className="bg-yellow-100 border border-yellow-300 mx-5 p-4 rounded-2xl mb-4">
         <Text className="text-yellow-800">
@@ -59,16 +70,6 @@ const StatusAlerts: React.FC<StatusAlertsProps> = ({
         </Text>
         <Text className="text-yellow-800 font-semibold italic">
           Perfil {'>'} Meus veículos {'>'} Novo veículo
-        </Text>
-      </View>
-    )
-  }
-  if (!wallet && driver?.status === 'active') {
-    return (
-      <View className="bg-yellow-100 border border-yellow-300 mx-5 p-4 rounded-2xl mb-4">
-        <Text className="text-yellow-800">
-          Ainda nenhuma carteira cadastrada. Por favor, aguarde ou entre em
-          contato com o suporte.
         </Text>
       </View>
     )
