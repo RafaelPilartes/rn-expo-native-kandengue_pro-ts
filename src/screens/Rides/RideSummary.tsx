@@ -1,41 +1,27 @@
 // src/screens/Ride/RideSummaryScreen.tsx
-import React, { useEffect, useRef, useState } from 'react'
-import { View, StyleSheet, Alert, Linking, Platform } from 'react-native'
-import MapView, { Marker, Polyline } from 'react-native-maps'
+import React, { useEffect, useRef, useState, useMemo } from 'react'
+import { StyleSheet, Alert, Linking, Platform } from 'react-native'
+import MapView from 'react-native-maps'
 
 import { useRideSummary } from '@/hooks/useRideSummary'
-import { RoutePreviewCard } from './components/RoutePreviewCard'
-import { ConfirmRideCard } from './components/ConfirmRideCard'
 import { DriverRideSheet } from './components/DriverRideCard'
 
 import { CustomPlace } from '@/types/places'
 import { SafeAreaView } from 'react-native-safe-area-context'
-import {
-  CommonActions,
-  useNavigation,
-  useRoute
-} from '@react-navigation/native'
+import { useNavigation, useRoute } from '@react-navigation/native'
 import { NativeStackNavigationProp } from '@react-navigation/native-stack'
 import { HomeStackParamList } from '@/types/navigation'
-import { formatMoney } from '@/utils/formattedNumber'
-import { RideStatusArrival } from './components/RideStatusArrival'
-import { RideStatusDelivering } from './components/RideStatusDelivering'
-import { RideStatusArrivedDestination } from './components/RideStatusArrivedDestination'
 import { BottomSheetModal } from '@gorhom/bottom-sheet'
-import { DriverStatusOverlay } from './components/DriverStatusOverlay'
 import ROUTES from '@/constants/routes'
 import { useLocation } from '@/hooks/useLocation'
-import { MyLocationButton } from './components/MyLocationButton'
-import { LoadingCard } from './components/LoadingCard'
-import { FloatingActionButton } from './components/FloatingActionButton'
-import { OTPModal } from './components/OTPModal'
-import { CancelRideModal } from './components/CancelRideModal'
-import { ArrivalConfirmationModal } from './components/ArrivalConfirmationModal'
-import { Text } from 'react-native'
-import { RideConfirmationFlow } from './components/RideConfirmationFlow'
 import { calculateHeading } from '@/helpers/bearing'
 import { converter } from '@/utils/converter'
 import { RideFareInterface } from '@/interfaces/IRideFare'
+
+// New Components
+import { RideMapContainer } from './components/RideMapContainer'
+import { RideStatusManager } from './components/RideStatusManager'
+import { RideModals } from './components/RideModals'
 
 type RideSummaryScreenRouteParams = {
   id: string
@@ -62,7 +48,19 @@ export default function RideSummaryScreen() {
   const bottomSheetRef = useRef<BottomSheetModal>(null)
 
   // Estados modais
-  const [showOTPModal, setShowOTPModal] = useState(false)
+  // const [showOTPModal, setShowOTPModal] = useState(false) // Seems unused directly in logic, handled by RideConfirmationFlow? Keeping if needed.
+  // Actually logic used setShowOTPModal(false) in handleCompleteWithOTP.
+  // But RideConfirmationFlow controls its own visibility? No, passed visible prop.
+  // rideSummary used: const [showOTPModal, setShowOTPModal] = useState(false) but rendered OTPModal conditionally? No.
+  // It rendered RideConfirmationFlow with showConfirmationFlow.
+  // Let's check original...
+  // Line 65: const [showOTPModal, setShowOTPModal] = useState(false)
+  // Line 255: setShowOTPModal(false) in handleCompleteWithOTP
+  // Line 31: import { OTPModal }
+  // But OTPModal NOT used in JSX.
+  // So showOTPModal might be dead code or leftover?
+  // Use showConfirmationFlow instead.
+
   const [showCancelModal, setShowCancelModal] = useState(false)
   const [showArrivalModal, setShowArrivalModal] = useState(false)
   const [showConfirmationFlow, setShowConfirmationFlow] = useState(false)
@@ -129,19 +127,20 @@ export default function RideSummaryScreen() {
 
   const ridePath = rideTracking?.path || []
 
-  let markerHeading = 0
-
-  if (ridePath.length >= 2) {
-    const lastPointTracked = ridePath[ridePath.length - 1]
-    const prevPointTracked = ridePath[ridePath.length - 2]
-
-    markerHeading = calculateHeading(
-      prevPointTracked.latitude,
-      prevPointTracked.longitude,
-      lastPointTracked.latitude,
-      lastPointTracked.longitude
-    )
-  }
+  // Calculate Heading
+  const markerHeading = useMemo(() => {
+    if (ridePath.length >= 2) {
+      const lastPointTracked = ridePath[ridePath.length - 1]
+      const prevPointTracked = ridePath[ridePath.length - 2]
+      return calculateHeading(
+        prevPointTracked.latitude,
+        prevPointTracked.longitude,
+        lastPointTracked.latitude,
+        lastPointTracked.longitude
+      )
+    }
+    return 0
+  }, [ridePath])
 
   // 🔹 ABRIR NO GPS
   const handleOpenInMaps = () => {
@@ -252,7 +251,7 @@ export default function RideSummaryScreen() {
 
       if (isValidOTP) {
         await handleCompletedRide(photoUri)
-        setShowOTPModal(false)
+        // setShowOTPModal(false) // Deprecated/Unused?
 
         // Navegar para tela de conclusão
         navigation.replace(ROUTES.Rides.FINISHED, {
@@ -333,182 +332,40 @@ export default function RideSummaryScreen() {
     }
   }, [currentRide])
 
-  function renderContentByStatus() {
-    switch (rideStatus) {
-      case 'idle':
-        return (
-          <>
-            {isLoadingDataRide ? (
-              <LoadingCard />
-            ) : (
-              <>
-                <RoutePreviewCard
-                  pickupDescription={currentRide?.pickup?.name || ''}
-                  dropoffDescription={currentRide?.dropoff?.name || ''}
-                />
-
-                <View style={{ position: 'absolute', bottom: 220, left: 28 }}>
-                  <MyLocationButton
-                    isLocating={isLoadingUserLocation}
-                    onPress={centerOnUser}
-                    disabled={isLoadingUserLocation}
-                  />
-                </View>
-
-                <ConfirmRideCard
-                  price={formatMoney(fareDetails?.total as number, 0)}
-                  duration={duration}
-                  isLoading={isLoadingDataRide}
-                  onConfirm={handleAcceptRide}
-                />
-              </>
-            )}
-          </>
-        )
-
-      case 'driver_on_the_way':
-        return (
-          <>
-            <DriverStatusOverlay
-              duration={durationDriver}
-              driverName={driver?.name || 'Motorista'}
-              onArrived={() => setShowArrivalModal(true)}
-            />
-            <FloatingActionButton
-              icon="navigation"
-              label="Abrir no GPS"
-              onPress={handleOpenInMaps}
-              position="top-right"
-            />
-          </>
-        )
-
-      case 'arrived_pickup':
-        return (
-          <>
-            <RideStatusArrival
-              rideStatus={rideStatus}
-              currentTime={currentTime}
-              additionalTime={String(additionalTime)}
-              onConfirmPickup={handlePickedUpRide}
-              customerName={currentRide?.user?.name}
-            />
-          </>
-        )
-
-      case 'picked_up':
-        return (
-          <>
-            <RideStatusDelivering
-              distanceTraveled={distance}
-              distanceTotal={distance}
-              duration={duration}
-              packageInfo={currentRide?.details?.item}
-              onArrived={() => setShowArrivalModal(true)}
-              onPress={handleOpenInMaps}
-            />
-          </>
-        )
-
-      case 'arrived_dropoff':
-        return (
-          <>
-            <RideStatusArrivedDestination
-              onConfirm={handleStartConfirmation}
-              packageInfo={currentRide?.details?.item}
-            />
-          </>
-        )
-
-      default:
-        return null
-    }
-  }
-
   return (
     <SafeAreaView className="flex-1 bg-white">
       {/* MAPA */}
-      <MapView
-        ref={mapRef}
-        style={StyleSheet.absoluteFillObject}
-        initialRegion={{
-          latitude: currentRide
-            ? currentRide.pickup.latitude
-            : location.pickup.latitude,
-          longitude: currentRide
-            ? currentRide.pickup.longitude
-            : location.pickup.longitude,
-          latitudeDelta: 0.05,
-          longitudeDelta: 0.05
-        }}
-        showsUserLocation={false}
-        showsMyLocationButton={false}
-      >
-        {/* Marker da localização atual */}
-        {userLocation && (
-          <Marker
-            coordinate={userLocation}
-            title="Sua Localização"
-            description="Motorista"
-            image={require('@/assets/markers/moto.png')}
-            rotation={markerHeading} // rotaciona o marker
-            anchor={{ x: 0.5, y: 0.5 }} // mantém centrado
-            flat={true} // permite ficar deitado sobre o mapa
-          />
-        )}
-
-        {/* Rota do motorista para a recolha */}
-        {(rideStatus === 'idle' || rideStatus === 'driver_on_the_way') && (
-          <>
-            {routeCoordsDriver.length > 0 && (
-              <Polyline
-                coordinates={routeCoordsDriver}
-                strokeColor="#007AFF"
-                strokeWidth={4}
-                lineDashPattern={[0]}
-              />
-            )}
-          </>
-        )}
-
-        {/* Ponto pickup */}
-        {currentRide && (
-          <Marker
-            coordinate={{
-              latitude: currentRide.pickup.latitude,
-              longitude: currentRide.pickup.longitude
-            }}
-            image={require('@/assets/markers/pickup.png')}
-            title="Local de Recolha"
-            description={currentRide.pickup?.name}
-          />
-        )}
-
-        {/* Ponto dropoff */}
-        {currentRide && (
-          <Marker
-            coordinate={{
-              latitude: currentRide.dropoff.latitude,
-              longitude: currentRide.dropoff.longitude
-            }}
-            image={require('@/assets/markers/dropoff.png')}
-            title="Local de Entrega"
-            description={currentRide.dropoff?.name}
-          />
-        )}
-
-        {/* Rota */}
-        {routeCoords.length > 0 && (
-          <Polyline
-            coordinates={routeCoords}
-            strokeColor="#03af5f"
-            strokeWidth={4}
-          />
-        )}
-      </MapView>
+      <RideMapContainer
+        mapRef={mapRef}
+        userLocation={userLocation}
+        currentRide={currentRide || null}
+        location={location}
+        rideStatus={rideStatus}
+        routeCoords={routeCoords}
+        routeCoordsDriver={routeCoordsDriver}
+        markerHeading={markerHeading}
+      />
 
       {/* CONTENT */}
-      {renderContentByStatus()}
+      <RideStatusManager
+        rideStatus={rideStatus}
+        isLoadingDataRide={isLoadingDataRide}
+        currentRide={currentRide || null}
+        isLoadingUserLocation={isLoadingUserLocation}
+        centerOnUser={centerOnUser}
+        fareDetails={fareDetails}
+        duration={duration}
+        handleAcceptRide={handleAcceptRide}
+        durationDriver={durationDriver ? String(durationDriver) : ''}
+        driver={driver}
+        setShowArrivalModal={setShowArrivalModal}
+        handleOpenInMaps={handleOpenInMaps}
+        currentTime={currentTime}
+        additionalTime={String(additionalTime)}
+        handlePickedUpRide={handlePickedUpRide}
+        distance={distance}
+        handleStartConfirmation={handleStartConfirmation}
+      />
 
       {/* DRIVER RIDE SHEET */}
       {currentRide && (
@@ -522,32 +379,21 @@ export default function RideSummaryScreen() {
         />
       )}
 
-      <CancelRideModal
-        visible={showCancelModal}
-        onClose={() => setShowCancelModal(false)}
-        onConfirm={handleCancelRide}
-        isLoading={false}
-      />
-
-      <ArrivalConfirmationModal
-        visible={showArrivalModal}
-        onClose={() => setShowArrivalModal(false)}
-        onConfirm={handleConfirmArrival}
-        locationType={rideStatus === 'driver_on_the_way' ? 'pickup' : 'dropoff'}
-        address={
-          rideStatus === 'driver_on_the_way'
-            ? location.pickup.description
-            : location.dropoff.description
-        }
-      />
-
-      {/* Modal de Confirmação com Foto e OTP */}
-      <RideConfirmationFlow
-        visible={showConfirmationFlow}
-        onClose={() => setShowConfirmationFlow(false)}
-        onConfirm={handleCompleteWithOTP}
-        isLoading={isLoadingCompleteRide}
-        userId={currentRide?.user.id ?? null}
+      {/* MODALS */}
+      <RideModals
+        showCancelModal={showCancelModal}
+        setShowCancelModal={setShowCancelModal}
+        handleCancelRide={handleCancelRide}
+        showArrivalModal={showArrivalModal}
+        setShowArrivalModal={setShowArrivalModal}
+        handleConfirmArrival={handleConfirmArrival}
+        rideStatus={rideStatus}
+        location={location}
+        showConfirmationFlow={showConfirmationFlow}
+        setShowConfirmationFlow={setShowConfirmationFlow}
+        handleCompleteWithOTP={handleCompleteWithOTP}
+        isLoadingCompleteRide={isLoadingCompleteRide}
+        userId={currentRide?.user?.id ?? null}
       />
     </SafeAreaView>
   )
