@@ -18,12 +18,16 @@ interface UploadResult {
 export class FirebaseFileDAO {
   async copyToExpoAccessiblePath(uri: string): Promise<string> {
     try {
-      const newPath = `${FileSystem.cacheDirectory}${Date.now()}.jpg`
+      // Se já for um arquivo local acessível, talvez não precise copiar
+      // Mas o comportamento seguro é tentar copiar para o cache
+      const newPath = `${FileSystem.cacheDirectory}upload_${Date.now()}.jpg`
       await FileSystem.copyAsync({ from: uri, to: newPath })
       return newPath
-    } catch (err) {
-      console.error('❌ Erro ao copiar arquivo:', err)
-      throw new Error('Falha ao preparar arquivo para upload')
+    } catch (err: any) {
+      console.warn('⚠️ Falha ao copiar arquivo para cache:', err.message)
+      // Fallback: Tentar usar a URI original se a cópia falhar
+      // O putFile do Firebase often lida bem com URIs originais
+      return uri
     }
   }
 
