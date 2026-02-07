@@ -14,8 +14,10 @@ import {
   CheckCircle2,
   Clock,
   XCircle,
-  Edit3,
-  Trash2
+  Edit2,
+  Trash2,
+  MoreVertical,
+  Star
 } from 'lucide-react-native'
 import VehicleModal from './components/VehicleModal'
 import PageHeader from '@/components/PageHeader'
@@ -25,7 +27,6 @@ import { useAuthStore } from '@/storage/store/useAuthStore'
 import { VehicleType } from '@/types/enum'
 import { useFileUploadViewModel } from '@/viewModels/FileUploadViewModel'
 import { BaseLoadingPage } from '@/components/loadingPage'
-import { SafeAreaView } from 'react-native-safe-area-context'
 
 export default function VehiclesScreen() {
   const { driver } = useAuthStore()
@@ -36,11 +37,8 @@ export default function VehiclesScreen() {
     deleteVehicle
   } = useVehiclesViewModel()
 
-  const {
-    uploadSomeImageForUser,
-    isUploadingSomeImageForUser: isUploadingImageImage,
-    uploadSomeImageForUserError: uploadImageErrorImage
-  } = useFileUploadViewModel()
+  const { uploadSomeImageForUser, uploadSomeImageForUserError } =
+    useFileUploadViewModel()
 
   const [vehicles, setVehicles] = useState<VehicleInterface[]>([])
   const [isFetchingVehicles, setIsFetchingVehicles] = useState(true)
@@ -50,168 +48,7 @@ export default function VehiclesScreen() {
   )
   const [isSubmitting, setIsSubmitting] = useState(false)
 
-  // 🔹 Status do veículo
-  const renderStatus = (status: VehicleInterface['status']) => {
-    const statusConfig = {
-      validated: { icon: CheckCircle2, color: '#10B981', label: 'Aprovado' },
-      under_analysis: { icon: Clock, color: '#F59E0B', label: 'Pendente' },
-      rejected: { icon: XCircle, color: '#EF4444', label: 'Rejeitado' }
-    }
-
-    const config =
-      statusConfig[status as keyof typeof statusConfig] ||
-      statusConfig.under_analysis
-    const IconComponent = config.icon
-
-    return (
-      <View className="flex-row items-center">
-        <IconComponent size={16} color={config.color} />
-        <Text
-          className="ml-1 text-xs font-medium"
-          style={{ color: config.color }}
-        >
-          {config.label}
-        </Text>
-      </View>
-    )
-  }
-
-  // 🔹 UPLOAD: de imagem - FUNÇÃO ADICIONADA
-  const handleUploadImage = async (imageToUpload: string): Promise<string> => {
-    if (!imageToUpload) return imageToUpload || ''
-
-    try {
-      console.log('📤 Iniciando upload da imagem...')
-
-      const { url, path } = await uploadSomeImageForUser({
-        fileUri: imageToUpload,
-        userId: driver?.id || '',
-        imageType: 'vehicles'
-      })
-
-      if (!url || !path) {
-        const errorMsg =
-          uploadImageErrorImage?.message || 'Erro ao carregar ficheiro'
-        console.error('❌ Upload falhou:', errorMsg)
-        Alert.alert('Erro', errorMsg)
-        throw new Error('Upload inválido')
-      }
-
-      console.log('✅ Upload concluído:', url)
-      return url
-    } catch (err) {
-      console.error('❌ Erro no upload:', err)
-      Alert.alert('Erro', 'Erro ao carregar ficheiro')
-      throw err
-    }
-  }
-
-  // 🔹 Manipular salvamento do veículo
-  const handleSaveVehicle = async (vehicleData: Partial<VehicleInterface>) => {
-    setIsSubmitting(true)
-
-    try {
-      let finalImageUrl = vehicleToEdit?.image
-
-      // 🔹 FAZER UPLOAD se há nova imagem selecionada
-      if (vehicleData.image && vehicleData.image !== vehicleToEdit?.image) {
-        console.log('🔄 Fazendo upload da nova imagem...')
-        finalImageUrl = await handleUploadImage(vehicleData.image)
-      }
-
-      // 🔹 PREPARAR dados para atualização
-      const updateData: Partial<VehicleInterface> = {
-        ...vehicleData
-      }
-
-      // 🔹 ADICIONAR foto apenas se mudou
-      if (finalImageUrl !== vehicleToEdit?.image) {
-        updateData.image = finalImageUrl
-      }
-
-      if (vehicleToEdit?.id) {
-        // Editar veículo existente
-        await updateVehicle.mutateAsync({
-          id: vehicleToEdit.id,
-          vehicle: {
-            ...updateData,
-            status: 'under_analysis',
-            isDefault: false
-          }
-        })
-      } else {
-        // Criar novo veículo
-        const createdVehicle: Omit<VehicleInterface, 'id'> = {
-          ...updateData,
-          user_id: driver?.id || '',
-          type: vehicleData.type as VehicleType,
-          brand: vehicleData.brand as string,
-          model: vehicleData.model as string,
-          color: vehicleData.color as string,
-          plate: vehicleData.plate as string,
-          status: 'under_analysis',
-          isDefault: false
-        }
-        await createVehicle.mutateAsync(createdVehicle)
-      }
-
-      setShowModal(false)
-      setVehicleToEdit(null)
-
-      Alert.alert(
-        'Sucesso',
-        vehicleToEdit ? 'Veículo atualizado!' : 'Veículo adicionado!'
-      )
-    } catch (error) {
-      console.error('Erro ao salvar veículo:', error)
-      Alert.alert('Erro', 'Não foi possível salvar o veículo. Tente novamente.')
-    } finally {
-      if (driver) {
-        fetchAllVehicles()
-      }
-      setIsSubmitting(false)
-    }
-  }
-
-  // 🔹 Excluir veículo
-  const handleDeleteVehicle = (vehicle: VehicleInterface) => {
-    Alert.alert(
-      'Excluir Veículo',
-      `Tem certeza que deseja excluir ${vehicle.brand} ${vehicle.model}?`,
-      [
-        { text: 'Cancelar', style: 'cancel' },
-        {
-          text: 'Excluir',
-          style: 'destructive',
-          onPress: async () => {
-            try {
-              await deleteVehicle.mutateAsync(vehicle.id!)
-              if (driver) {
-                fetchAllVehicles()
-              }
-              Alert.alert('Sucesso', 'Veículo excluído!')
-            } catch (error) {
-              Alert.alert('Erro', 'Não foi possível excluir o veículo')
-            }
-          }
-        }
-      ]
-    )
-  }
-
-  // 🔹 Abrir modal para editar
-  const handleEditVehicle = (vehicle: VehicleInterface) => {
-    setVehicleToEdit(vehicle)
-    setShowModal(true)
-  }
-
-  // 🔹 Abrir modal para adicionar
-  const handleAddVehicle = () => {
-    setVehicleToEdit(null)
-    setShowModal(true)
-  }
-
-  // fetch all vehicles
+  // 🔹 Fetch vehicles
   const fetchAllVehicles = async () => {
     try {
       const vehiclesResponse = await fetchAllVehiclesByField(
@@ -232,132 +69,287 @@ export default function VehiclesScreen() {
     }
   }, [driver])
 
+  // 🔹 Upload Image Logic
+  const handleUploadImage = async (imageToUpload: string): Promise<string> => {
+    if (!imageToUpload) return ''
+
+    try {
+      const { url, path } = await uploadSomeImageForUser({
+        fileUri: imageToUpload,
+        userId: driver?.id || '',
+        imageType: 'vehicles'
+      })
+
+      if (!url || !path) {
+        throw new Error(
+          uploadSomeImageForUserError?.message || 'Erro ao carregar imagem'
+        )
+      }
+      return url
+    } catch (err) {
+      console.error('Upload failed:', err)
+      Alert.alert('Erro', 'Falha ao fazer upload da imagem.')
+      throw err
+    }
+  }
+
+  // 🔹 Save Vehicle
+  const handleSaveVehicle = async (vehicleData: Partial<VehicleInterface>) => {
+    setIsSubmitting(true)
+    try {
+      let finalImageUrl = vehicleToEdit?.image
+
+      if (vehicleData.image && vehicleData.image !== vehicleToEdit?.image) {
+        finalImageUrl = await handleUploadImage(vehicleData.image)
+      }
+
+      const updateData: Partial<VehicleInterface> = { ...vehicleData }
+      if (finalImageUrl !== vehicleToEdit?.image) {
+        updateData.image = finalImageUrl
+      }
+
+      if (vehicleToEdit?.id) {
+        await updateVehicle.mutateAsync({
+          id: vehicleToEdit.id,
+          vehicle: {
+            ...updateData,
+            status: 'under_analysis',
+            isDefault: vehicleToEdit.isDefault
+          }
+        })
+      } else {
+        await createVehicle.mutateAsync({
+          ...updateData,
+          user_id: driver?.id || '',
+          type: vehicleData.type as VehicleType,
+          brand: vehicleData.brand as string,
+          model: vehicleData.model as string,
+          color: vehicleData.color as string,
+          plate: vehicleData.plate as string,
+          status: 'under_analysis',
+          isDefault: vehicles.length === 0 // First vehicle is default by default
+        } as any)
+      }
+
+      setShowModal(false)
+      setVehicleToEdit(null)
+      Alert.alert(
+        'Sucesso',
+        vehicleToEdit
+          ? 'Veículo atualizado e enviado para análise.'
+          : 'Veículo adicionado com sucesso!'
+      )
+      fetchAllVehicles()
+    } catch (error) {
+      console.error('Save error:', error)
+      Alert.alert('Erro', 'Não foi possível salvar o veículo.')
+    } finally {
+      setIsSubmitting(false)
+    }
+  }
+
+  // 🔹 Delete Vehicle
+  const handleDeleteVehicle = (vehicle: VehicleInterface) => {
+    Alert.alert(
+      'Excluir Veículo',
+      `Tem certeza que deseja remover ${vehicle.brand} ${vehicle.model}?`,
+      [
+        { text: 'Cancelar', style: 'cancel' },
+        {
+          text: 'Excluir',
+          style: 'destructive',
+          onPress: async () => {
+            try {
+              await deleteVehicle.mutateAsync(vehicle.id!)
+              fetchAllVehicles()
+            } catch (error) {
+              Alert.alert('Erro', 'Falha ao excluir veículo.')
+            }
+          }
+        }
+      ]
+    )
+  }
+
+  // 🔹 Open Modals
+  const handleEditVehicle = (vehicle: VehicleInterface) => {
+    setVehicleToEdit(vehicle)
+    setShowModal(true)
+  }
+
+  const handleAddVehicle = () => {
+    setVehicleToEdit(null)
+    setShowModal(true)
+  }
+
+  // 🔹 Render Status Badge
+  const renderStatusBadge = (status: VehicleInterface['status']) => {
+    switch (status) {
+      case 'validated':
+        return (
+          <View className="flex-row items-center bg-green-50 px-2 py-1 rounded-lg border border-green-100">
+            <CheckCircle2 size={12} color="#166534" />
+            <Text className="ml-1.5 text-[10px] uppercase font-bold text-green-800">
+              Aprovado
+            </Text>
+          </View>
+        )
+      case 'rejected':
+        return (
+          <View className="flex-row items-center bg-red-50 px-2 py-1 rounded-lg border border-red-100">
+            <XCircle size={12} color="#991B1B" />
+            <Text className="ml-1.5 text-[10px] uppercase font-bold text-red-800">
+              Rejeitado
+            </Text>
+          </View>
+        )
+      default:
+        return (
+          <View className="flex-row items-center bg-amber-50 px-2 py-1 rounded-lg border border-amber-100">
+            <Clock size={12} color="#B45309" />
+            <Text className="ml-1.5 text-[10px] uppercase font-bold text-amber-800">
+              Análise
+            </Text>
+          </View>
+        )
+    }
+  }
+
   if (isFetchingVehicles) {
     return (
       <BaseLoadingPage
         title="Meus Veículos"
-        primaryText={'Buscando veículos...'}
+        primaryText={'Carregando sua frota...'}
       />
     )
   }
 
   return (
-    <View className="relative flex-1 bg-gray-50 m-safe">
-      {/* Header */}
+    <View className="flex-1 bg-gray-50 m-safe">
       <PageHeader title="Meus Veículos" canGoBack={true} />
 
-      <ScrollView className="flex-1 p-4">
-        {/* Lista de Veículos */}
+      <ScrollView
+        className="flex-1 px-4 pt-4"
+        contentContainerStyle={{ paddingBottom: 100 }}
+        showsVerticalScrollIndicator={false}
+      >
         {vehicles.length > 0 ? (
           vehicles.map(vehicle => (
-            <View
+            <TouchableOpacity
               key={vehicle.id}
-              className="bg-white rounded-2xl shadow-sm mb-4 p-4 border border-gray-100"
+              activeOpacity={0.9}
+              onPress={() => handleEditVehicle(vehicle)}
+              className="bg-white rounded-3xl p-4 mb-4 shadow-sm border border-gray-100"
             >
-              <View className="flex-row items-start">
-                {/* Imagem do Veículo */}
-                <View className="mr-4">
+              {/* Header Card: Status & Default */}
+              <View className="flex-row justify-between items-center mb-3">
+                {renderStatusBadge(vehicle.status)}
+                {vehicle.isDefault && (
+                  <View className="flex-row items-center bg-blue-50 px-2 py-1 rounded-full border border-blue-100">
+                    <Star size={10} color="#2563EB" fill="#2563EB" />
+                    <Text className="ml-1 text-[10px] font-bold text-blue-700 uppercase">
+                      Principal
+                    </Text>
+                  </View>
+                )}
+              </View>
+
+              <View className="flex-row items-center">
+                {/* Image */}
+                <View className="relative">
                   {vehicle.image ? (
                     <Image
-                      source={{ uri: vehicle.image ?? '' }}
-                      className="w-20 h-20 rounded-xl"
+                      source={{ uri: vehicle.image }}
+                      className="w-20 h-20 rounded-2xl bg-gray-100"
                     />
                   ) : (
-                    <View className="w-20 h-20 rounded-xl bg-gray-100 items-center justify-center">
+                    <View className="w-20 h-20 rounded-2xl bg-gray-50 items-center justify-center border border-gray-100">
                       <Car size={28} color="#9CA3AF" />
                     </View>
                   )}
                 </View>
 
-                {/* Informações */}
-                <View className="flex-1">
-                  <View className="flex-row justify-between items-start mb-2">
-                    <View className="flex-1">
-                      <Text className="text-lg font-semibold text-gray-900 mb-1">
-                        {vehicle.brand} {vehicle.model}
-                      </Text>
-                      <Text className="text-sm text-gray-600 capitalize">
-                        {vehicle.type} • {vehicle.color}
-                      </Text>
-                    </View>
-
-                    {/* Status */}
-                    {renderStatus(vehicle.status || 'pending')}
-                  </View>
-
-                  {/* Ações */}
-                  <View className="flex-row justify-between items-center pt-2 border-t border-gray-100">
-                    <Text className="text-xs text-gray-500">
-                      {vehicle.isDefault && '⭐ Veículo Principal'}
+                {/* Info */}
+                <View className="flex-1 ml-4 justify-center">
+                  <Text className="text-lg font-bold text-gray-900 leading-tight">
+                    {vehicle.brand} {vehicle.model}
+                  </Text>
+                  <Text className="text-sm text-gray-500 font-medium mt-0.5 capitalize">
+                    {vehicle.color} • {vehicle.plate}
+                  </Text>
+                  <View className="flex-row mt-2">
+                    <Text className="text-xs bg-gray-100 text-gray-600 px-2 py-0.5 rounded capitalize">
+                      {vehicle.type === 'motorcycle' ? 'Moto' : 'Carro'}
                     </Text>
-
-                    <View className="flex-row gap-3">
-                      {vehicle.status !== 'validated' && (
-                        <TouchableOpacity
-                          onPress={() => handleEditVehicle(vehicle)}
-                          className="flex-row items-center"
-                        >
-                          <Edit3 size={16} color="#6B7280" />
-                          <Text className="ml-1 text-xs text-gray-600">
-                            Editar
-                          </Text>
-                        </TouchableOpacity>
-                      )}
-
-                      {!vehicle.isDefault && (
-                        <TouchableOpacity
-                          onPress={() => handleDeleteVehicle(vehicle)}
-                          className="flex-row items-center ml-3"
-                        >
-                          <Trash2 size={16} color="#EF4444" />
-                          <Text className="text-xs text-red-600">Excluir</Text>
-                        </TouchableOpacity>
-                      )}
-                    </View>
                   </View>
                 </View>
+
+                {/* Edit Icon (Subtle) */}
+                <View className="h-20 justify-center pl-2">
+                  <MoreVertical size={20} color="#E5E7EB" />
+                </View>
               </View>
-            </View>
+
+              {/* Actions Footer */}
+              {!vehicle.isDefault && (
+                <View className="mt-4 pt-3 border-t border-gray-50 flex-row justify-end">
+                  <TouchableOpacity
+                    onPress={() => handleDeleteVehicle(vehicle)}
+                    className="flex-row items-center px-3 py-1.5"
+                  >
+                    <Trash2 size={14} color="#EF4444" />
+                    <Text className="ml-1.5 text-xs font-semibold text-red-600">
+                      Remover
+                    </Text>
+                  </TouchableOpacity>
+                </View>
+              )}
+            </TouchableOpacity>
           ))
         ) : (
-          // Estado Vazio
-          <View className="items-center justify-center py-16">
-            <Car size={64} color="#D1D5DB" />
-            <Text className="text-lg font-medium text-gray-500 mt-4 text-center">
-              Nenhum veículo cadastrado
+          <View className="items-center justify-center py-20 opacity-80">
+            <View className="w-20 h-20 bg-gray-100 rounded-full items-center justify-center mb-4">
+              <Car size={32} color="#9CA3AF" />
+            </View>
+            <Text className="text-lg font-bold text-gray-900">
+              Nenhum veículo
             </Text>
-            <Text className="text-gray-400 text-center mt-2">
-              Adicione seu primeiro veículo para começar
+            <Text className="text-gray-500 text-center mt-2 px-10 leading-relaxed text-sm">
+              Adicione os veículos que você utilizará para trabalhar na
+              plataforma.
             </Text>
           </View>
         )}
 
-        {/* Informações */}
-        <View className="mt-6 p-4 bg-blue-50 rounded-xl">
-          <Text className="text-sm font-medium text-blue-800 mb-2">
-            💡 Informações
-          </Text>
-          <Text className="text-xs text-blue-600">
-            • Você pode ter múltiplos veículos
-          </Text>
-          <Text className="text-xs text-blue-600 mt-1">
-            • Um veículo precisa ser aprovado antes de usar
-          </Text>
-          <Text className="text-xs text-blue-600 mt-1">
-            • Foto do veículo ajuda na verificação
-          </Text>
-        </View>
+        {/* Info Box */}
+        {vehicles.length > 0 && (
+          <View className="bg-blue-50/50 rounded-2xl p-5 border border-blue-100/50 mb-6">
+            <Text className="text-sm font-bold text-blue-900 mb-2">
+              Dicas Importantes
+            </Text>
+            <View className="space-y-1">
+              <Text className="text-xs text-blue-800/80 leading-relaxed">
+                • Mantenha os dados do veículo sempre atualizados.
+              </Text>
+              <Text className="text-xs text-blue-800/80 leading-relaxed">
+                • A foto do veículo deve ser clara e mostrar a placa.
+              </Text>
+              <Text className="text-xs text-blue-800/80 leading-relaxed">
+                • Veículos em análise não podem receber corridas.
+              </Text>
+            </View>
+          </View>
+        )}
       </ScrollView>
 
-      {/* Botão Adicionar (sempre visível) */}
+      {/* FAB */}
       <TouchableOpacity
         onPress={handleAddVehicle}
         className="absolute bottom-10 left-6 p-5 flex-row items-center justify-center bg-red-600 rounded-full shadow-lg"
       >
-        <Plus size={22} color="white" />
+        <Plus size={28} color="white" />
       </TouchableOpacity>
 
-      {/* Modal */}
       <VehicleModal
         visible={showModal}
         onClose={() => {

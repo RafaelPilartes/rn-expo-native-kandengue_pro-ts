@@ -1,4 +1,4 @@
-// src/components/driver/VehicleModal.tsx
+// src/screens/Main/Profile/Vehicles/components/VehicleModal.tsx
 import React, { useState, useEffect } from 'react'
 import {
   Modal,
@@ -13,7 +13,7 @@ import {
   KeyboardAvoidingView,
   Platform
 } from 'react-native'
-import { X, Camera, Image as ImageIcon, Trash2 } from 'lucide-react-native'
+import { X, Camera, Image as ImageIcon, Trash2, Car } from 'lucide-react-native'
 import { useImagePicker } from '@/hooks/useImagePicker'
 import { ImagePickerPresets } from '@/services/picker/imagePickerPresets'
 import { VehicleInterface } from '@/interfaces/IVehicle'
@@ -29,9 +29,6 @@ type Props = {
   vehicleToEdit?: Partial<VehicleInterface> | null
   isEditing?: boolean
 }
-
-const PLACEHOLDER_IMAGE =
-  'https://via.placeholder.com/600x400.png?text=Foto+do+ve%C3%ADculo'
 
 export default function VehicleModal({
   visible,
@@ -53,11 +50,10 @@ export default function VehicleModal({
     image: undefined
   })
 
-  // 🔹 Reset form quando modal abre/fecha
+  // 🔹 Reset form when modal opens
   useEffect(() => {
     if (visible) {
       if (vehicleToEdit) {
-        // Modo edição
         setFormData({
           type: vehicleToEdit.type || 'motorcycle',
           brand: vehicleToEdit.brand || '',
@@ -69,7 +65,6 @@ export default function VehicleModal({
         })
         setSelectedFile(vehicleToEdit.image || null)
       } else {
-        // Modo criação
         setFormData({
           type: 'motorcycle',
           brand: '',
@@ -84,31 +79,23 @@ export default function VehicleModal({
     }
   }, [vehicleToEdit, visible])
 
-  // 🔹 Atualizar campo
   const handleChange = (field: keyof VehicleInterface, value: string) => {
     setFormData(prev => ({ ...prev, [field]: value }))
-
-    // Limpar erro do campo quando usuário digitar
     if (errors[field]) {
       setErrors(prev => ({ ...prev, [field]: '' }))
     }
   }
 
-  // 🔹 Validar formulário
   const validateForm = (): boolean => {
     const newErrors: Record<string, string> = {}
-
     if (!formData.brand?.trim()) newErrors.brand = 'Marca é obrigatória'
     if (!formData.model?.trim()) newErrors.model = 'Modelo é obrigatório'
     if (!formData.plate?.trim()) newErrors.plate = 'Placa é obrigatória'
     if (!formData.color?.trim()) newErrors.color = 'Cor é obrigatória'
-    if (!formData.plate?.trim()) newErrors.color = 'Placa é obrigatória'
-
     setErrors(newErrors)
     return Object.keys(newErrors).length === 0
   }
 
-  // Pick from gallery
   const handlePickImage = async () => {
     clearError()
     try {
@@ -116,21 +103,15 @@ export default function VehicleModal({
         ImagePickerPresets.PROFILE.config,
         ImagePickerPresets.PROFILE.validation
       )
-
       if (imageUri) {
         setSelectedFile(imageUri)
-        setFormData(prev => ({
-          ...prev,
-          image: imageUri
-        }))
+        setFormData(prev => ({ ...prev, image: imageUri }))
       }
     } catch (error) {
-      console.error('Erro ao abrir image picker:', error)
-      Alert.alert('Erro', 'Não foi possível abrir a galeria')
+      Alert.alert('Erro', 'Não foi possível acessar a galeria.')
     }
   }
 
-  // Take photo with camera
   const handleTakePhoto = async () => {
     clearError()
     try {
@@ -138,73 +119,34 @@ export default function VehicleModal({
         ImagePickerPresets.PROFILE.config,
         ImagePickerPresets.PROFILE.validation
       )
-
       if (imageUri) {
         setSelectedFile(imageUri)
-        setFormData(prev => ({
-          ...prev,
-          image: imageUri
-        }))
+        setFormData(prev => ({ ...prev, image: imageUri }))
       }
     } catch (error) {
-      console.error('Erro ao abrir image picker:', error)
-      Alert.alert('Erro', 'Não foi possível abrir a galeria')
+      Alert.alert('Erro', 'Não foi possível acessar a câmera.')
     }
   }
 
-  // 🔹 Remover imagem
   const handleRemoveImage = () => {
-    Alert.alert('Remover imagem', 'Deseja remover a imagem do veículo?', [
-      { text: 'Cancelar', style: 'cancel' },
-      {
-        text: 'Remover',
-        style: 'destructive',
-        onPress: () => setFormData(prev => ({ ...prev, image: undefined }))
-      }
-    ])
+    setFormData(prev => ({ ...prev, image: undefined }))
+    setSelectedFile(null)
   }
 
   const handleSave = () => {
     if (!validateForm()) return
-
-    // Formatar placa (remover espaços e colocar em maiúsculas)
     const formattedForm = {
       ...formData,
       plate: formData.plate?.replace(/\s/g, '').toUpperCase() || ''
     }
-
     onSave(formattedForm)
   }
 
-  // 🔹 Fechar modal com confirmação se houver alterações
-  const handleClose = () => {
-    const hasChanges =
-      formData.brand !== vehicleToEdit?.brand ||
-      formData.model !== vehicleToEdit?.model ||
-      formData.plate !== vehicleToEdit?.plate ||
-      formData.color !== vehicleToEdit?.color ||
-      formData.image !== vehicleToEdit?.image
-
-    if (hasChanges && !vehicleToEdit?.id) {
-      Alert.alert(
-        'Descartar alterações',
-        'Tem certeza que deseja descartar as alterações?',
-        [
-          { text: 'Continuar editando', style: 'cancel' },
-          { text: 'Descartar', style: 'destructive', onPress: onClose }
-        ]
-      )
-    } else {
-      onClose()
-    }
-  }
-
-  // 🔹 Verificar se pode salvar
+  // 🔹 Check if form has basic data
   const canSave =
     formData.brand?.trim() &&
     formData.model?.trim() &&
     formData.plate?.trim() &&
-    formData.color?.trim() &&
     !isEditing
 
   return (
@@ -212,131 +154,159 @@ export default function VehicleModal({
       visible={visible}
       animationType="slide"
       transparent
-      onRequestClose={handleClose}
+      onRequestClose={onClose}
     >
       <KeyboardAvoidingView
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
         style={{ flex: 1 }}
       >
         <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
-          <View className="flex-1 h-full bg-black/40 justify-end">
-            <View className="bg-white rounded-t-2xl p-6 max-h-[85%]">
+          <View className="flex-1 bg-black/60 justify-end">
+            <View className="bg-white rounded-t-3xl h-[85%] overflow-hidden">
               {/* Header */}
-              <View className="flex-row justify-between items-center mb-4">
-                <Text className="text-xl font-bold text-gray-900">
-                  {vehicleToEdit ? 'Editar Veículo' : 'Adicionar Veículo'}
-                </Text>
-                <TouchableOpacity onPress={onClose}>
-                  <X size={24} color="black" />
+              <View className="flex-row justify-between items-center p-6 border-b border-gray-100 bg-white z-10">
+                <View>
+                  <Text className="text-xl font-bold text-gray-900">
+                    {vehicleToEdit ? 'Editar Veículo' : 'Novo Veículo'}
+                  </Text>
+                  <Text className="text-gray-500 text-sm mt-0.5">
+                    Preencha os dados do veículo
+                  </Text>
+                </View>
+
+                <TouchableOpacity
+                  onPress={onClose}
+                  className="w-10 h-10 bg-gray-50 rounded-full items-center justify-center active:bg-gray-100"
+                >
+                  <X size={20} color="#374151" />
                 </TouchableOpacity>
               </View>
 
-              <ScrollView showsVerticalScrollIndicator={false}>
-                {/* Imagem */}
-                <View className="mb-2">
-                  {/* Titulo */}
-                  <Text className="text-gray-700 mb-2">Imagem do veículo</Text>
-
-                  <View>
-                    {/* Preview da Imagem */}
-                    <View className="w-full h-44 rounded-xl overflow-hidden bg-gray-100 mb-4 border-2 border-dashed border-gray-300">
+              <ScrollView
+                showsVerticalScrollIndicator={false}
+                contentContainerStyle={{ padding: 24, paddingBottom: 100 }}
+              >
+                {/* Image Section */}
+                <View className="items-center mb-6">
+                  <View className="relative w-full h-44 bg-gray-50 rounded-2xl border-2 border-dashed border-gray-200 overflow-hidden items-center justify-center">
+                    {formData.image ? (
                       <Image
-                        source={{ uri: formData.image || '' }}
-                        style={{ width: '100%', height: '100%' }}
+                        source={{ uri: formData.image }}
+                        className="w-full h-full"
                         resizeMode="cover"
                       />
-                    </View>
-
-                    {/* Overlay de loading */}
-                    {(!selectedFile || !formData.image) && (
-                      <View className="absolute inset-0 bg-black/50 items-center justify-center h-44 rounded-xl border-2 border-dashed border-gray-400">
-                        <View className="bg-white/90 rounded-full p-3">
-                          <Camera size={24} color="#374151" />
-                        </View>
+                    ) : (
+                      <View className="items-center opacity-40">
+                        <Car size={48} color="#9CA3AF" />
+                        <Text className="text-gray-900 font-medium mt-2">
+                          Foto da Viatura
+                        </Text>
+                        <Text className="text-gray-500 text-xs">
+                          Opcional, mas recomendado
+                        </Text>
                       </View>
                     )}
                   </View>
 
-                  {formData.image && (
+                  {/* Image Actions */}
+                  <View className="flex-row mt-4 gap-3 w-full">
                     <TouchableOpacity
-                      onPress={handleRemoveImage}
-                      className="mt-3 flex-row items-center justify-center"
+                      onPress={handlePickImage}
+                      className="flex-1 bg-blue-50 py-3 rounded-xl flex-row items-center justify-center active:bg-blue-100"
                     >
-                      <Trash2 size={16} color="red" />
-                      <Text className="ml-2 text-sm text-red-600">
-                        Remover imagem
+                      <ImageIcon size={18} color="#2563EB" />
+                      <Text className="ml-2 font-semibold text-blue-700 text-xs">
+                        Galeria
                       </Text>
                     </TouchableOpacity>
+
+                    <TouchableOpacity
+                      onPress={handleTakePhoto}
+                      className="flex-1 bg-blue-50 py-3 rounded-xl flex-row items-center justify-center active:bg-blue-100"
+                    >
+                      <Camera size={18} color="#2563EB" />
+                      <Text className="ml-2 font-semibold text-blue-700 text-xs">
+                        Câmera
+                      </Text>
+                    </TouchableOpacity>
+
+                    {formData.image && (
+                      <TouchableOpacity
+                        onPress={handleRemoveImage}
+                        className="w-12 items-center justify-center bg-red-50 rounded-xl active:bg-red-100"
+                      >
+                        <Trash2 size={18} color="#EF4444" />
+                      </TouchableOpacity>
+                    )}
+                  </View>
+                </View>
+
+                {/* Form Fields - Modern Inputs */}
+                <View className="space-y-4">
+                  <SelectField
+                    label="Tipo de Veículo"
+                    placeholder="Selecione..."
+                    options={vehicleTypeOptions}
+                    value={formData.type}
+                    error={errors.type}
+                    onSelect={value => handleChange('type', value)}
+                  />
+
+                  <View className="flex-row gap-4">
+                    <View className="flex-1">
+                      <InputField
+                        label="Marca"
+                        placeholder="Ex: Toyota"
+                        value={formData.brand}
+                        error={errors.brand}
+                        onChangeText={text => handleChange('brand', text)}
+                      />
+                    </View>
+                    <View className="flex-1">
+                      <InputField
+                        label="Modelo"
+                        placeholder="Ex: Yaris"
+                        value={formData.model}
+                        error={errors.model}
+                        onChangeText={text => handleChange('model', text)}
+                      />
+                    </View>
+                  </View>
+
+                  <InputField
+                    label="Matrícula"
+                    placeholder="LD-00-00-AA"
+                    value={formData.plate}
+                    error={errors.plate}
+                    onChangeText={text => handleChange('plate', text)}
+                    autoCapitalize="characters"
+                  />
+
+                  <InputField
+                    label="Cor"
+                    placeholder="Ex: Branco"
+                    value={formData.color}
+                    error={errors.color}
+                    onChangeText={text => handleChange('color', text)}
+                  />
+                </View>
+
+                {/* Submit Logic */}
+                <View className="mt-8">
+                  <PrimaryButton
+                    onPress={handleSave}
+                    label={
+                      vehicleToEdit ? 'Salvar Alterações' : 'Adicionar Veículo'
+                    }
+                    disabled={!canSave || isEditing}
+                    loading={isEditing}
+                  />
+                  {!canSave && (
+                    <Text className="text-center text-gray-400 text-xs mt-3">
+                      Preencha todos os campos obrigatórios (*)
+                    </Text>
                   )}
                 </View>
-
-                {/* Botões de Ação */}
-                <View className="flex-row gap-4 mb-4">
-                  <TouchableOpacity
-                    className="flex-1 flex-row items-center justify-center border border-gray-300 rounded-lg py-3"
-                    onPress={handlePickImage}
-                  >
-                    <ImageIcon size={16} color="black" />
-                    <Text className="ml-2 text-sm">Escolher foto</Text>
-                  </TouchableOpacity>
-
-                  <TouchableOpacity
-                    className="flex-1 flex-row items-center justify-center border border-gray-300 rounded-lg py-3"
-                    onPress={handleTakePhoto}
-                  >
-                    <Camera size={16} color="black" />
-                    <Text className="ml-2 text-sm">Tirar foto</Text>
-                  </TouchableOpacity>
-                </View>
-
-                {/* Campos */}
-                <SelectField
-                  label="Tipo"
-                  placeholder="Ex: Carro, Moto..."
-                  options={vehicleTypeOptions}
-                  value={formData.type}
-                  error={errors.type}
-                  onSelect={value => handleChange('type', value)}
-                />
-
-                <InputField
-                  label="Marca"
-                  placeholder="Ex: Toyota, Honda..."
-                  value={formData.brand}
-                  error={errors.brand}
-                  onChangeText={text => handleChange('brand', text)}
-                />
-                <InputField
-                  label="Modelo"
-                  placeholder="Ex: Corolla, CB 125..."
-                  value={formData.model}
-                  error={errors.model}
-                  onChangeText={text => handleChange('model', text)}
-                />
-                <InputField
-                  label="Placa"
-                  placeholder="Ex: LD-45-89"
-                  value={formData.plate}
-                  onChangeText={text => handleChange('plate', text)}
-                />
-                <InputField
-                  label="Cor"
-                  placeholder="Ex: Preto, Vermelho..."
-                  value={formData.color}
-                  error={errors.color}
-                  onChangeText={text => handleChange('color', text)}
-                />
-
-                {/* Botão salvar */}
-                <PrimaryButton
-                  className="mt-4"
-                  onPress={handleSave}
-                  label={
-                    vehicleToEdit ? 'Salvar Alterações' : 'Adicionar Veículo'
-                  }
-                  disabled={!canSave || isEditing}
-                  loading={isEditing}
-                />
               </ScrollView>
             </View>
           </View>
