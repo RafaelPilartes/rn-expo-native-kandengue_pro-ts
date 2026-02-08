@@ -45,7 +45,7 @@ export const useHomeViewModel = () => {
     isGettingAddress,
     fetchAddress,
     missingPermission,
-    requestPermission
+    triggerPermissionFlow
   } = useLocation()
 
   const { currentRide, resolveCurrentRide } = useTrackRide()
@@ -68,8 +68,8 @@ export const useHomeViewModel = () => {
   // Determine View State
   const viewState: HomeViewState = useMemo(() => {
     if (!currentDriverData) return 'LOADING'
-    if (currentRide) return 'RIDE_ACTIVE'
     if (missingPermission) return 'PERMISSION_DENIED'
+    if (currentRide) return 'RIDE_ACTIVE'
 
     // Check Account Issues
     if (currentDriverData.status !== 'active') return 'ACCOUNT_ISSUE'
@@ -122,7 +122,7 @@ export const useHomeViewModel = () => {
       handleDetailsRide,
       fetchAddress,
       requestCurrentLocation,
-      requestPermission,
+      triggerPermissionFlow,
       resolveCurrentRide
     },
     navigationMainStack // Export navigation directly to avoid nested actions issue

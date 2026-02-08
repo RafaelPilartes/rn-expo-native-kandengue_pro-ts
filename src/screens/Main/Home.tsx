@@ -63,7 +63,7 @@ export default function HomeScreen() {
       case 'PERMISSION_DENIED':
         return (
           <PermissionBlocker
-            onReqPermission={actions.requestPermission}
+            onReqPermission={actions.triggerPermissionFlow}
             message={
               currentRide
                 ? 'Para continuar com a corrida, você precisa permitir o acesso à sua localização.'

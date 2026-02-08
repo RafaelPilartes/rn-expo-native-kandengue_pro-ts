@@ -1,5 +1,6 @@
 // src/contexts/LocationContext.tsx
 import React, { createContext, useState, useRef, useEffect } from 'react'
+import { Alert, Linking, Platform } from 'react-native'
 import * as Location from 'expo-location'
 import { getAddressFromCoords } from '@/services/google/googleApi'
 import { BACKGROUND_LOCATION_TASK } from '@/services/location/BackgroundLocationTask'
@@ -30,6 +31,7 @@ interface LocationContextType {
   fetchAddress: (coords?: Coords) => Promise<void>
   clearError: () => void
   getCurrentTrackingMode: () => TrackingMode
+  triggerPermissionFlow: () => void
   requestPermission: () => Promise<boolean>
 }
 
@@ -64,19 +66,14 @@ export const LocationProvider = ({
   // --------------------------------------------------------
   const checkInitialPermissions = async () => {
     try {
-      const { status } = await Location.getForegroundPermissionsAsync()
-      if (status !== 'granted') {
-        setShowDisclosure(true)
-        setMissingPermission(true)
-      } else {
+      const { status, canAskAgain } =
+        await Location.getForegroundPermissionsAsync()
+
+      if (status === 'granted') {
         setMissingPermission(false)
-        // If foreground granted, check background (optional but good for tracking)
-        const { status: bgStatus } =
-          await Location.getBackgroundPermissionsAsync()
-        if (bgStatus !== 'granted') {
-          // You might decide to show disclosure again for background or handle differently
-          // For now, we ensure at least foreground is explicit
-        }
+      } else {
+        // Just set state, don't show modal automatically
+        setMissingPermission(true)
       }
     } catch (error) {
       console.warn('Error checking initial location permissions:', error)
@@ -89,40 +86,73 @@ export const LocationProvider = ({
     }
   }, [driver])
 
+  // Public method to start the flow
+  const triggerPermissionFlow = () => {
+    setShowDisclosure(true)
+  }
+
   const handleAcceptDisclosure = async () => {
     setShowDisclosure(false)
-    await requestPermission()
+    await requestInternalPermission()
   }
 
   const handleDeclineDisclosure = () => {
     setShowDisclosure(false)
+    // User explicitly declined disclosure
     setMissingPermission(true)
-    setError('Permissão de localização necessária para o funcionamento do app.')
   }
 
-  const requestPermission = async () => {
+  const requestInternalPermission = async (): Promise<boolean> => {
     try {
-      const { status: fgStatus } =
+      // 1. Check current status first
+      const { status: existingStatus, canAskAgain } =
+        await Location.getForegroundPermissionsAsync()
+
+      // 2. If already granted, we are good
+      if (existingStatus === 'granted') {
+        setMissingPermission(false)
+        return true
+      }
+
+      // 3. If denied and cannot ask again (blocked), open settings
+      if (existingStatus === 'denied' && !canAskAgain) {
+        Alert.alert(
+          'Permissão Negada',
+          'A permissão de localização foi negada permanentemente. Por favor, ative nas configurações do app.',
+          [
+            { text: 'Cancelar', style: 'cancel' },
+            {
+              text: 'Abrir Configurações',
+              onPress: () => Linking.openSettings()
+            }
+          ]
+        )
+        setMissingPermission(true)
+        return false
+      }
+
+      // 4. Request Permission
+      const { status: newStatus } =
         await Location.requestForegroundPermissionsAsync()
-      if (fgStatus !== 'granted') {
-        setError('Permissão de localização em uso negada.')
+
+      if (newStatus !== 'granted') {
+        setError('Permissão de localização necessária.')
         setMissingPermission(true)
         return false
       }
 
       setMissingPermission(false)
 
+      // 5. Check background permission (optional, separate flow usually)
       const { status: bgStatus } =
         await Location.requestBackgroundPermissionsAsync()
       if (bgStatus !== 'granted') {
-        console.warn(
-          'Permissão de background negada. O app funcionará apenas em foreground.'
-        )
+        console.warn('Background permission denied')
       }
 
       return true
     } catch (e) {
-      setError('Erro ao solicitar permissão de localização.')
+      setError('Erro ao solicitar permissão.')
       return false
     }
   }
@@ -161,7 +191,7 @@ export const LocationProvider = ({
     setIsLoading(true)
     setError(null)
 
-    const ok = await requestPermission()
+    const ok = await requestInternalPermission()
     if (!ok) {
       setIsLoading(false)
       return null
@@ -320,7 +350,7 @@ export const LocationProvider = ({
 
     setError(null)
 
-    const ok = await requestPermission()
+    const ok = await requestInternalPermission()
     if (!ok) {
       console.log('❌ [startTracking] Permission denied')
       return
@@ -453,7 +483,8 @@ export const LocationProvider = ({
         isGettingAddress,
 
         requestCurrentLocation,
-        requestPermission,
+        requestPermission: requestInternalPermission, // Exposed for legacy/internal use if needed
+        triggerPermissionFlow, // The new main entry point
         missingPermission,
         startTracking,
         stopTracking,
