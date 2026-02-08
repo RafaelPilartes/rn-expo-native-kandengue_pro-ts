@@ -4,7 +4,7 @@ const path = require('path')
 
 /**
  * Config plugin to fix React Native Firebase modular header warnings
- * Injects build setting into existing post_install hook
+ * Sets BOTH required build settings to fix the issue
  */
 const withDisableModularHeaders = config => {
   return withDangerousMod(config, [
@@ -24,13 +24,18 @@ const withDisableModularHeaders = config => {
 
       // Check if already patched
       if (
-        podfileContent.includes('CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER')
+        podfileContent.includes(
+          'CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER'
+        ) &&
+        podfileContent.includes(
+          'CLANG_WARN_NON_MODULAR_INCLUDE_IN_FRAMEWORK_MODULES'
+        )
       ) {
-        console.log('✅ Podfile already patched for modular headers')
+        console.log('✅ Podfile already patched')
         return config
       }
 
-      console.log('🔧 Patching Podfile to disable modular header warnings...')
+      console.log('🔧 Patching Podfile to fix Firebase modular headers...')
 
       const lines = podfileContent.split('\n')
       const patchedLines = []
@@ -41,24 +46,21 @@ const withDisableModularHeaders = config => {
         const line = lines[i]
         patchedLines.push(line)
 
-        // Find the post_install hook
         if (line.includes('post_install do |installer|') && !foundPostInstall) {
           foundPostInstall = true
 
-          // Detect indentation from next line
+          // Detect indentation
           if (i + 1 < lines.length && lines[i + 1].trim() !== '') {
-            const nextLine = lines[i + 1]
-            const match = nextLine.match(/^(\s+)/)
+            const match = lines[i + 1].match(/^(\s+)/)
             if (match) {
               indentation = match[1]
             }
           }
 
-          // Inject our code right after post_install declaration
+          // Inject BOTH build settings
           patchedLines.push('')
           patchedLines.push(
-            indentation +
-              '# Fix for React Native Firebase with useFrameworks: "static"'
+            indentation + '# Fix React Native Firebase with useFrameworks'
           )
           patchedLines.push(
             indentation + 'installer.pods_project.targets.each do |target|'
@@ -70,37 +72,37 @@ const withDisableModularHeaders = config => {
             indentation +
               "    config.build_settings['CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER'] = 'NO'"
           )
+          patchedLines.push(
+            indentation +
+              "    config.build_settings['CLANG_WARN_NON_MODULAR_INCLUDE_IN_FRAMEWORK_MODULES'] = 'NO'"
+          )
           patchedLines.push(indentation + '  end')
           patchedLines.push(indentation + 'end')
 
-          console.log(
-            `✅ Injected code into post_install hook with indentation: "${indentation}"`
-          )
+          console.log('✅ Injected Firebase fix into post_install')
         }
       }
 
       if (!foundPostInstall) {
-        // No post_install found, create one at the end
-        console.log('📝 No post_install found, creating new hook...')
+        console.log('📝 Creating new post_install hook...')
         patchedLines.push('')
-        patchedLines.push(
-          '# Fix for React Native Firebase with useFrameworks: "static"'
-        )
+        patchedLines.push('# Fix React Native Firebase with useFrameworks')
         patchedLines.push('post_install do |installer|')
         patchedLines.push('  installer.pods_project.targets.each do |target|')
         patchedLines.push('    target.build_configurations.each do |config|')
         patchedLines.push(
           "      config.build_settings['CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER'] = 'NO'"
         )
+        patchedLines.push(
+          "      config.build_settings['CLANG_WARN_NON_MODULAR_INCLUDE_IN_FRAMEWORK_MODULES'] = 'NO'"
+        )
         patchedLines.push('    end')
         patchedLines.push('  end')
         patchedLines.push('end')
       }
 
-      const patchedContent = patchedLines.join('\n')
-      fs.writeFileSync(podfilePath, patchedContent)
-
-      console.log('✅ Podfile successfully patched!')
+      fs.writeFileSync(podfilePath, patchedLines.join('\n'))
+      console.log('✅ Podfile patched successfully!')
 
       return config
     }
