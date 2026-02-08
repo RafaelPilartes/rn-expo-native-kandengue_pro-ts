@@ -1,10 +1,10 @@
-const { withDangerousMod, withPlugins } = require('@expo/config-plugins')
+const { withDangerousMod } = require('@expo/config-plugins')
 const fs = require('fs')
 const path = require('path')
 
 /**
- * Config plugin to disable CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER
- * This fixes React Native Firebase compatibility issues with useFrameworks: "static"
+ * Config plugin to fix React Native Firebase modular header warnings
+ * This runs during prebuild and modifies the Podfile
  */
 const withDisableModularHeaders = config => {
   return withDangerousMod(config, [
@@ -15,17 +15,26 @@ const withDisableModularHeaders = config => {
         'Podfile'
       )
 
-      let podfileContent = fs.readFileSync(podfilePath, 'utf-8')
-
-      // Check if our modification already exists
-      if (
-        podfileContent.includes('CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER')
-      ) {
+      if (!fs.existsSync(podfilePath)) {
+        console.warn('⚠️  Podfile not found, skipping patch')
         return config
       }
 
-      // Add post_install hook to disable the warning
+      let podfileContent = fs.readFileSync(podfilePath, 'utf-8')
+
+      // Check if already patched
+      if (
+        podfileContent.includes('CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER')
+      ) {
+        console.log('✅ Podfile already patched')
+        return config
+      }
+
+      console.log('🔧 Patching Podfile to fix modular headers...')
+
+      // Add post_install hook
       const postInstallHook = `
+# Fix for React Native Firebase with useFrameworks: "static"
 post_install do |installer|
   installer.pods_project.targets.each do |target|
     target.build_configurations.each do |config|
@@ -35,21 +44,11 @@ post_install do |installer|
 end
 `
 
-      // Append at the end of the file if no post_install exists
-      if (!podfileContent.includes('post_install')) {
-        podfileContent += '\n' + postInstallHook
-      } else {
-        // If post_install exists, we need to modify it
-        // This is more complex, so for now, let's just append a comment
-        console.warn(
-          '⚠️  post_install hook already exists in Podfile. Please add the following manually:'
-        )
-        console.warn(
-          "config.build_settings['CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER'] = 'NO'"
-        )
-      }
-
+      // Append at the end
+      podfileContent += '\n' + postInstallHook
       fs.writeFileSync(podfilePath, podfileContent)
+
+      console.log('✅ Podfile patched successfully!')
 
       return config
     }

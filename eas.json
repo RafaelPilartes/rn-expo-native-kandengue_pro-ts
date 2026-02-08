@@ -15,20 +15,12 @@
       "distribution": "internal",
       "ios": {
         "buildConfiguration": "Release"
-      },
-      "prebuildCommand": "chmod +x eas-hooks/postPrebuild.sh",
-      "postPrebuild": {
-        "command": "./eas-hooks/postPrebuild.sh"
       }
     },
     "production": {
       "autoIncrement": true,
       "ios": {
         "buildConfiguration": "Release"
-      },
-      "prebuildCommand": "chmod +x eas-hooks/postPrebuild.sh",
-      "postPrebuild": {
-        "command": "./eas-hooks/postPrebuild.sh"
       }
     }
   },
