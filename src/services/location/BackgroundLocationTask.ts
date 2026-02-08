@@ -83,7 +83,17 @@ TaskManager.defineTask(BACKGROUND_LOCATION_TASK, async ({ data, error }) => {
           })
         }
 
-        console.log('✅ Ponto de corrida salvo com sucesso')
+        // ALSO update driver's current location for real-time passenger view
+        await driverUseCase.update(driver.id as string, {
+          current_location: {
+            latitude: location.coords.latitude,
+            longitude: location.coords.longitude,
+            heading: location.coords.heading ?? undefined,
+            updated_at: new Date()
+          }
+        })
+
+        console.log('✅ Ponto de corrida E localização do motorista salvos')
       } else if (mode === 'AVAILABILITY') {
         // --------------------------------------------------------
         // AVAILABILITY MODE: Update driver.current_location

@@ -6,13 +6,30 @@
   "build": {
     "development": {
       "developmentClient": true,
-      "distribution": "internal"
+      "distribution": "internal",
+      "ios": {
+        "buildConfiguration": "Debug"
+      }
     },
     "preview": {
-      "distribution": "internal"
+      "distribution": "internal",
+      "ios": {
+        "buildConfiguration": "Release"
+      },
+      "prebuildCommand": "chmod +x eas-hooks/postPrebuild.sh",
+      "postPrebuild": {
+        "command": "./eas-hooks/postPrebuild.sh"
+      }
     },
     "production": {
-      "autoIncrement": true
+      "autoIncrement": true,
+      "ios": {
+        "buildConfiguration": "Release"
+      },
+      "prebuildCommand": "chmod +x eas-hooks/postPrebuild.sh",
+      "postPrebuild": {
+        "command": "./eas-hooks/postPrebuild.sh"
+      }
     }
   },
   "submit": {

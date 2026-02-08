@@ -26,7 +26,9 @@ export const useRidesState = (): RidesStateReturn => {
     if (!driver?.id) return
 
     console.log('🔹 [useRidesState] Iniciando listener de corridas idle')
-    const unsubscribeRides = listenAllRidesByField('status', 'idle', setRides)
+    const unsubscribeRides = listenAllRidesByField('status', 'idle', setRides, {
+      limit: 500
+    })
 
     return unsubscribeRides
   }, [driver?.id])
