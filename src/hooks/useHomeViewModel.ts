@@ -45,10 +45,15 @@ export const useHomeViewModel = () => {
     isGettingAddress,
     fetchAddress,
     missingPermission,
-    triggerPermissionFlow
+    triggerPermissionFlow,
+    isCheckingPermissions
   } = useLocation()
 
-  const { currentRide, resolveCurrentRide } = useTrackRide()
+  const {
+    currentRide,
+    resolveCurrentRide,
+    isLoading: isRideLoading
+  } = useTrackRide()
 
   // Initial Setup
   useEffect(() => {
@@ -67,7 +72,11 @@ export const useHomeViewModel = () => {
 
   // Determine View State
   const viewState: HomeViewState = useMemo(() => {
-    if (!currentDriverData) return 'LOADING'
+    // 1. Wait for Critical Checks
+    if (isCheckingPermissions || isRideLoading || !currentDriverData) {
+      return 'LOADING'
+    }
+
     if (currentRide) return 'RIDE_ACTIVE'
     if (missingPermission) return 'PERMISSION_DENIED'
 
@@ -80,7 +89,15 @@ export const useHomeViewModel = () => {
     if (!currentDriverData.is_online) return 'OFFLINE'
 
     return 'READY'
-  }, [currentDriverData, currentRide, missingPermission, vehicle, wallet])
+  }, [
+    currentDriverData,
+    currentRide,
+    missingPermission,
+    vehicle,
+    wallet,
+    isCheckingPermissions,
+    isRideLoading
+  ])
 
   // Determine specific account issue
   const accountIssue: AccountIssueType = useMemo(() => {

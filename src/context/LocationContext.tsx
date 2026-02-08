@@ -24,6 +24,7 @@ interface LocationContextType {
   isLoading: boolean
   isGettingAddress: boolean
   missingPermission: boolean
+  isCheckingPermissions: boolean
 
   requestCurrentLocation: () => Promise<Coords | null>
   startTracking: (mode: TrackingMode) => Promise<void>
@@ -50,6 +51,7 @@ export const LocationProvider = ({
   const [trackingMode, setTrackingMode] = useState<TrackingMode>('OFFLINE')
   const [isGettingAddress, setIsGettingAddress] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
+  const [isCheckingPermissions, setIsCheckingPermissions] = useState(true)
   const [error, setError] = useState<string | null>(null)
 
   // Explicit Disclosure State
@@ -77,6 +79,8 @@ export const LocationProvider = ({
       }
     } catch (error) {
       console.warn('Error checking initial location permissions:', error)
+    } finally {
+      setIsCheckingPermissions(false)
     }
   }
 
@@ -486,6 +490,7 @@ export const LocationProvider = ({
         requestPermission: requestInternalPermission, // Exposed for legacy/internal use if needed
         triggerPermissionFlow, // The new main entry point
         missingPermission,
+        isCheckingPermissions,
         startTracking,
         stopTracking,
         fetchAddress,
