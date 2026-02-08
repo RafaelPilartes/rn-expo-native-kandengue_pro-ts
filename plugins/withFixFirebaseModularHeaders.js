@@ -58,6 +58,7 @@ const withFixFirebaseModularHeaders = config => {
         "      config.build_settings['CLANG_WARN_MODULE_INCLUDE_IN_FRAMEWORK_HEADER'] = 'NO'",
         "      config.build_settings['CLANG_WARN_IMPLICIT_INT'] = 'NO'",
         "      config.build_settings['GCC_TREAT_WARNINGS_AS_ERRORS'] = 'NO'",
+        "      config.build_settings['OTHER_CFLAGS'] = '$(inherited) -Wno-implicit-int'",
         '    end',
         '  end',
         ''
