@@ -12,18 +12,26 @@ const PermissionBlocker: React.FC<PermissionBlockerProps> = ({
   message = 'Para continuar, você precisa permitir o acesso à sua localização.'
 }) => {
   return (
-    <View className="flex-1 items-center justify-center px-5 py-10">
-      <MapPin size={64} color="#EF4444" />
-      <Text className="text-center text-lg font-bold text-gray-800 mt-4">
-        Permissão de localização necessária
-      </Text>
-      <Text className="text-center text-gray-500 mt-2 mb-6">{message}</Text>
-      <TouchableOpacity
-        className="bg-primary-200 px-6 py-3 rounded-full"
-        onPress={onReqPermission}
-      >
-        <Text className="text-white font-bold">Permitir Localização</Text>
-      </TouchableOpacity>
+    // 1. Container invisível que ocupa tudo e centraliza
+    <View className="items-center justify-center bg-transparent p-8">
+      {/* 2. O Cartão Branco visível */}
+      <View className="bg-white w-full rounded-2xl items-center p-8 shadow-sm">
+        <MapPin size={64} color="#EF4444" />
+        <Text className="text-center text-2xl font-bold text-gray-800 mt-4">
+          Permitir acesso à localização
+        </Text>
+        <Text className="text-base text-center text-gray-500 mt-2 mb-6">
+          {message}
+        </Text>
+        <TouchableOpacity
+          className="w-full bg-primary-200 px-6 py-4 rounded-full items-center justify-center"
+          onPress={onReqPermission}
+        >
+          <Text className="text-base text-white font-bold">
+            Permitir Localização
+          </Text>
+        </TouchableOpacity>
+      </View>
     </View>
   )
 }
