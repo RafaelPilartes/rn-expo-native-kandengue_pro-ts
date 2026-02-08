@@ -81,16 +81,13 @@
     "plugins": [
       "@react-native-firebase/app",
       "@react-native-firebase/auth",
+      "./plugins/withFixFirebaseModularHeaders",
       [
         "expo-build-properties",
         {
           "ios": {
             "useFrameworks": "static",
-            "deploymentTarget": "15.1",
-            "xcodeCompilerFlags": [
-              "-Wno-quoted-include-in-framework-header",
-              "-Wno-non-modular-include-in-framework-module"
-            ]
+            "deploymentTarget": "15.1"
           },
           "android": {
             "compileSdkVersion": 35,
