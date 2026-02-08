@@ -68,8 +68,8 @@ export const useHomeViewModel = () => {
   // Determine View State
   const viewState: HomeViewState = useMemo(() => {
     if (!currentDriverData) return 'LOADING'
-    if (missingPermission) return 'PERMISSION_DENIED'
     if (currentRide) return 'RIDE_ACTIVE'
+    if (missingPermission) return 'PERMISSION_DENIED'
 
     // Check Account Issues
     if (currentDriverData.status !== 'active') return 'ACCOUNT_ISSUE'

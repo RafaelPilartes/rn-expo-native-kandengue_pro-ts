@@ -2,6 +2,14 @@ import React, { useEffect, useCallback } from 'react'
 import { View } from 'react-native'
 import { StatusBar } from 'expo-status-bar'
 import * as SplashScreen from 'expo-splash-screen'
+import {
+  useFonts,
+  Inter_400Regular,
+  Inter_500Medium,
+  Inter_600SemiBold,
+  Inter_700Bold,
+  Inter_800ExtraBold
+} from '@expo-google-fonts/inter'
 
 import '@/styles/global.css'
 import '@/i18n'
@@ -33,6 +41,14 @@ function App() {
   const { changeLanguage, ready } = useTranslation()
   const [appIsReady, setAppIsReady] = React.useState(false)
 
+  const [fontsLoaded] = useFonts({
+    Inter_400Regular,
+    Inter_500Medium,
+    Inter_600SemiBold,
+    Inter_700Bold,
+    Inter_800ExtraBold
+  })
+
   useEffect(() => {
     async function prepare() {
       try {
@@ -49,11 +65,11 @@ function App() {
   }, [])
 
   useEffect(() => {
-    if (ready && appIsReady) {
+    if (ready && appIsReady && fontsLoaded) {
       // Only hide splash screen once
       SplashScreen.hideAsync()
     }
-  }, [ready, appIsReady])
+  }, [ready, appIsReady, fontsLoaded])
 
   // Apply language only when it changes and we are ready
   // We avoid putting 'changeLanguage' in the dependency array to break the loop
@@ -63,9 +79,9 @@ function App() {
     if (ready && language) {
       changeLanguage(language)
     }
-  }, [ready, language]) // Removed changeLanguage from deps to be safe, though useTranslation fixes are better.
+  }, [ready, appIsReady, fontsLoaded]) // Removed changeLanguage from deps to be safe, though useTranslation fixes are better.
 
-  if (!appIsReady || !ready) {
+  if (!appIsReady || !ready || !fontsLoaded) {
     return null
   }
 
