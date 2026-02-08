@@ -32,5 +32,5 @@
   "swipe_hint": "Deslize",
   "swipe": "Deslize",
   "location_disclosure_title": "Accès à la localisation requis",
-  "location_disclosure_message": "Kandengue Pro collecte des données de localisation pour permettre le suivi en temps réel, les alertes de sécurité et les fonctionnalités d'urgence SOS même lorsque l'application est fermée ou inutilisée."
+  "location_disclosure_message": "Kandengue Pro collecte des données de localisation en premier plan et en second plan pour permettre le suivi en temps réel, les alertes de sécurité et les fonctionnalités d'urgence SOS même lorsque l'application est fermée ou inutilisée."
 }

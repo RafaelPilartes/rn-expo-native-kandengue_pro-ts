@@ -10,6 +10,7 @@ import {
 } from '@/types/trackingTypes'
 import { useAuthStore } from '@/storage/store/useAuthStore'
 import { useDriversViewModel } from '@/viewModels/DriverViewModel'
+import LocationDisclosureModal from '@/components/modals/LocationDisclosureModal'
 
 type Coords = { latitude: number; longitude: number }
 
@@ -21,6 +22,7 @@ interface LocationContextType {
   error: string | null
   isLoading: boolean
   isGettingAddress: boolean
+  missingPermission: boolean
 
   requestCurrentLocation: () => Promise<Coords | null>
   startTracking: (mode: TrackingMode) => Promise<void>
@@ -28,6 +30,7 @@ interface LocationContextType {
   fetchAddress: (coords?: Coords) => Promise<void>
   clearError: () => void
   getCurrentTrackingMode: () => TrackingMode
+  requestPermission: () => Promise<boolean>
 }
 
 export const LocationContext = createContext<LocationContextType>(
@@ -47,22 +50,67 @@ export const LocationProvider = ({
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
+  // Explicit Disclosure State
+  const [showDisclosure, setShowDisclosure] = useState(false)
+  const [missingPermission, setMissingPermission] = useState(false)
+
   const watchRef = useRef<Location.LocationSubscription | null>(null)
 
   const { driver, currentMissionId } = useAuthStore()
   const { updateDriver } = useDriversViewModel()
 
   // --------------------------------------------------------
-  // 1) Permission Request
+  // 1) Permission Request Logic
   // --------------------------------------------------------
+  const checkInitialPermissions = async () => {
+    try {
+      const { status } = await Location.getForegroundPermissionsAsync()
+      if (status !== 'granted') {
+        setShowDisclosure(true)
+        setMissingPermission(true)
+      } else {
+        setMissingPermission(false)
+        // If foreground granted, check background (optional but good for tracking)
+        const { status: bgStatus } =
+          await Location.getBackgroundPermissionsAsync()
+        if (bgStatus !== 'granted') {
+          // You might decide to show disclosure again for background or handle differently
+          // For now, we ensure at least foreground is explicit
+        }
+      }
+    } catch (error) {
+      console.warn('Error checking initial location permissions:', error)
+    }
+  }
+
+  useEffect(() => {
+    if (driver) {
+      checkInitialPermissions()
+    }
+  }, [driver])
+
+  const handleAcceptDisclosure = async () => {
+    setShowDisclosure(false)
+    await requestPermission()
+  }
+
+  const handleDeclineDisclosure = () => {
+    setShowDisclosure(false)
+    setMissingPermission(true)
+    setError('Permissão de localização necessária para o funcionamento do app.')
+  }
+
   const requestPermission = async () => {
     try {
       const { status: fgStatus } =
         await Location.requestForegroundPermissionsAsync()
       if (fgStatus !== 'granted') {
         setError('Permissão de localização em uso negada.')
+        setMissingPermission(true)
         return false
       }
+
+      setMissingPermission(false)
 
       const { status: bgStatus } =
         await Location.requestBackgroundPermissionsAsync()
@@ -405,6 +453,8 @@ export const LocationProvider = ({
         isGettingAddress,
 
         requestCurrentLocation,
+        requestPermission,
+        missingPermission,
         startTracking,
         stopTracking,
         fetchAddress,
@@ -413,6 +463,11 @@ export const LocationProvider = ({
       }}
     >
       {children}
+      <LocationDisclosureModal
+        visible={showDisclosure}
+        onAccept={handleAcceptDisclosure}
+        onDecline={handleDeclineDisclosure}
+      />
     </LocationContext.Provider>
   )
 }

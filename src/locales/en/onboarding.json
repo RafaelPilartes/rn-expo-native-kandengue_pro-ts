@@ -32,5 +32,5 @@
   "swipe_hint": "Swipe Hint",
   "swipe": "Swipe",
   "location_disclosure_title": "Location Access Required",
-  "location_disclosure_message": "Kandengue Pro collects location data to enable real-time tracking, safety alerts, and emergency SOS features even when the app is closed or not in use."
+  "location_disclosure_message": "Kandengue Pro collects location data in foreground and background to enable real-time tracking, safety alerts, and emergency SOS features even when the app is closed or not in use."
 }
