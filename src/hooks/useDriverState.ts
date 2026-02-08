@@ -77,6 +77,7 @@ export const useDriverState = (): DriverStateReturn => {
           id: currentDriverData.id,
           driver: {
             is_online: true,
+            is_invisible: false, // Initialize if doesn't exist
             current_location: {
               ...location,
               updated_at: new Date()

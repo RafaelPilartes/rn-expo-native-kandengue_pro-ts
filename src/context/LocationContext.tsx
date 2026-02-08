@@ -252,6 +252,11 @@ export const LocationProvider = ({
   // 7) Start Tracking (Mode-aware)
   // --------------------------------------------------------
   const startTracking = async (mode: TrackingMode) => {
+    console.log(`🎬 [startTracking] Called with mode: ${mode}`)
+    console.log(
+      `📊 [startTracking] Current state: tracking=${isTracking}, mode=${trackingMode}`
+    )
+
     if (isTracking && trackingMode === mode) {
       console.log(`📍 Já rastreando no modo ${mode}`)
       return
@@ -259,29 +264,42 @@ export const LocationProvider = ({
 
     // Stop existing tracking first
     if (isTracking) {
+      console.log(
+        `🛑 [startTracking] Stopping existing ${trackingMode} tracking...`
+      )
       await stopTracking()
     }
 
     setError(null)
 
     const ok = await requestPermission()
-    if (!ok) return
+    if (!ok) {
+      console.log('❌ [startTracking] Permission denied')
+      return
+    }
+
+    // Set mode BEFORE starting async operations
+    console.log(`🎯 [startTracking] Setting tracking mode to: ${mode}`)
+    setTrackingMode(mode)
+    setIsTracking(true)
 
     // Handle different modes
     if (mode === 'AVAILABILITY') {
+      console.log('📡 [startTracking] Starting AVAILABILITY mode...')
       await startPeriodicSnapshot()
-      setIsTracking(true)
-      setTrackingMode('AVAILABILITY')
     } else if (mode === 'RIDE') {
+      console.log('🚗 [startTracking] Starting RIDE mode...')
       await startPreciseTracking()
-      setIsTracking(true)
-      setTrackingMode('RIDE')
     } else {
       // OFFLINE or INVISIBLE - no tracking
       console.log(`🔕 Modo ${mode} - sem rastreamento`)
-      setTrackingMode(mode)
       setIsTracking(false)
+      setTrackingMode(mode)
     }
+
+    console.log(
+      `✅ [startTracking] Completed. Mode: ${mode}, Tracking: ${mode === 'AVAILABILITY' || mode === 'RIDE'}`
+    )
   }
 
   // --------------------------------------------------------
@@ -328,24 +346,50 @@ export const LocationProvider = ({
   // 11) Auto-switch tracking mode based on driver state
   // --------------------------------------------------------
   useEffect(() => {
+    console.log('🔄 [LocationContext] useEffect triggered', {
+      hasDriver: !!driver,
+      driver: driver,
+      driverId: driver?.id,
+      is_online: driver?.is_online,
+      is_invisible: driver?.is_invisible,
+      currentMissionId,
+      currentTrackingMode: trackingMode,
+      isCurrentlyTracking: isTracking
+    })
+
     if (!driver) {
+      console.log('⚠️ [LocationContext] No driver, stopping tracking')
       if (isTracking) stopTracking()
       return
     }
 
     const mode = determineTrackingMode(
       driver.is_online,
-      driver.is_invisible ?? false,
+      driver.is_invisible,
       currentMissionId
     )
 
-    console.log(`🔄 Modo de rastreamento determinado: ${mode}`)
+    console.log(`🎯 [LocationContext] Mode determined: ${mode}`)
+    console.log(
+      `📊 [LocationContext] Current state: tracking=${isTracking}, mode=${trackingMode}`
+    )
 
     if (mode === 'RIDE' || mode === 'AVAILABILITY') {
+      console.log(`✅ [LocationContext] Starting ${mode} tracking...`)
       startTracking(mode)
     } else {
       // OFFLINE or INVISIBLE
-      if (isTracking) stopTracking()
+      console.log(
+        `🛑 [LocationContext] Mode is ${mode}, checking if need to stop...`
+      )
+      if (isTracking) {
+        console.log('🛑 [LocationContext] Stopping tracking')
+        stopTracking()
+      } else {
+        console.log(
+          'ℹ️ [LocationContext] Already not tracking, no action needed'
+        )
+      }
     }
   }, [driver?.is_online, driver?.is_invisible, currentMissionId])
 

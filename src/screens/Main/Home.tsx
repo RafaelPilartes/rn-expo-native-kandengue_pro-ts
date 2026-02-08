@@ -47,6 +47,7 @@ export default function HomeScreen() {
 
   // Solicitar localização quando o motorista ficar online
   useEffect(() => {
+    console.log('Driver DATA =>', currentDriverData)
     if (
       currentDriverData?.is_online &&
       currentDriverData?.status === 'active'
