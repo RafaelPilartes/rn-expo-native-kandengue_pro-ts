@@ -49,14 +49,15 @@ const withFixFirebaseModularHeaders = config => {
       const fixCode = [
         '',
         '  # FIREBASE_MODULAR_HEADERS_FIX',
-        '  # Fix for React Native Firebase with useFrameworks: static',
-        '  # Disables modular header warnings that are treated as errors',
+        '  # Fix for React Native Firebase + C99 issues on Xcode 15 / EAS',
         '  installer.pods_project.targets.each do |target|',
         '    target.build_configurations.each do |config|',
-        "      config.build_settings['CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER'] = 'NO'",
         "      config.build_settings['CLANG_ALLOW_NON_MODULAR_INCLUDES_IN_FRAMEWORK_MODULES'] = 'YES'",
         "      config.build_settings['CLANG_WARN_NON_MODULAR_INCLUDE_IN_FRAMEWORK_MODULE'] = 'NO'",
+        "      config.build_settings['CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER'] = 'NO'",
         "      config.build_settings['CLANG_WARN_MODULE_INCLUDE_IN_FRAMEWORK_HEADER'] = 'NO'",
+        "      config.build_settings['CLANG_WARN_IMPLICIT_INT'] = 'NO'",
+        "      config.build_settings['GCC_TREAT_WARNINGS_AS_ERRORS'] = 'NO'",
         '    end',
         '  end',
         ''
