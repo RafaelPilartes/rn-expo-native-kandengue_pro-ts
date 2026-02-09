@@ -68,17 +68,14 @@ export const LocationProvider = ({
   // --------------------------------------------------------
   const checkInitialPermissions = async () => {
     try {
-      const { status, canAskAgain } =
-        await Location.getForegroundPermissionsAsync()
+      const { status } = await Location.getForegroundPermissionsAsync()
 
-      if (status === 'granted') {
-        setMissingPermission(false)
-      } else {
-        // Just set state, don't show modal automatically
-        setMissingPermission(true)
-      }
+      // Update missingPermission based on current status
+      setMissingPermission(status !== 'granted')
     } catch (error) {
       console.warn('Error checking initial location permissions:', error)
+      // On error, assume permission is missing to be safe
+      setMissingPermission(true)
     } finally {
       setIsCheckingPermissions(false)
     }
