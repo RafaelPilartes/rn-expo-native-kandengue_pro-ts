@@ -1,5 +1,5 @@
 import { useState, useCallback, useRef, useEffect } from 'react'
-import { Alert, Platform, PermissionsAndroid } from 'react-native'
+import { Platform, PermissionsAndroid } from 'react-native'
 import {
   ImagePickerService,
   ImageValidationRules,
@@ -9,6 +9,8 @@ import type {
   CameraOptions,
   ImageLibraryOptions
 } from 'react-native-image-picker'
+import { useAlert } from '@/context/AlertContext'
+import { error } from 'console'
 
 interface UseImagePickerReturn {
   pickImage: (
@@ -28,6 +30,7 @@ export const useImagePicker = (): UseImagePickerReturn => {
   const [isUploading, setIsUploading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const isMounted = useRef(true)
+  const { showAlert } = useAlert()
 
   useEffect(() => {
     return () => {
@@ -74,7 +77,12 @@ export const useImagePicker = (): UseImagePickerReturn => {
           safeSetState(setError as any, msg)
 
           if (!result.cancelled) {
-            Alert.alert('Erro', msg)
+            showAlert({
+              title: 'Erro',
+              message: msg,
+              type: 'error',
+              buttons: [{ text: 'OK' }]
+            })
           }
           return null
         }
@@ -91,13 +99,18 @@ export const useImagePicker = (): UseImagePickerReturn => {
         const errorMessage =
           error instanceof Error ? error.message : 'Erro desconhecido'
         safeSetState(setError as any, errorMessage)
-        Alert.alert('Erro', 'Não foi possível processar a imagem')
+        showAlert({
+          title: 'Erro',
+          message: 'Não foi possível processar a imagem',
+          type: 'error',
+          buttons: [{ text: 'OK' }]
+        })
         return null
       } finally {
         safeSetState(setIsUploading as any, false)
       }
     },
-    [safeSetState]
+    [safeSetState, showAlert]
   )
 
   const pickImage = useCallback(
@@ -129,10 +142,13 @@ export const useImagePicker = (): UseImagePickerReturn => {
           )
           if (granted !== PermissionsAndroid.RESULTS.GRANTED) {
             console.warn('Permissão de câmera negada')
-            Alert.alert(
-              'Permissão negada',
-              'É necessário permitir o acesso à câmera para continuar.'
-            )
+            showAlert({
+              title: 'Permissão negada',
+              message:
+                'É necessário permitir o acesso à câmera para continuar.',
+              type: 'warning',
+              buttons: [{ text: 'OK' }]
+            })
             return null
           }
         } catch (err) {

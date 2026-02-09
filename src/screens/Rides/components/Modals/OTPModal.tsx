@@ -1,49 +1,51 @@
 // src/screens/Ride/components/OTPModal.tsx
-import React, { useState } from 'react';
-import {
-  Modal,
-  View,
-  Text,
-  TouchableOpacity,
-  TextInput,
-  Alert,
-} from 'react-native';
-import { X, Shield } from 'lucide-react-native';
+import React, { useState } from 'react'
+import { Modal, View, Text, TouchableOpacity, TextInput } from 'react-native'
+import { X, Shield } from 'lucide-react-native'
+
+import { useAlert } from '@/context/AlertContext'
 
 interface OTPModalProps {
-  visible: boolean;
-  onClose: () => void;
-  onConfirm: (otpCode: string) => void;
-  customerName: string;
+  visible: boolean
+  onClose: () => void
+  onConfirm: (otpCode: string) => void
+  customerName: string
 }
 
 export const OTPModal: React.FC<OTPModalProps> = ({
   visible,
   onClose,
   onConfirm,
-  customerName,
+  customerName
 }) => {
-  const [otpCode, setOtpCode] = useState('');
-  const [isLoading, setIsLoading] = useState(false);
+  const [otpCode, setOtpCode] = useState('')
+  const [isLoading, setIsLoading] = useState(false)
+
+  const { showAlert } = useAlert()
 
   const handleConfirm = async () => {
     if (otpCode.length !== 4) {
-      Alert.alert('Erro', 'Por favor, digite o código de 4 dígitos');
-      return;
+      showAlert({
+        title: 'Erro',
+        message: 'Por favor, digite o código de 4 dígitos',
+        type: 'error',
+        buttons: [{ text: 'OK' }]
+      })
+      return
     }
 
-    setIsLoading(true);
+    setIsLoading(true)
     try {
-      await onConfirm(otpCode);
+      await onConfirm(otpCode)
     } finally {
-      setIsLoading(false);
+      setIsLoading(false)
     }
-  };
+  }
 
   const handleClose = () => {
-    setOtpCode('');
-    onClose();
-  };
+    setOtpCode('')
+    onClose()
+  }
 
   return (
     <Modal
@@ -122,5 +124,5 @@ export const OTPModal: React.FC<OTPModalProps> = ({
         </View>
       </View>
     </Modal>
-  );
-};
+  )
+}

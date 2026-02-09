@@ -9,7 +9,7 @@ import { WalletInterface } from '@/interfaces/IWallet'
 import { VehicleInterface } from '@/interfaces/IVehicle'
 import { useAuthStore } from '@/storage/store/useAuthStore'
 import ROUTES from '@/constants/routes'
-import { Alert } from 'react-native'
+import { useAlert } from '@/context/AlertContext'
 
 // Custom Hooks
 import { useDriverState } from '@/hooks/useDriverState'
@@ -54,6 +54,7 @@ export const AppProvider: React.FC<AppProviderProps> = ({ children }) => {
 
   // Store
   const { driver, setCurrentMissionId } = useAuthStore()
+  const { showAlert } = useAlert()
 
   // Estados via Custom Hooks
   const { currentDriverData, toggleOnline, toggleInvisible, updateVehicle } =
@@ -93,11 +94,12 @@ export const AppProvider: React.FC<AppProviderProps> = ({ children }) => {
         return
       }
       if (!ride.pickup || !ride.dropoff) {
-        Alert.alert(
-          'Erro na localização',
-          'A corrida selecionada não possui localização.',
-          [{ text: 'OK' }]
-        )
+        showAlert({
+          title: 'Erro na localização',
+          message: 'A corrida selecionada não possui localização.',
+          type: 'error',
+          buttons: [{ text: 'OK' }]
+        })
         return
       }
 
@@ -105,21 +107,23 @@ export const AppProvider: React.FC<AppProviderProps> = ({ children }) => {
       const rideById = await fetchRideById(ride.id)
 
       if (!rideById) {
-        Alert.alert(
-          'Erro ao buscar corrida',
-          'A corrida selecionada foi excluida ou não existe.',
-          [{ text: 'OK' }]
-        )
+        showAlert({
+          title: 'Erro ao buscar corrida',
+          message: 'A corrida selecionada foi excluida ou não existe.',
+          type: 'error',
+          buttons: [{ text: 'OK' }]
+        })
         return
       }
 
       if (rideById.status !== 'idle') {
         if (rideById.driver?.id !== driver?.id) {
-          Alert.alert(
-            'Corrida indisponível',
-            'A corrida selecionada já não está disponível.',
-            [{ text: 'OK' }]
-          )
+          showAlert({
+            title: 'Corrida indisponível',
+            message: 'A corrida selecionada já não está disponível.',
+            type: 'warning',
+            buttons: [{ text: 'OK' }]
+          })
           setCurrentMissionId(null)
           return
         }
@@ -142,7 +146,13 @@ export const AppProvider: React.FC<AppProviderProps> = ({ children }) => {
         }
       })
     },
-    [navigationHomeStack, fetchRideById, driver?.id, setCurrentMissionId]
+    [
+      navigationHomeStack,
+      fetchRideById,
+      driver?.id,
+      setCurrentMissionId,
+      showAlert
+    ]
   )
 
   const handleNotifications = useCallback((): void => {

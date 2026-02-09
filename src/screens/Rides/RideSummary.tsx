@@ -1,6 +1,6 @@
 // src/screens/Ride/RideSummaryScreen.tsx
 import React, { useEffect, useRef, useState, useMemo } from 'react'
-import { StyleSheet, Alert, Linking, Platform } from 'react-native'
+import { StyleSheet, Linking, Platform } from 'react-native'
 import MapView from '@/components/map/MapView'
 
 import { useRideSummary } from '@/hooks/useRideSummary'
@@ -17,6 +17,7 @@ import { useLocation } from '@/hooks/useLocation'
 import { calculateHeading } from '@/helpers/bearing'
 import { converter } from '@/utils/converter'
 import { RideFareInterface } from '@/interfaces/IRideFare'
+import { useAlert } from '@/context/AlertContext'
 
 // New Components
 import { RideMapContainer } from './components/Map/RideMapContainer'
@@ -44,22 +45,10 @@ export default function RideSummaryScreen() {
     requestCurrentLocation
   } = useLocation()
 
+  const { showAlert } = useAlert()
+
   const mapRef = useRef<any>(null)
   const bottomSheetRef = useRef<BottomSheetModal>(null)
-
-  // Estados modais
-  // const [showOTPModal, setShowOTPModal] = useState(false) // Seems unused directly in logic, handled by RideConfirmationFlow? Keeping if needed.
-  // Actually logic used setShowOTPModal(false) in handleCompleteWithOTP.
-  // But RideConfirmationFlow controls its own visibility? No, passed visible prop.
-  // rideSummary used: const [showOTPModal, setShowOTPModal] = useState(false) but rendered OTPModal conditionally? No.
-  // It rendered RideConfirmationFlow with showConfirmationFlow.
-  // Let's check original...
-  // Line 65: const [showOTPModal, setShowOTPModal] = useState(false)
-  // Line 255: setShowOTPModal(false) in handleCompleteWithOTP
-  // Line 31: import { OTPModal }
-  // But OTPModal NOT used in JSX.
-  // So showOTPModal might be dead code or leftover?
-  // Use showConfirmationFlow instead.
 
   const [showCancelModal, setShowCancelModal] = useState(false)
   const [showArrivalModal, setShowArrivalModal] = useState(false)
@@ -70,7 +59,12 @@ export default function RideSummaryScreen() {
     const coords = userLocation ?? (await requestCurrentLocation())
 
     if (!coords) {
-      Alert.alert('Erro', 'Não foi possível obter localização.')
+      showAlert({
+        title: 'Erro',
+        message: 'Não foi possível obter localização.',
+        type: 'error',
+        buttons: [{ text: 'OK' }]
+      })
       return
     }
 
@@ -149,7 +143,12 @@ export default function RideSummaryScreen() {
 
     if (url) {
       Linking.openURL(url).catch(() => {
-        Alert.alert('Erro', 'Não foi possível abrir o aplicativo de mapas')
+        showAlert({
+          title: 'Erro',
+          message: 'Não foi possível abrir o aplicativo de mapas',
+          type: 'error',
+          buttons: [{ text: 'OK' }]
+        })
       })
     }
   }
@@ -161,7 +160,12 @@ export default function RideSummaryScreen() {
         setShowArrivalModal(false)
         await handleArrivedToPickup()
       } catch (error) {
-        Alert.alert('Erro', 'Falha ao confirmar chegada')
+        showAlert({
+          title: 'Erro',
+          message: 'Falha ao confirmar chegada',
+          type: 'error',
+          buttons: [{ text: 'OK' }]
+        })
       }
     }
 
@@ -170,17 +174,23 @@ export default function RideSummaryScreen() {
         setShowArrivalModal(false)
         await handleArrivedToDropoff()
       } catch (error) {
-        Alert.alert('Erro', 'Falha ao confirmar chegada')
+        showAlert({
+          title: 'Erro',
+          message: 'Falha ao confirmar chegada',
+          type: 'error',
+          buttons: [{ text: 'OK' }]
+        })
       }
     }
   }
 
   const handleAcceptRide = async () => {
     try {
-      Alert.alert(
-        'Corrida aceita?',
-        'Tem certeza que deseja aceitar essa corrida?',
-        [
+      showAlert({
+        title: 'Corrida aceita?',
+        message: 'Tem certeza que deseja aceitar essa corrida?',
+        type: 'info',
+        buttons: [
           {
             text: 'Cancelar',
             style: 'cancel'
@@ -198,9 +208,14 @@ export default function RideSummaryScreen() {
             }
           }
         ]
-      )
+      })
     } catch (error) {
-      Alert.alert('Erro', 'Falha ao aceitar corrida')
+      showAlert({
+        title: 'Erro',
+        message: 'Falha ao aceitar corrida',
+        type: 'error',
+        buttons: [{ text: 'OK' }]
+      })
     }
   }
 
@@ -216,7 +231,12 @@ export default function RideSummaryScreen() {
         navigation.goBack()
       }, 1000)
     } catch (error) {
-      Alert.alert('Erro', 'Falha ao cancelar corrida')
+      showAlert({
+        title: 'Erro',
+        message: 'Falha ao cancelar corrida',
+        type: 'error',
+        buttons: [{ text: 'OK' }]
+      })
     }
   }
 
@@ -231,12 +251,22 @@ export default function RideSummaryScreen() {
     try {
       // Validar OTP antes de completar a corrida
       if (otpCode.length !== 4) {
-        Alert.alert('Erro', 'Código OTP deve ter 4 dígitos')
+        showAlert({
+          title: 'Erro',
+          message: 'Código OTP deve ter 4 dígitos',
+          type: 'error',
+          buttons: [{ text: 'OK' }]
+        })
         return
       }
 
       if (!currentRide?.otp_code) {
-        Alert.alert('Erro', 'Código OTP não encontrado')
+        showAlert({
+          title: 'Erro',
+          message: 'Código OTP não encontrado',
+          type: 'error',
+          buttons: [{ text: 'OK' }]
+        })
         return
       }
       // Aqui você pode validar o OTP com o backend
@@ -260,12 +290,22 @@ export default function RideSummaryScreen() {
         })
       } else {
         setIsLoadingCompleteRide(false)
-        Alert.alert('Erro', 'Código OTP inválido')
+        showAlert({
+          title: 'Erro',
+          message: 'Código OTP inválido',
+          type: 'error',
+          buttons: [{ text: 'OK' }]
+        })
       }
     } catch (error) {
       setIsLoadingCompleteRide(false)
       console.error('Erro ao validar OTP:', error)
-      Alert.alert('Erro', 'Falha ao validar código OTP')
+      showAlert({
+        title: 'Erro',
+        message: 'Falha ao validar código OTP',
+        type: 'error',
+        buttons: [{ text: 'OK' }]
+      })
     }
   }
 
@@ -309,7 +349,12 @@ export default function RideSummaryScreen() {
     if (!driver) return
 
     if (currentRide.status !== 'idle' && !currentRide.driver) {
-      Alert.alert('Erro', 'Corrida indisponível')
+      showAlert({
+        title: 'Erro',
+        message: 'Corrida indisponível',
+        type: 'error',
+        buttons: [{ text: 'OK' }]
+      })
       if (navigation.canGoBack()) {
         navigation.goBack()
       }
@@ -320,7 +365,12 @@ export default function RideSummaryScreen() {
       currentRide?.driver?.id !== driver.id
     ) {
       if (navigation.canGoBack()) {
-        Alert.alert('Erro', 'Outro motorista iniciou a corrida')
+        showAlert({
+          title: 'Erro',
+          message: 'Outro motorista iniciou a corrida',
+          type: 'error',
+          buttons: [{ text: 'OK' }]
+        })
         navigation.goBack()
       }
     }

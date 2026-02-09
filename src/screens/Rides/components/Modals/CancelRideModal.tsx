@@ -1,5 +1,5 @@
 // src/screens/Ride/components/CancelRideModal.tsx
-import React, { useState } from 'react';
+import React, { useState } from 'react'
 import {
   View,
   Text,
@@ -7,15 +7,17 @@ import {
   TouchableOpacity,
   TextInput,
   ScrollView,
-  Alert,
-} from 'react-native';
-import { X } from 'lucide-react-native';
+  Alert
+} from 'react-native'
+import { X } from 'lucide-react-native'
+
+import { useAlert } from '@/context/AlertContext'
 
 interface CancelRideModalProps {
-  visible: boolean;
-  onClose: () => void;
-  onConfirm: (reason: string) => void;
-  isLoading?: boolean;
+  visible: boolean
+  onClose: () => void
+  onConfirm: (reason: string) => void
+  isLoading?: boolean
 }
 
 const CANCEL_REASONS = [
@@ -25,35 +27,41 @@ const CANCEL_REASONS = [
   'Emergência pessoal',
   'Cliente cancelou',
   'Problema com a rota',
-  'Outro motivo',
-];
+  'Outro motivo'
+]
 
 export const CancelRideModal: React.FC<CancelRideModalProps> = ({
   visible,
   onClose,
   onConfirm,
-  isLoading = false,
+  isLoading = false
 }) => {
-  const [selectedReason, setSelectedReason] = useState('');
-  const [customReason, setCustomReason] = useState('');
+  const [selectedReason, setSelectedReason] = useState('')
+  const [customReason, setCustomReason] = useState('')
+  const { showAlert } = useAlert()
 
   const handleConfirm = () => {
     const reason =
-      selectedReason === 'Outro motivo' ? customReason : selectedReason;
+      selectedReason === 'Outro motivo' ? customReason : selectedReason
     if (!reason.trim()) {
-      Alert.alert('Atenção', 'Por favor, selecione ou digite um motivo.');
-      return;
+      showAlert({
+        title: 'Atenção',
+        message: 'Por favor, selecione ou digite um motivo.',
+        type: 'warning',
+        buttons: [{ text: 'OK' }]
+      })
+      return
     }
-    onConfirm(reason);
-    setSelectedReason('');
-    setCustomReason('');
-  };
+    onConfirm(reason)
+    setSelectedReason('')
+    setCustomReason('')
+  }
 
   const handleClose = () => {
-    setSelectedReason('');
-    setCustomReason('');
-    onClose();
-  };
+    setSelectedReason('')
+    setCustomReason('')
+    onClose()
+  }
 
   return (
     <Modal
@@ -147,5 +155,5 @@ export const CancelRideModal: React.FC<CancelRideModalProps> = ({
         </View>
       </View>
     </Modal>
-  );
-};
+  )
+}

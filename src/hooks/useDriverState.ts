@@ -1,10 +1,10 @@
 // src/hooks/useDriverState.ts
 import { useState, useEffect, useCallback } from 'react'
-import { Alert } from 'react-native'
 import { DriverInterface } from '@/interfaces/IDriver'
 import { useDriversViewModel } from '@/viewModels/DriverViewModel'
 import { useAuthStore } from '@/storage/store/useAuthStore'
 import { useLocation } from './useLocation'
+import { useAlert } from '@/context/AlertContext'
 
 interface DriverStateReturn {
   currentDriverData: DriverInterface | null
@@ -17,6 +17,7 @@ export const useDriverState = (): DriverStateReturn => {
   const { driver } = useAuthStore()
   const { listenDriverRealtime, updateDriver } = useDriversViewModel()
   const { requestCurrentLocation } = useLocation()
+  const { showAlert } = useAlert()
 
   const [currentDriverData, setCurrentDriverData] =
     useState<DriverInterface | null>(driver)
@@ -52,10 +53,13 @@ export const useDriverState = (): DriverStateReturn => {
         const location = await requestCurrentLocation()
 
         if (!location) {
-          Alert.alert(
-            'Erro',
-            'Não foi possível obter sua localização. Verifique as permissões.'
-          )
+          showAlert({
+            title: 'Erro',
+            message:
+              'Não foi possível obter sua localização. Verifique as permissões.',
+            type: 'error',
+            buttons: [{ text: 'OK' }]
+          })
           return
         }
 
@@ -107,7 +111,7 @@ export const useDriverState = (): DriverStateReturn => {
         prev ? { ...prev, is_online: !newValue } : prev
       )
     }
-  }, [currentDriverData, updateDriver, requestCurrentLocation])
+  }, [currentDriverData, updateDriver, requestCurrentLocation, showAlert])
 
   // Ação: Toggle invisible mode
   const toggleInvisible = useCallback(async (): Promise<void> => {
@@ -117,10 +121,12 @@ export const useDriverState = (): DriverStateReturn => {
     }
 
     if (!currentDriverData.is_online) {
-      Alert.alert(
-        'Aviso',
-        'Você precisa estar online para ativar o modo invisível.'
-      )
+      showAlert({
+        title: 'Aviso',
+        message: 'Você precisa estar online para ativar o modo invisível.',
+        type: 'warning',
+        buttons: [{ text: 'OK' }]
+      })
       return
     }
 
@@ -143,10 +149,13 @@ export const useDriverState = (): DriverStateReturn => {
 
       // Show feedback to user
       if (newValue) {
-        Alert.alert(
-          'Modo Invisível Ativado',
-          'Você está online mas não aparecerá no mapa para passageiros. Sua localização não será rastreada.'
-        )
+        showAlert({
+          title: 'Modo Invisível Ativado',
+          message:
+            'Você está online mas não aparecerá no mapa para passageiros. Sua localização não será rastreada.',
+          type: 'info',
+          buttons: [{ text: 'OK' }]
+        })
       }
     } catch (error) {
       console.error('❌ Erro ao alternar modo invisível:', error)

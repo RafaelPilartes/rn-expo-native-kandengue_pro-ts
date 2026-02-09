@@ -14,13 +14,7 @@ import Animated, {
   withTiming,
   runOnJS
 } from 'react-native-reanimated'
-import {
-  CheckCircle,
-  XCircle,
-  AlertTriangle,
-  Info,
-  X
-} from 'lucide-react-native'
+import { CheckCircle, XCircle, AlertTriangle, Info } from 'lucide-react-native'
 import { useAlert, AlertType } from '@/context/AlertContext'
 
 // Map types to colors and icons

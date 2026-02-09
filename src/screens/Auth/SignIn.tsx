@@ -22,8 +22,8 @@ import ROUTES from '@/constants/routes'
 import { useTranslation } from 'react-i18next'
 import { LogoRed } from '@/constants/images'
 import { useAuthViewModel } from '@/viewModels/AuthViewModel' // 🔹 ADICIONAR
-import { Alert } from 'react-native'
 import { SafeAreaView } from 'react-native-safe-area-context'
+import { useAlert } from '@/context/AlertContext'
 import { mapFirebaseError } from '@/helpers/mapFirebaseError'
 import { useAuthStore } from '@/storage/store/useAuthStore'
 import { useDriversViewModel } from '@/viewModels/DriverViewModel'
@@ -40,11 +40,13 @@ export default function LoginScreen() {
     navigation.navigate(to)
   }
 
-  // Hooks principais
+  // 🔹 Hook de autenticação
   const { login, checkEmailVerification, sendEmailVerification } =
     useAuthViewModel()
   const { updateDriver } = useDriversViewModel()
   const { setDriver: zustandLogin, logout: zustandLogout } = useAuthStore()
+
+  const { showAlert } = useAlert()
 
   const [isLoading, setIsLoading] = useState(false)
 
@@ -107,12 +109,15 @@ export default function LoginScreen() {
         console.warn('⚠️ Email não verificado')
 
         // Mostrar alerta mas permitir acesso
-        Alert.alert(
-          'Email não verificado',
-          'Seu email ainda não foi verificado. Verifique seu email e clique no link enviado para ativar sua conta.',
-          [
+        showAlert({
+          title: 'Email não verificado',
+          message:
+            'Seu email ainda não foi verificado. Verifique seu email e clique no link enviado para ativar sua conta.',
+          type: 'warning',
+          buttons: [
             {
               text: 'Entendi',
+              style: 'cancel',
               onPress: () => {
                 // Navegar para a tela principal mesmo com email não verificado
                 navigation.replace(ROUTES.AuthStack.WELCOME)
@@ -123,17 +128,24 @@ export default function LoginScreen() {
               onPress: async () => {
                 try {
                   await sendEmailVerification.mutateAsync()
-                  Alert.alert(
-                    'Verificação reenviada',
-                    `Um novo email foi enviado para ${email}.`
-                  )
+                  showAlert({
+                    title: 'Verificação reenviada',
+                    message: `Um novo email foi enviado para ${email}.`,
+                    type: 'success',
+                    buttons: [{ text: 'OK' }]
+                  })
                 } catch (err) {
-                  Alert.alert('Erro', 'Falha ao reenviar email de verificação.')
+                  showAlert({
+                    title: 'Erro',
+                    message: 'Falha ao reenviar email de verificação.',
+                    type: 'error',
+                    buttons: [{ text: 'OK' }]
+                  })
                 }
               }
             }
           ]
-        )
+        })
 
         // Faz logout até o email ser verificado
         zustandLogout()
@@ -168,7 +180,12 @@ export default function LoginScreen() {
 
       let errorMessage = error.message || 'Erro ao fazer login'
 
-      Alert.alert('Erro no Login', mapFirebaseError(errorMessage))
+      showAlert({
+        title: 'Erro no Login',
+        message: mapFirebaseError(errorMessage),
+        type: 'error',
+        buttons: [{ text: 'OK' }]
+      })
 
       // 🔹 LIMPAR: senha em caso de erro
       if (error.message.includes('Senha incorreta')) {

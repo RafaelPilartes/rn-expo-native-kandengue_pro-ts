@@ -1,9 +1,10 @@
 // src/screens/Ride/components/RideConfirmationFlow.tsx
 import React, { useState } from 'react'
-import { Modal, View, Alert } from 'react-native'
+import { Modal, View } from 'react-native'
 import { useImagePicker } from '@/hooks/useImagePicker'
 import { ImagePickerPresets } from '@/services/picker/imagePickerPresets'
 import { useFileUploadViewModel } from '@/viewModels/FileUploadViewModel'
+import { useAlert } from '@/context/AlertContext'
 
 // Steps
 import { PhotoStep } from './steps/PhotoStep'
@@ -30,6 +31,8 @@ export const RideConfirmationFlow: React.FC<RideConfirmationFlowProps> = ({
     uploadSomeImageForUserError: uploadRideErrorImage
   } = useFileUploadViewModel()
 
+  const { showAlert } = useAlert()
+
   const [currentStep, setCurrentStep] = useState<'photo' | 'otp'>('photo')
   const [otpCode, setOtpCode] = useState('')
   const [ridePhoto, setRidePhoto] = useState<string | null>(null)
@@ -47,7 +50,12 @@ export const RideConfirmationFlow: React.FC<RideConfirmationFlowProps> = ({
         setRidePhoto(imageUri)
       }
     } catch (error) {
-      Alert.alert('Erro', 'Não foi possível capturar a foto')
+      showAlert({
+        title: 'Erro',
+        message: 'Não foi possível capturar a foto',
+        type: 'error',
+        buttons: [{ text: 'OK' }]
+      })
     }
   }
 
@@ -57,10 +65,12 @@ export const RideConfirmationFlow: React.FC<RideConfirmationFlowProps> = ({
 
   const handleContinueToOTP = () => {
     if (!ridePhoto) {
-      Alert.alert(
-        'Atenção',
-        'Por favor, tire uma foto da encomenda antes de continuar'
-      )
+      showAlert({
+        title: 'Atenção',
+        message: 'Por favor, tire uma foto da encomenda antes de continuar',
+        type: 'warning',
+        buttons: [{ text: 'OK' }]
+      })
       return
     }
     setCurrentStep('otp')
@@ -84,7 +94,12 @@ export const RideConfirmationFlow: React.FC<RideConfirmationFlowProps> = ({
         const errorMsg =
           uploadRideErrorImage?.message || 'Erro ao carregar ficheiro'
         console.error('❌ Upload falhou:', errorMsg)
-        Alert.alert('Erro na imagem', errorMsg)
+        showAlert({
+          title: 'Erro na imagem',
+          message: errorMsg,
+          type: 'error',
+          buttons: [{ text: 'OK' }]
+        })
         throw new Error('Upload inválido')
       }
 
@@ -92,17 +107,24 @@ export const RideConfirmationFlow: React.FC<RideConfirmationFlowProps> = ({
       return url
     } catch (err) {
       console.error('❌ Erro no upload:', err)
-      Alert.alert(
-        'Erro ',
-        'Erro ao carregar ficheiro, tente tirar outra fotografia'
-      )
+      showAlert({
+        title: 'Erro',
+        message: 'Erro ao carregar ficheiro, tente tirar outra fotografia',
+        type: 'error',
+        buttons: [{ text: 'OK' }]
+      })
       throw err
     }
   }
 
   const handleConfirmRide = async () => {
     if (otpCode.length !== 4) {
-      Alert.alert('Erro', 'Digite o código OTP de 4 dígitos')
+      showAlert({
+        title: 'Erro',
+        message: 'Digite o código OTP de 4 dígitos',
+        type: 'error',
+        buttons: [{ text: 'OK' }]
+      })
       return
     }
     try {

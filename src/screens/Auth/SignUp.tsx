@@ -9,7 +9,6 @@ import {
   ScrollView,
   Platform,
   Keyboard,
-  Alert,
   Image
 } from 'react-native'
 import { User, Mail, Phone } from 'lucide-react-native'
@@ -24,6 +23,8 @@ import { useTranslation } from 'react-i18next'
 import { LogoRed } from '@/constants/images'
 import { useAuthViewModel } from '@/viewModels/AuthViewModel'
 
+import { useAlert } from '@/context/AlertContext'
+
 export default function SignUpScreen() {
   const navigation =
     useNavigation<NativeStackNavigationProp<AuthStackParamList>>()
@@ -32,6 +33,7 @@ export default function SignUpScreen() {
 
   // 🔹 Hook de autenticação
   const { register } = useAuthViewModel()
+  const { showAlert } = useAlert()
   const [isLoading, setIsLoading] = useState(false)
 
   const navigateTo = (to: any) => {
@@ -99,7 +101,12 @@ export default function SignUpScreen() {
       // navigation.navigate('PinSetup', { email: formData.email });
     } catch (error) {
       console.error('Erro na validação:', error)
-      Alert.alert('Erro', 'Ocorreu um erro ao validar os dados')
+      showAlert({
+        title: 'Erro',
+        message: 'Ocorreu um erro ao validar os dados',
+        type: 'error',
+        buttons: [{ text: 'OK' }]
+      })
     } finally {
       setIsLoading(false)
     }
