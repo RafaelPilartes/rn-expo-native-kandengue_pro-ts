@@ -1,9 +1,9 @@
 import { useEffect, useState, useMemo } from 'react'
-import { Alert } from 'react-native'
 import { useAppProvider } from '@/providers/AppProvider'
 import { useLocation } from '@/hooks/useLocation'
 import { useTrackRide } from '@/hooks/useTrackRide'
 import { useNetwork } from '@/providers/NetworkProvider'
+import { useAlert } from '@/context/AlertContext'
 import { MIN_AMOUNT } from '@/constants/config'
 
 export type HomeViewState =
@@ -58,6 +58,7 @@ export const useHomeViewModel = () => {
   } = useTrackRide()
 
   const { isConnected, isInternetReachable } = useNetwork()
+  const { showAlert } = useAlert()
 
   // Initial Setup
   useEffect(() => {
@@ -142,10 +143,13 @@ export const useHomeViewModel = () => {
       handleToWallet,
       handleDetailsRide: (ride: any) => {
         if (isConnected === false || isInternetReachable === false) {
-          Alert.alert(
-            'Sem conexão',
-            'Verifique sua conexão com a internet para acessar os detalhes da corrida.'
-          )
+          showAlert({
+            title: 'Sem conexão',
+            message:
+              'Verifique sua conexão com a internet para acessar os detalhes da corrida.',
+            type: 'error',
+            buttons: [{ text: 'Entendi', style: 'cancel' }]
+          })
           return
         }
 

@@ -27,6 +27,8 @@ import { BottomSheetModalProvider } from '@gorhom/bottom-sheet'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { LocationProvider } from './context/LocationContext'
 import { TrackRideProvider } from './context/TrackRideContext'
+import { AlertProvider } from './context/AlertContext'
+import { CustomAlert } from './components/ui/CustomAlert'
 import { SafeAreaProvider } from 'react-native-safe-area-context'
 import { NetworkStatusBanner } from './components/NetworkStatusBanner'
 import { ErrorBoundary } from './components/ErrorBoundary'
@@ -93,17 +95,20 @@ function App() {
             <NavigationContainer>
               <GestureHandlerRootView style={{ flex: 1 }}>
                 <BottomSheetModalProvider>
-                  <LocationProvider>
-                    <TrackRideProvider>
-                      <NetworkProvider>
-                        <StatusBar style="dark" />
-                        <NetworkStatusBanner />
-                        <AppProvider>
-                          <AppRouter />
-                        </AppProvider>
-                      </NetworkProvider>
-                    </TrackRideProvider>
-                  </LocationProvider>
+                  <AlertProvider>
+                    <LocationProvider>
+                      <TrackRideProvider>
+                        <NetworkProvider>
+                          <StatusBar style="dark" />
+                          <NetworkStatusBanner />
+                          <AppProvider>
+                            <AppRouter />
+                          </AppProvider>
+                          <CustomAlert />
+                        </NetworkProvider>
+                      </TrackRideProvider>
+                    </LocationProvider>
+                  </AlertProvider>
                 </BottomSheetModalProvider>
               </GestureHandlerRootView>
             </NavigationContainer>

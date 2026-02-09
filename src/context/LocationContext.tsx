@@ -1,6 +1,6 @@
 // src/contexts/LocationContext.tsx
 import React, { createContext, useState, useRef, useEffect } from 'react'
-import { Alert, Linking, Platform } from 'react-native'
+import { Linking } from 'react-native'
 import * as Location from 'expo-location'
 import { getAddressFromCoords } from '@/services/google/googleApi'
 import { BACKGROUND_LOCATION_TASK } from '@/services/location/BackgroundLocationTask'
@@ -12,6 +12,7 @@ import {
 import { useAuthStore } from '@/storage/store/useAuthStore'
 import { useDriversViewModel } from '@/viewModels/DriverViewModel'
 import LocationDisclosureModal from '@/components/modals/LocationDisclosureModal'
+import { useAlert } from '@/context/AlertContext'
 
 type Coords = { latitude: number; longitude: number }
 
@@ -59,6 +60,8 @@ export const LocationProvider = ({
   const [missingPermission, setMissingPermission] = useState(false)
 
   const watchRef = useRef<Location.LocationSubscription | null>(null)
+
+  const { showAlert } = useAlert()
 
   const { driver, currentMissionId } = useAuthStore()
   const { updateDriver } = useDriversViewModel()
@@ -117,17 +120,19 @@ export const LocationProvider = ({
 
       // 3. If denied and cannot ask again (blocked), open settings
       if (existingStatus === 'denied' && !canAskAgain) {
-        Alert.alert(
-          'Permissão Negada',
-          'A permissão de localização foi negada permanentemente. Por favor, ative nas configurações do app.',
-          [
+        showAlert({
+          title: 'Permissão Negada',
+          message:
+            'A permissão de localização foi negada permanentemente. Por favor, ative nas configurações do app.',
+          type: 'error',
+          buttons: [
             { text: 'Cancelar', style: 'cancel' },
             {
               text: 'Abrir Configurações',
               onPress: () => Linking.openSettings()
             }
           ]
-        )
+        })
         setMissingPermission(true)
         return false
       }
