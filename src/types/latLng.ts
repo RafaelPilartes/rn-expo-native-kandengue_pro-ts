@@ -1,1 +1,5 @@
-export type LatLngType = { latitude: number; longitude: number }
+export type LatLngType = {
+  latitude: number
+  longitude: number
+  rotation?: number
+}

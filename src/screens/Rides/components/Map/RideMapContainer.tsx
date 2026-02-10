@@ -3,23 +3,19 @@ import { StyleSheet, Platform } from 'react-native'
 import MapView, { Marker } from '@/components/map/MapView'
 import { RideInterface } from '@/interfaces/IRide'
 import { CustomPlace } from '@/types/places'
-
-type LatLng = {
-  latitude: number
-  longitude: number
-}
+import { LatLngType } from '@/types/latLng'
 
 type Props = {
   mapRef: React.RefObject<any>
-  userLocation: LatLng | null
+  userLocation: LatLngType | null
   currentRide: RideInterface | null
   location: {
     pickup: CustomPlace
     dropoff: CustomPlace
   }
   rideStatus: string
-  routeCoords: LatLng[]
-  routeCoordsDriver: LatLng[]
+  routeCoords: LatLngType[]
+  routeCoordsDriver: LatLngType[]
   markerHeading: number
 }
 

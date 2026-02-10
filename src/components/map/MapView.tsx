@@ -1,3 +1,4 @@
+// components/map/MapView.tsx
 import { Platform } from 'react-native'
 import { AppleMaps, GoogleMaps } from 'expo-maps'
 

@@ -1,3 +1,4 @@
+// providers/MapProvider.tsx
 import React, {
   createContext,
   useContext,
@@ -8,7 +9,6 @@ import React, {
 } from 'react'
 import { AppState } from 'react-native'
 import * as Location from 'expo-location'
-import MapView from '../components/map/MapView'
 import { getAddressFromCoords } from '@/services/google/googleApi'
 import { Coords, MapContextType } from '@/types/map'
 
