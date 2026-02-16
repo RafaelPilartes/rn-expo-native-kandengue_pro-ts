@@ -12,15 +12,12 @@ import {
   MessageCircle,
   Phone,
   Mail,
-  HelpCircle,
   ChevronDown,
   ChevronUp,
   Clock,
   User,
-  CreditCard,
   MapPin,
-  Shield,
-  Search
+  Shield
 } from 'lucide-react-native'
 import { useNavigation } from '@react-navigation/native'
 import PageHeader from '@/components/PageHeader'

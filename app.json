@@ -81,22 +81,16 @@
     "plugins": [
       "@react-native-firebase/app",
       "@react-native-firebase/auth",
-      "./plugins/withFixFirebaseModularHeaders",
+      "expo-maps",
       [
         "expo-build-properties",
         {
           "ios": {
             "useFrameworks": "static",
-            "deploymentTarget": "15.1"
-          },
-          "android": {
-            "compileSdkVersion": 35,
-            "targetSdkVersion": 35,
-            "buildToolsVersion": "35.0.0"
+            "buildReactNativeFromSource": true
           }
         }
-      ],
-      "expo-maps"
+      ]
     ]
   }
 }

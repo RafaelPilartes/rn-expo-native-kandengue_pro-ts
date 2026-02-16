@@ -6,19 +6,17 @@ import {
   ScrollView,
   TouchableOpacity,
   Linking,
-  Alert,
-  Image
+  Alert
 } from 'react-native'
 import {
   Info,
-  Globe,
   Mail,
   Smartphone,
   MapPin,
   ChevronRight
 } from 'lucide-react-native'
 import PageHeader from '@/components/PageHeader'
-import { APP_VERSION, BUILD_NUMBER, LAST_UPDATE } from '@/constants/config'
+import { APP_VERSION, BUILD_NUMBER } from '@/constants/config'
 
 export default function AboutScreen() {
   const handleContact = (type: 'site' | 'email' | 'tel') => {

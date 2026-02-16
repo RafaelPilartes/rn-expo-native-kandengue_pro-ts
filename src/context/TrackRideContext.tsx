@@ -63,7 +63,7 @@ export const TrackRideProvider = ({
       }
 
       if (!isTracking) {
-        startTracking()
+        startTracking('RIDE')
       }
       setCurrentRide(ride ?? null)
       setIsLoading(false)
@@ -93,7 +93,7 @@ export const TrackRideProvider = ({
 
     if (pendingRide) {
       if (!isTracking) {
-        startTracking()
+        startTracking('RIDE')
       }
       setCurrentMissionId(pendingRide.id as string)
       setCurrentRide(pendingRide)
