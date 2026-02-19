@@ -48,7 +48,7 @@ export default function AboutScreen() {
       >
         {/* App Hero */}
         <View className="items-center py-10">
-          <View className="w-24 h-24 bg-white rounded-3xl shadow-sm items-center justify-center mb-5 border border-gray-100">
+          <View className="w-24 h-24 bg-white rounded-3xl items-center justify-center mb-5 border border-gray-100">
             {/* Logo Placeholder - idealmente seria uma Image */}
             <Info size={40} color="#000" strokeWidth={1.5} />
           </View>
@@ -131,7 +131,7 @@ export default function AboutScreen() {
 
         {/* Location (Optional/Placeholder based on context) */}
         <View className="px-5">
-          <View className="bg-white rounded-2xl shadow-sm border border-gray-100 p-5 flex-row items-start">
+          <View className="bg-white rounded-2xl border border-gray-100 p-5 flex-row items-start">
             <MapPin size={20} color="#374151" className="mt-0.5" />
             <View className="ml-4 flex-1">
               <Text className="text-sm font-bold text-gray-900 mb-1">

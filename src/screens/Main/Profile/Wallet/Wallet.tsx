@@ -432,7 +432,7 @@ export default function WalletScreen() {
       <PageHeader title="Minha Carteira" canGoBack={true} />
 
       {/* Saldo Atual */}
-      <View className="items-center py-8 bg-white mb-4 shadow-sm mx-4 mt-4 rounded-3xl">
+      <View className="items-center py-8 bg-white mb-4 mx-4 mt-4 rounded-3xl">
         <View className="bg-red-50 p-4 rounded-full mb-3">
           <Wallet size={40} color={PRIMARY_COLOR} />
         </View>
@@ -447,7 +447,7 @@ export default function WalletScreen() {
             <TouchableOpacity
               onPress={() => setModalVisible(true)}
               disabled={isLoadingWalletTopupRequests}
-              className="bg-primary-400 px-6 py-4 rounded-full flex-row items-center flex-1"
+              className="bg-primary-200 px-6 py-4 rounded-full flex-row items-center flex-1"
               style={{
                 shadowColor: PRIMARY_COLOR,
                 shadowOffset: { width: 0, height: 4 },
@@ -465,7 +465,7 @@ export default function WalletScreen() {
             {/* Botão Estatísticas */}
             <TouchableOpacity
               onPress={() => setStatisticsModalVisible(true)}
-              className="px-5 py-4 border-2 border-primary-400 rounded-full flex-row items-center"
+              className="px-5 py-4 border-2 border-primary-200 rounded-full flex-row items-center"
             >
               <BarChart3 size={20} color={PRIMARY_COLOR} />
             </TouchableOpacity>
@@ -474,11 +474,11 @@ export default function WalletScreen() {
       </View>
 
       {/* Tabs */}
-      <View className="flex-row bg-white rounded-3xl mx-4 mb-4 p-1.5 shadow-sm border border-gray-100">
+      <View className="flex-row bg-white rounded-3xl mx-4 mb-4 p-1.5 border border-gray-100">
         <TouchableOpacity
           onPress={() => setActiveTab('transactions')}
           className={`flex-1 py-4 rounded-3xl flex-row items-center justify-center ${
-            activeTab === 'transactions' ? 'bg-primary-400' : ''
+            activeTab === 'transactions' ? 'bg-primary-200' : ''
           }`}
           style={
             activeTab === 'transactions'
@@ -508,7 +508,7 @@ export default function WalletScreen() {
         <TouchableOpacity
           onPress={() => setActiveTab('requests')}
           className={`flex-1 py-4 rounded-3xl flex-row items-center justify-center ${
-            activeTab === 'requests' ? 'bg-primary-400' : ''
+            activeTab === 'requests' ? 'bg-primary-200' : ''
           }`}
           style={
             activeTab === 'requests'

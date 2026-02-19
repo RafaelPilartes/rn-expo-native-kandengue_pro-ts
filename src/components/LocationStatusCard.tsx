@@ -113,13 +113,9 @@ const styles = StyleSheet.create({
     backgroundColor: '#FFFFFF',
     borderRadius: 24,
     padding: 20,
+    marginTop: 10,
     marginHorizontal: 20,
-    marginBottom: 12,
-    shadowColor: '#2424244b',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.04,
-    shadowRadius: 8,
-    elevation: 2
+    marginBottom: 12
   },
   separator: {
     height: 1,

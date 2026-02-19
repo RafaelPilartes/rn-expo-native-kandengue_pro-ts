@@ -1,15 +1,15 @@
 // src/components/form/InputField.tsx
-import React from 'react';
-import { View, Text, TextInput, TouchableOpacity } from 'react-native';
-import type { TextInputProps } from 'react-native';
+import React from 'react'
+import { View, Text, TextInput, TouchableOpacity } from 'react-native'
+import type { TextInputProps } from 'react-native'
 
 interface InputFieldProps extends TextInputProps {
-  label?: string;
-  icon?: React.ReactNode;
-  onClickIcon?: () => void;
-  error?: string;
-  rightIcon?: React.ReactNode;
-  containerClass?: string;
+  label?: string
+  icon?: React.ReactNode
+  onClickIcon?: () => void
+  error?: string
+  rightIcon?: React.ReactNode
+  containerClass?: string
 }
 
 export const InputField = ({
@@ -47,5 +47,5 @@ export const InputField = ({
 
       {error && <Text className="text-red-500 text-xs mt-1">{error}</Text>}
     </View>
-  );
-};
+  )
+}

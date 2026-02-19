@@ -139,7 +139,7 @@ A violação destas regras pode resultar no banimento permanente da plataforma.`
             return (
               <View key={section.id} className="mb-4">
                 <TouchableOpacity
-                  className={`bg-white rounded-2xl p-5 border border-gray-100 shadow-sm ${isExpanded ? 'border-gray-300' : ''}`}
+                  className={`bg-white rounded-2xl p-5 border border-gray-100 ${isExpanded ? 'border-gray-100' : ''}`}
                   onPress={() => toggleSection(section.id)}
                   activeOpacity={0.7}
                 >

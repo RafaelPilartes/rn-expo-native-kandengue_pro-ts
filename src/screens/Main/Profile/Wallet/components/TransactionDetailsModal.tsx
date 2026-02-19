@@ -121,7 +121,7 @@ export function TransactionDetailsModal({
             </View>
 
             {/* Details List */}
-            <View className="bg-white rounded-2xl border border-gray-100 px-4 mb-6 shadow-sm">
+            <View className="bg-white rounded-2xl border border-gray-100 px-4 mb-6 ">
               <DetailRow
                 label="Descrição"
                 value={transaction.description || 'Sem descrição'}

@@ -369,7 +369,7 @@ export default function DocumentsScreen() {
     const hasDocumentUploaded = !!driverDocument
 
     return (
-      <View className="bg-white rounded-2xl shadow-sm p-4 mb-4 border border-gray-100">
+      <View className="bg-white rounded-2xl  p-4 mb-4 border border-gray-100">
         {/* Header */}
         <View className="flex-row justify-between items-start mb-3">
           <View className="flex-1">
@@ -492,7 +492,7 @@ export default function DocumentsScreen() {
 
       <ScrollView contentContainerStyle={{ padding: 16 }}>
         {/* Estatísticas */}
-        <View className="bg-white rounded-2xl p-4 mb-4 shadow-sm">
+        <View className="bg-white rounded-2xl p-4 mb-4 ">
           <Text className="text-lg font-semibold text-gray-800 mb-3">
             Status dos Documentos
           </Text>

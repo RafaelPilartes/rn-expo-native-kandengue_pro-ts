@@ -150,7 +150,7 @@ export function RequestDetailsModal({
             </View>
 
             {/* Details List */}
-            <View className="bg-white rounded-2xl border border-gray-100 px-4 mb-6 shadow-sm">
+            <View className="bg-white rounded-2xl border border-gray-100 px-4 mb-6 ">
               <DetailRow
                 label="Data da Solicitação"
                 value={

@@ -127,7 +127,7 @@ Telefone: 928 888 745`
             return (
               <View key={section.id} className="mb-4">
                 <TouchableOpacity
-                  className={`bg-white rounded-2xl p-5 border border-gray-100 shadow-sm ${isExpanded ? 'border-blue-100 bg-blue-50' : ''}`}
+                  className={`bg-white rounded-2xl p-5 border border-gray-100 ${isExpanded ? 'border-blue-100 bg-blue-50' : ''}`}
                   onPress={() => toggleSection(section.id)}
                   activeOpacity={0.7}
                 >

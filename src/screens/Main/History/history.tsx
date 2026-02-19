@@ -94,7 +94,7 @@ export default function History() {
 
       {/* New Premium Dashboard */}
       <View className="px-4 mt-4 mb-2">
-        <View className="bg-white p-5 rounded-2xl shadow-sm border border-gray-100 flex-row items-center justify-between">
+        <View className="bg-white p-5 rounded-2xl border border-gray-100 flex-row items-center justify-between">
           <View>
             <Text className="text-sm text-gray-500 font-medium mb-1">
               Ganhos Totais

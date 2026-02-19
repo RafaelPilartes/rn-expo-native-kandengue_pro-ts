@@ -154,7 +154,7 @@ export function StatisticsModal({
             </View>
 
             {/* General Stats List */}
-            <View className="bg-white rounded-2xl border border-gray-100 px-4 shadow-sm">
+            <View className="bg-white rounded-2xl border border-gray-100 px-4 ">
               <DetailRow
                 label="Saldo Atual Disponível"
                 value={formatCurrency(currentBalance)}
