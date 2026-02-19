@@ -371,7 +371,7 @@ eas submit --platform ios
 ## 📂 Estrutura de Pastas
 
 ```
-RnExpoNativeKandengueProTs/
+RnNativeKandengueProTs/
 │
 ├── .agent/                 # Agentes de IA e skills
 ├── android/                # Projeto Android nativo (gerado)
