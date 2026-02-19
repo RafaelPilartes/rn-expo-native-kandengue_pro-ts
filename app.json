@@ -17,7 +17,7 @@
       "googleServicesFile": "./firebase/GoogleService-Info.plist",
       "bundleIdentifier": "com.kandengueatrevido.pro",
       "infoPlist": {
-        "UIBackgroundModes": ["location", "location"],
+        "UIBackgroundModes": ["location", "fetch", "remote-notification"],
         "NSLocationWhenInUseUsageDescription": "This app requires access to your location to provide navigation and nearby services.",
         "NSLocationAlwaysAndWhenInUseUsageDescription": "This app needs background location access to keep tracking your rides even when the app is closed.",
         "NSLocationAlwaysUsageDescription": "This app requires background location access to function properly.",

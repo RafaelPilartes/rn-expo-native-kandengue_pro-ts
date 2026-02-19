@@ -202,8 +202,8 @@ Antes de começar, certifique-se de ter instalado:
 ### 1. Clone o repositório
 
 ```bash
-git clone https://github.com/seu-usuario/RnExpoNativeKandengueProTs.git
-cd RnExpoNativeKandengueProTs
+git clone https://github.com/RafaelPilartes/rn-expo-native-kandengue_pro-ts
+cd rn-expo-native-kandengue_pro-ts
 ```
 
 ### 2. Instale as dependências
