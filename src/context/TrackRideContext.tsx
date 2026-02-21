@@ -23,7 +23,7 @@ export const TrackRideProvider = ({
   children: React.ReactNode
 }) => {
   const { driver, currentMissionId, setCurrentMissionId } = useAuthStore()
-  const { location, startTracking, stopTracking, isTracking } = useLocation()
+  const { startTracking, stopTracking, isTracking } = useLocation()
 
   const { fetchRideById, fetchAllRidesByField } = useRidesViewModel()
 

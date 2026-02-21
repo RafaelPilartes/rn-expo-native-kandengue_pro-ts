@@ -5,9 +5,7 @@ import { WifiOff } from 'lucide-react-native'
 import Animated, {
   useAnimatedStyle,
   withTiming,
-  useSharedValue,
-  withSequence,
-  withDelay
+  useSharedValue
 } from 'react-native-reanimated'
 import { useNetwork } from '../providers/NetworkProvider'
 
