@@ -1,13 +1,6 @@
 import React, { JSX, useEffect, useState } from 'react'
-import {
-  View,
-  Text,
-  ScrollView,
-  Image,
-  Alert,
-  Platform,
-  Linking
-} from 'react-native'
+import { View, Text, ScrollView, Alert, Platform, Linking } from 'react-native'
+import * as Location from 'expo-location'
 import PermissionCard from '@/components/ui/card/PermissionCard'
 import PrimaryButton from '@/components/ui/button/PrimaryButton'
 import { useNavigation } from '@react-navigation/native'
@@ -19,11 +12,6 @@ import { useTranslation } from 'react-i18next'
 import { Check, Mic, Navigation, X } from 'lucide-react-native'
 import { LocationPermission } from '@/constants/images'
 import { usePermissionsStore } from '@/storage/store/usePermissionsStore'
-import {
-  checkLocationPermission,
-  LocationPermissionResponse,
-  requestLocationPermission
-} from '@/services/permissions/locationPermission'
 import LocationDisclosureModal from '@/components/modals/LocationDisclosureModal'
 import {
   checkNotificationPermission,
@@ -54,11 +42,21 @@ const Permissions = () => {
 
   const [showLocationDisclosure, setShowLocationDisclosure] = useState(false)
 
-  // 🔹 Verificar status atual das permissões
+  // 🔹 Verificar status atual das permissões (usando expo-location)
   const checkAllPermissions = async () => {
     try {
-      const locationStatus = await checkLocationPermission()
+      const { status: locStatus, canAskAgain } =
+        await Location.getForegroundPermissionsAsync()
       const notificationStatus = await checkNotificationPermission()
+
+      const locationPermStatus: PermissionStatus =
+        locStatus === 'granted'
+          ? 'granted'
+          : !canAskAgain
+            ? 'blocked'
+            : locStatus === 'denied'
+              ? 'denied'
+              : 'pending'
 
       setPermissions([
         {
@@ -66,7 +64,7 @@ const Permissions = () => {
           icon: <Navigation size={24} color="#3B82F6" />,
           title: t('onboarding:permissions_title_1'),
           description: t('onboarding:permissions_description_1'),
-          status: mapLocationStatus(locationStatus)
+          status: locationPermStatus
         },
         {
           id: 'notifications',
@@ -79,16 +77,6 @@ const Permissions = () => {
     } catch (error) {
       console.error('Erro ao verificar permissões:', error)
     }
-  }
-
-  // 🔹 Mapear status da localização
-  const mapLocationStatus = (
-    status: LocationPermissionResponse
-  ): PermissionStatus => {
-    if (status.granted) return 'granted'
-    if (status.denied) return 'denied'
-    if (status.blocked) return 'blocked'
-    return 'pending'
   }
 
   // 🔹 Mapear status das notificações
@@ -119,20 +107,41 @@ const Permissions = () => {
     try {
       setIsLoading(true)
 
-      let result
+      let granted = false
+      let denied = false
+
       if (permissionId === 'location') {
-        result = await requestLocationPermission()
+        // Usar expo-location para evitar conflito com react-native-permissions no iOS
+        const { status, canAskAgain } =
+          await Location.requestForegroundPermissionsAsync()
+
+        granted = status === 'granted'
+        denied = status !== 'granted'
+
+        // Se foreground foi concedido, tentar background também
+        if (granted) {
+          const { status: bgStatus } =
+            await Location.requestBackgroundPermissionsAsync()
+          console.log(`Background location permission: ${bgStatus}`)
+        }
+
+        // Se negou e não pode pedir de novo, está bloqueado
+        if (denied && !canAskAgain) {
+          denied = false // blocked, not just denied
+        }
       } else {
-        result = await requestNotificationPermission()
+        const result = await requestNotificationPermission()
+        granted = result.granted
+        denied = result.denied || result.blocked
       }
 
       // Atualizar status da permissão
       await checkAllPermissions()
 
       // Mostrar feedback baseado no resultado
-      if (result.granted) {
+      if (granted) {
         showPermissionGrantedFeedback(permissionId)
-      } else if (result.denied || result.blocked) {
+      } else if (denied) {
         showPermissionDeniedFeedback(permissionId)
       }
     } catch (error) {
