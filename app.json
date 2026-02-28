@@ -25,7 +25,7 @@
         "NSMicrophoneUsageDescription": "Microphone access is required for in-app audio features.",
         "NSPhotoLibraryUsageDescription": "Photo library access is required to upload or select images.",
         "NSPhotoLibraryAddUsageDescription": "The app needs permission to save images to your library.",
-        "NSUserTrackingUsageDescription": "Tracking permission is needed for analytics and personalized experience.",
+        "NSContactsUsageDescription": "Contacts access is required to allow selecting contacts from your device.",
         "NSUserNotificationUsageDescription": "Notifications permission is needed for push notifications.",
         "ITSAppUsesNonExemptEncryption": false
       },
