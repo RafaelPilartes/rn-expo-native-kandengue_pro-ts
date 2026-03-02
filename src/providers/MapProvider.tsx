@@ -84,7 +84,7 @@ export const MapProvider = ({ children }: { children: React.ReactNode }) => {
       }
 
       setLocation(coords)
-      fetchAddress(coords)
+      // fetchAddress(coords) <- REMOVED to save Geocoding API costs
       return coords
     } catch (err: any) {
       console.warn('Erro ao obter localização:', err)

@@ -309,7 +309,7 @@ export const LocationProvider = ({
           longitude: pos.coords.longitude
         }
         setLocation(coords)
-        fetchAddress(coords)
+        // fetchAddress(coords) <- REMOVED to save Geocoding API costs
       }
     )
 
