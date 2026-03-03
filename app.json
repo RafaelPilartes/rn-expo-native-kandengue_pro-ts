@@ -27,7 +27,8 @@
         "NSPhotoLibraryAddUsageDescription": "The app needs permission to save images to your library.",
         "NSContactsUsageDescription": "Contacts access is required to allow selecting contacts from your device.",
         "NSUserNotificationUsageDescription": "Notifications permission is needed for push notifications.",
-        "ITSAppUsesNonExemptEncryption": false
+        "ITSAppUsesNonExemptEncryption": false,
+        "NSUserTrackingUsageDescription": "This app uses tracking to improve your experience and provide relevant services. Your data is not shared with third parties for advertising."
       },
       "config": {
         "googleMapsApiKey": "AIzaSyCcaxxnCRThBiRzzjF4SHO-yo6qtV8q7iM"
@@ -84,7 +85,8 @@
             "buildReactNativeFromSource": true
           }
         }
-      ]
+      ],
+      "expo-tracking-transparency"
     ]
   }
 }

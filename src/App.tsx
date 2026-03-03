@@ -1,5 +1,5 @@
 import React, { useEffect, useCallback } from 'react'
-import { View } from 'react-native'
+import { Platform } from 'react-native'
 import { StatusBar } from 'expo-status-bar'
 import * as SplashScreen from 'expo-splash-screen'
 import {
@@ -32,6 +32,7 @@ import { CustomAlert } from './components/ui/CustomAlert'
 import { SafeAreaProvider } from 'react-native-safe-area-context'
 import { NetworkStatusBanner } from './components/NetworkStatusBanner'
 import { ErrorBoundary } from './components/ErrorBoundary'
+import { requestTrackingPermissionsAsync } from 'expo-tracking-transparency'
 
 // Prevent auto-hiding the splash screen
 SplashScreen.preventAutoHideAsync()
@@ -55,7 +56,11 @@ function App() {
     async function prepare() {
       try {
         await StorageManager.initialize(STORAGE_TYPE.MMKV)
-        // Add any other async loading here (fonts, etc.)
+
+        // Request ATT permission on iOS before Firebase collects data
+        if (Platform.OS === 'ios') {
+          await requestTrackingPermissionsAsync()
+        }
       } catch (e) {
         console.warn(e)
       } finally {
