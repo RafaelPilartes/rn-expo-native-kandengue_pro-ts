@@ -32,6 +32,8 @@ type RideSummaryScreenRouteParams = {
   }
 }
 
+import { useMap } from '@/providers/MapProvider'
+
 export default function RideSummaryScreen() {
   const route = useRoute()
 
@@ -47,32 +49,14 @@ export default function RideSummaryScreen() {
 
   const { showAlert } = useAlert()
 
-  const mapRef = useRef<any>(null)
+  const { mapRef, centerOnUser } = useMap()
+
   const bottomSheetRef = useRef<BottomSheetModal>(null)
 
   const [showCancelModal, setShowCancelModal] = useState(false)
   const [showArrivalModal, setShowArrivalModal] = useState(false)
   const [showConfirmationFlow, setShowConfirmationFlow] = useState(false)
   const [isLoadingCompleteRide, setIsLoadingCompleteRide] = useState(false)
-
-  const centerOnUser = async () => {
-    const coords = userLocation ?? (await requestCurrentLocation())
-
-    if (!coords) {
-      showAlert({
-        title: 'Erro',
-        message: 'Não foi possível obter localização.',
-        type: 'error',
-        buttons: [{ text: 'OK' }]
-      })
-      return
-    }
-
-    mapRef.current?.setCameraPosition?.({
-      coordinates: coords,
-      zoom: 15
-    })
-  }
 
   const {
     loading: isLoadingDataRide,

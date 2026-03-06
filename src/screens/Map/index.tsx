@@ -13,6 +13,7 @@ import { MapError } from '@/components/map/MapError'
 import { useAppProvider } from '@/providers/AppProvider'
 import { Alert } from 'react-native'
 import { useLocation } from '@/hooks/useLocation'
+import { useMap } from '@/providers/MapProvider'
 
 export default function MapScreen() {
   const { handleGoBack } = useAppProvider()
@@ -20,31 +21,18 @@ export default function MapScreen() {
   const {
     location,
     isLoading,
-    requestCurrentLocation,
     error: locationError,
     address,
     isGettingAddress
   } = useLocation()
-  const mapRef = useRef<any>(null)
 
-  const centerOnUser = async () => {
-    const coords = location ?? (await requestCurrentLocation())
-    if (!coords) {
-      Alert.alert('Erro', 'Não foi possível obter localização.')
-      return
-    }
-
-    mapRef.current?.setCameraPosition?.({
-      coordinates: coords,
-      zoom: 15
-    })
-  }
+  const { mapRef, centerOnUser } = useMap()
 
   useEffect(() => {
     if (location) {
       centerOnUser()
     }
-  }, [location])
+  }, [location, centerOnUser])
 
   if (locationError) {
     console.log('🚨 Erro ao carregar mapa:', locationError)
