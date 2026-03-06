@@ -28,7 +28,7 @@
         "NSContactsUsageDescription": "Contacts access is required to allow selecting contacts from your device.",
         "NSUserNotificationUsageDescription": "Notifications permission is needed for push notifications.",
         "ITSAppUsesNonExemptEncryption": false,
-        "NSUserTrackingUsageDescription": "This app uses tracking to improve your experience and provide relevant services. Your data is not shared with third parties for advertising."
+        "NSUserTrackingUsageDescription": "This app requires tracking permission to provide secure authentication and push notifications via Firebase. We do not share your data with third-party advertising entities."
       },
       "config": {
         "googleMapsApiKey": "AIzaSyCcaxxnCRThBiRzzjF4SHO-yo6qtV8q7iM"
