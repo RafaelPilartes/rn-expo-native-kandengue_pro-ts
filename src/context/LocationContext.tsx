@@ -103,12 +103,6 @@ export const LocationProvider = ({
     }, 500)
   }
 
-  const handleDeclineDisclosure = () => {
-    setShowDisclosure(false)
-    // User explicitly declined disclosure
-    setMissingPermission(true)
-  }
-
   const requestInternalPermission = async (): Promise<boolean> => {
     try {
       // 1. Check current status first
@@ -507,7 +501,6 @@ export const LocationProvider = ({
       <LocationDisclosureModal
         visible={showDisclosure}
         onAccept={handleAcceptDisclosure}
-        onDecline={handleDeclineDisclosure}
       />
     </LocationContext.Provider>
   )

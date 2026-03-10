@@ -32,7 +32,6 @@ import { CustomAlert } from './components/ui/CustomAlert'
 import { SafeAreaProvider } from 'react-native-safe-area-context'
 import { NetworkStatusBanner } from './components/NetworkStatusBanner'
 import { ErrorBoundary } from './components/ErrorBoundary'
-import { requestTrackingPermissionsAsync } from 'expo-tracking-transparency'
 
 // Prevent auto-hiding the splash screen
 SplashScreen.preventAutoHideAsync()
@@ -56,11 +55,7 @@ function App() {
     async function prepare() {
       try {
         await StorageManager.initialize(STORAGE_TYPE.MMKV)
-
-        // Request ATT permission on iOS before Firebase collects data
-        if (Platform.OS === 'ios') {
-          await requestTrackingPermissionsAsync()
-        }
+        // Add any other async loading here (fonts, etc.)
       } catch (e) {
         console.warn(e)
       } finally {
