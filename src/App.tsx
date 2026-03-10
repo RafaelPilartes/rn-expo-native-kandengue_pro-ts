@@ -22,6 +22,7 @@ import { ThemeProvider } from './providers/ThemeProvider'
 import { NavigationContainer } from '@react-navigation/native'
 import { NetworkProvider } from './providers/NetworkProvider'
 import { AppProvider } from './providers/AppProvider'
+import { MapProvider } from './providers/MapProvider'
 import { GestureHandlerRootView } from 'react-native-gesture-handler'
 import { BottomSheetModalProvider } from '@gorhom/bottom-sheet'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
@@ -101,9 +102,11 @@ function App() {
                         <NetworkProvider>
                           <StatusBar style="dark" />
                           <NetworkStatusBanner />
-                          <AppProvider>
-                            <AppRouter />
-                          </AppProvider>
+                          <MapProvider>
+                            <AppProvider>
+                              <AppRouter />
+                            </AppProvider>
+                          </MapProvider>
                           <CustomAlert />
                         </NetworkProvider>
                       </TrackRideProvider>
