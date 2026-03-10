@@ -84,8 +84,7 @@
             "buildReactNativeFromSource": true
           }
         }
-      ],
-      "expo-tracking-transparency"
+      ]
     ]
   }
 }
