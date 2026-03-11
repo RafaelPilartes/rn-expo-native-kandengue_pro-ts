@@ -83,7 +83,7 @@ const Statistics: React.FC<StatisticsProps> = ({
             }}
           >
             <Package size={20} color="#2563EB" />
-            <Text className="text-xs text-gray-400">hoje</Text>
+            <Text className="text-xs text-gray-400">total</Text>
           </View>
           <Text className="text-2xl font-bold text-gray-900">{totalRides}</Text>
           <Text className="text-xs text-gray-500 mt-1">Entregas</Text>
