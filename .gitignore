@@ -45,3 +45,6 @@ yarn-error.*
 
 # agent
 # .agent/
+
+.docs/
+.local/

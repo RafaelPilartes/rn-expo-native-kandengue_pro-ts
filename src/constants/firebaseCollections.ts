@@ -7,21 +7,21 @@ export const firebaseCollections = {
     single: (userId: string) => `users/${userId}`,
     documents: (userId: string) => `users/${userId}/documents`,
     transactions: (userId: string) => `users/${userId}/transactions`,
-    notifications: (userId: string) => `users/${userId}/notifications`,
+    notifications: (userId: string) => `users/${userId}/notifications`
   },
 
   // ============================================
   // ADMIN
   admins: {
     root: 'admins',
-    single: (adminId: string) => `admins/${adminId}`,
+    single: (adminId: string) => `admins/${adminId}`
   },
 
   // ============================================
   // DRIVERS
   drivers: {
     root: 'drivers',
-    single: (driverId: string) => `drivers/${driverId}`,
+    single: (driverId: string) => `drivers/${driverId}`
   },
 
   // ============================================
@@ -29,82 +29,93 @@ export const firebaseCollections = {
   vehicles: {
     root: 'vehicles',
     single: (vehicleId: string) => `vehicles/${vehicleId}`,
-    documents: (vehicleId: string) => `vehicles/${vehicleId}/documents`,
+    documents: (vehicleId: string) => `vehicles/${vehicleId}/documents`
   },
 
   // ============================================
   // RIDES
   rides: {
     root: 'rides',
-    single: (rideId: string) => `rides/${rideId}`,
+    single: (rideId: string) => `rides/${rideId}`
   },
 
   // =============================================
   // RIDERATES
   rideRates: {
     root: 'rideRates',
-    single: (rideRateId: string) => `rideRates/${rideRateId}`,
+    single: (rideRateId: string) => `rideRates/${rideRateId}`
   },
 
   // =============================================
   // RIDETRACKINGS
   rideTrackings: {
     root: 'rideTrackings',
-    single: (rideTrackingId: string) => `rideTrackings/${rideTrackingId}`,
+    single: (rideTrackingId: string) => `rideTrackings/${rideTrackingId}`
   },
 
   // ============================================
   // TRANSACTIONS
   transactions: {
     root: 'transactions',
-    single: (transactionId: string) => `transactions/${transactionId}`,
+    single: (transactionId: string) => `transactions/${transactionId}`
   },
 
   // ============================================
   // WALLET
   wallets: {
     root: 'wallets',
-    single: (walletId: string) => `wallets/${walletId}`,
+    single: (walletId: string) => `wallets/${walletId}`
   },
 
   // =============================================
   // WALLET TOPUP REQUESTS
   requests: {
     root: 'topupRequests',
-    single: (requestId: string) => `topupRequests/${requestId}`,
+    single: (requestId: string) => `topupRequests/${requestId}`
   },
 
   // ============================================
   // DOCUMENTS
   documents: {
     root: 'documents',
-    single: (documentId: string) => `documents/${documentId}`,
+    single: (documentId: string) => `documents/${documentId}`
   },
 
   // ============================================
   // NOTIFICATIONS
   notifications: {
     root: 'notifications',
-    single: (notificationId: string) => `notifications/${notificationId}`,
+    single: (notificationId: string) => `notifications/${notificationId}`
   },
 
   // ============================================
   // RATES
   rates: {
     root: 'rates',
-    current: 'rates/current',
+    current: 'rates/current'
   },
 
   // ============================================
   // COMPLAINTS
   complaints: {
-    root: 'complaints',
+    root: 'complaints'
+  },
+
+  // MISSIONS
+  missions: {
+    root: 'missions',
+    single: (missionId: string) => `missions/${missionId}`
+  },
+
+  missionProgress: {
+    root: 'missionProgress',
+    single: (progressId: string) => `missionProgress/${progressId}`
   },
 
   // ============================================
   // SYSTEM LOGS
   logs: {
     root: 'logs',
-    single: (logId: string) => `logs/${logId}`,
-  },
-};
+    single: (logId: string) => `logs/${logId}`
+  }
+}

@@ -70,17 +70,29 @@ export type PaymentMethodType = 'cash' | 'card' | 'mobile_money'
 export type DocumentStatus = 'none' | 'pending' | 'approved' | 'rejected'
 
 export type TransactionType = 'credit' | 'debit' | 'refund'
+
 export type TransactionCategoryType =
   | 'wallet_topup'
   | 'ride_fee'
   | 'pension'
   | 'bonus'
+  | 'mission_bonus'
   | 'refund'
 
-export type TransactionStatus = 'pending' | 'approved' | 'rejected'
+export type TransactionStatus = 'pending' | 'success' | 'failed' | 'reversed'
+
 export type RequestStatus = 'pending' | 'approved' | 'rejected'
 
-export type WalletTopupMethodType = 'bank_transfer' | 'automated' | 'cash'
+export type WalletTopupStatus =
+  | 'pending' // criado localmente
+  | 'processing' // enviado para Unitel
+  | 'success' // confirmado
+  | 'failed' // falhou
+  | 'cancelled' // cancelado
+  | 'timeout' // sem resposta
+  | 'reversed' // estornado
+
+export type WalletTopupMethodType = 'unitel_money' | 'bank_transfer' | 'cash'
 
 // export type NotificationType = 'ride' | 'wallet' | 'document' | 'system'
 export type NotificationCategory = 'driver' | 'passenger' | 'admin' | 'all'
@@ -92,6 +104,8 @@ export type AdminRole =
   | 'finance'
   | 'content'
   | 'support'
+
+export type MissionType = 'daily' | 'weekly' | 'monthly'
 
 export type LogActionType =
   // Sessão e autenticação
