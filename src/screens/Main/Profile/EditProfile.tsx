@@ -359,14 +359,14 @@ export default function EditProfileScreen() {
           loading={isLoading}
         />
         {/* Informações de conta */}
-        <View className="mt-8 p-4 bg-blue-50 rounded-xl">
-          <Text className="text-sm font-medium text-blue-800 mb-2">
+        <View className="mt-8 p-4 bg-gray-100 rounded-xl">
+          <Text className="text-sm font-medium text-gray-800 mb-2">
             Informações de Conta
           </Text>
-          <Text className="text-xs text-blue-600">
+          <Text className="text-xs text-gray-600">
             Id de Usuário: {driver?.id}
           </Text>
-          <Text className="text-xs text-blue-600 mt-1">
+          <Text className="text-xs text-gray-600 mt-1">
             Data de Cadastro:{' '}
             {driver?.created_at
               ? new Date(driver.created_at).toLocaleDateString('pt-BR')

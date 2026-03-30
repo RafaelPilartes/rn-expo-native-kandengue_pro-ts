@@ -6,7 +6,7 @@ import { Package, Clock, MapPin, User, Navigation } from 'lucide-react-native'
 interface PackageInfo {
   type?: string
   description?: string
-  size?: string
+  size?: 'pequeno' | 'medio' | 'grande'
   quantity?: number
 }
 
@@ -59,16 +59,16 @@ export const RideStatusDelivering: React.FC<RideStatusDeliveringProps> = ({
 
         {/* Informações do pacote */}
         {packageInfo && (
-          <View className="bg-blue-50 p-3 rounded-lg mb-3">
+          <View className="bg-gray-100 p-3 rounded-lg mb-3">
             <View className="flex-row items-center mb-2">
-              <Package size={16} color="#1D4ED8" />
-              <Text className="text-blue-800 font-semibold ml-2">Pacote</Text>
+              <Package size={16} color="#1f2937" />
+              <Text className="text-gray-800 font-semibold ml-2">Pacote</Text>
             </View>
-            <Text className="text-blue-700 text-sm">
+            <Text className="text-gray-700 text-sm">
               {packageInfo.description || 'Pacote do cliente'}
             </Text>
             {packageInfo.size && (
-              <Text className="text-blue-600 text-xs mt-1">
+              <Text className="text-gray-600 text-xs mt-1">
                 Tamanho: {packageInfo.size} • Qtd: {packageInfo.quantity || 1}
               </Text>
             )}

@@ -37,12 +37,26 @@ export function RequestDetailsModal({
 
   const getStatusConfig = () => {
     switch (request.status) {
-      case 'approved':
+      case 'pending':
         return {
-          icon: CheckCircle2,
-          color: '#059669', // emerald-600
-          bg: '#ECFDF5', // emerald-50
-          text: 'Aprovado'
+          icon: Clock,
+          color: '#D97706', // amber-600
+          bg: '#FFFBEB', // amber-50
+          text: 'Pendente'
+        }
+      case 'processing':
+        return {
+          icon: Clock,
+          color: '#D97706', // amber-600
+          bg: '#FFFBEB', // amber-50
+          text: 'Processando'
+        }
+      case 'failed':
+        return {
+          icon: XCircle,
+          color: '#DC2626', // red-600
+          bg: '#FEF2F2', // red-50
+          text: 'Falhado'
         }
       case 'rejected':
         return {
@@ -50,6 +64,41 @@ export function RequestDetailsModal({
           color: '#DC2626', // red-600
           bg: '#FEF2F2', // red-50
           text: 'Rejeitado'
+        }
+      case 'approved':
+        return {
+          icon: CheckCircle2,
+          color: '#059669', // emerald-600
+          bg: '#ECFDF5', // emerald-50
+          text: 'Aprovado'
+        }
+      case 'success':
+        return {
+          icon: CheckCircle2,
+          color: '#059669', // emerald-600
+          bg: '#ECFDF5', // emerald-50
+          text: 'Sucesso'
+        }
+      case 'cancelled':
+        return {
+          icon: XCircle,
+          color: '#DC2626', // red-600
+          bg: '#FEF2F2', // red-50
+          text: 'Cancelado'
+        }
+      case 'reversed':
+        return {
+          icon: XCircle,
+          color: '#DC2626', // red-600
+          bg: '#FEF2F2', // red-50
+          text: 'Devolvido'
+        }
+      case 'timeout':
+        return {
+          icon: XCircle,
+          color: '#DC2626', // red-600
+          bg: '#FEF2F2', // red-50
+          text: 'Sem Resposta'
         }
       default:
         return {

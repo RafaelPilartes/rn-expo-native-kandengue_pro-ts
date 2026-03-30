@@ -86,8 +86,10 @@ export type RequestStatus = 'pending' | 'approved' | 'rejected'
 export type WalletTopupStatus =
   | 'pending' // criado localmente
   | 'processing' // enviado para Unitel
-  | 'success' // confirmado
+  | 'rejected' // rejeitado
   | 'failed' // falhou
+  | 'approved' // aprovado
+  | 'success' // confirmado
   | 'cancelled' // cancelado
   | 'timeout' // sem resposta
   | 'reversed' // estornado

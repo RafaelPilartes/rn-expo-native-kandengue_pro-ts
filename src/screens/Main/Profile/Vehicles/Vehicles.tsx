@@ -341,26 +341,6 @@ export default function VehiclesScreen() {
             </Text>
           </View>
         )}
-
-        {/* Info Box */}
-        {vehicles.length > 0 && (
-          <View className="bg-blue-50/50 rounded-2xl p-5 border border-blue-100/50 mb-6">
-            <Text className="text-sm font-bold text-blue-900 mb-2">
-              Dicas Importantes
-            </Text>
-            <View className="space-y-1">
-              <Text className="text-xs text-blue-800/80 leading-relaxed">
-                • Mantenha os dados do veículo sempre atualizados.
-              </Text>
-              <Text className="text-xs text-blue-800/80 leading-relaxed">
-                • A foto do veículo deve ser clara e mostrar a placa.
-              </Text>
-              <Text className="text-xs text-blue-800/80 leading-relaxed">
-                • Veículos em análise não podem receber corridas.
-              </Text>
-            </View>
-          </View>
-        )}
       </ScrollView>
 
       {/* FAB - Enhanced */}

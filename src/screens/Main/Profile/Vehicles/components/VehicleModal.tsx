@@ -318,15 +318,6 @@ export default function VehicleModal({
                     onChangeText={text => handleChange('color', text)}
                   />
                 </View>
-
-                {/* Info Box */}
-                <View className="bg-amber-50/50 rounded-2xl p-4 mt-6 border border-amber-100/50">
-                  <Text className="text-xs text-amber-900 leading-relaxed">
-                    💡 <Text className="font-semibold">Dica:</Text> Veículos são
-                    analisados pela equipa antes de serem aprovados para
-                    corridas.
-                  </Text>
-                </View>
               </ScrollView>
 
               {/* Fixed Bottom Action */}

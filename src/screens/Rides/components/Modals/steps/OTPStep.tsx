@@ -6,7 +6,9 @@ import {
   Image,
   TextInput,
   ActivityIndicator,
-  Platform
+  Platform,
+  TouchableWithoutFeedback,
+  Keyboard
 } from 'react-native'
 import { X, CheckCircle, ArrowLeft } from 'lucide-react-native'
 import { SafeAreaView } from 'react-native-safe-area-context'
@@ -34,7 +36,9 @@ export const OTPStep: React.FC<OTPStepProps> = ({
 }) => {
   return (
     <SafeAreaView className="flex-1 bg-white">
-      {/* Header */}
+      <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
+        <View className="flex-1">
+          {/* Header */}
       <View className="flex-row justify-between items-center px-6 py-4 mb-6 border-b border-gray-100">
         <View className="flex-row items-center gap-4">
           <TouchableOpacity
@@ -143,6 +147,8 @@ export const OTPStep: React.FC<OTPStepProps> = ({
           </TouchableOpacity>
         </View>
       </View>
+      </View>
+      </TouchableWithoutFeedback>
     </SafeAreaView>
   )
 }

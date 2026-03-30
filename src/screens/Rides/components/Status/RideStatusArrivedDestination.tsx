@@ -175,10 +175,10 @@ export const RideStatusArrivedDestination: React.FC<
           </Text>
         </TouchableOpacity>
 
-        {/* Informação sobre o novo processo */}
+        {/* Informação sobre o processo de entrega */}
         <View className="mt-2 bg-yellow-50 p-2 rounded-lg">
           <Text className="text-yellow-800 text-xs text-center">
-            📸 Agora com foto obrigatória para comprovar a entrega
+            Para finalizar, tire uma foto como comprovativo de entrega.
           </Text>
         </View>
       </View>

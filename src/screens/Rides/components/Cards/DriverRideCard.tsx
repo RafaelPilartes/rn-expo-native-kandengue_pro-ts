@@ -1,15 +1,6 @@
 // src/screens/Ride/components/DriverRideCard.tsx
-import { RideStatusType } from '@/types/enum'
-import { CustomPlace } from '@/types/places'
-import {
-  MapPinned,
-  MessageCircle,
-  Phone,
-  X,
-  User,
-  Package
-} from 'lucide-react-native'
-import React, { forwardRef } from 'react'
+import { MapPinned, MessageCircle, Phone, X } from 'lucide-react-native'
+import React, { forwardRef, useState } from 'react'
 import {
   View,
   Text,
@@ -17,7 +8,8 @@ import {
   Image,
   StyleSheet,
   Alert,
-  Linking
+  Linking,
+  Modal
 } from 'react-native'
 import { BottomSheetModal, BottomSheetView } from '@gorhom/bottom-sheet'
 import { RideInterface } from '@/interfaces/IRide'
@@ -35,19 +27,15 @@ type Props = {
 
 export const DriverRideSheet = forwardRef<BottomSheetModal, Props>(
   ({ rideDetails, fareDetails, distance, onCancel, snapPoints }, ref) => {
+    const [contactModalVisible, setContactModalVisible] = useState(false)
+    const [contactType, setContactType] = useState<'call' | 'message' | null>(
+      null
+    )
+
     const handleCall = () => {
       if (rideDetails.user?.phone) {
-        Alert.alert(
-          'Ligar para cliente',
-          `Deseja ligar para ${rideDetails.user.phone}?`,
-          [
-            { text: 'Cancelar', style: 'cancel' },
-            {
-              text: 'Ligar',
-              onPress: () => Linking.openURL(`tel:${rideDetails.user.phone}`)
-            }
-          ]
-        )
+        setContactType('call')
+        setContactModalVisible(true)
       } else {
         Alert.alert('Erro', 'Número de telefone não disponível')
       }
@@ -55,197 +43,261 @@ export const DriverRideSheet = forwardRef<BottomSheetModal, Props>(
 
     const handleMessage = () => {
       if (rideDetails.user?.phone) {
-        Alert.alert(
-          'Enviar mensagem',
-          `Deseja enviar mensagem para ${rideDetails.user.phone}?`,
-          [
-            { text: 'Cancelar', style: 'cancel' },
-            {
-              text: 'Enviar',
-              onPress: () => Linking.openURL(`sms:${rideDetails.user.phone}`)
-            }
-          ]
-        )
+        setContactType('message')
+        setContactModalVisible(true)
       } else {
         Alert.alert('Erro', 'Número de telefone não disponível')
       }
     }
 
     const getStatusInfo = () => {
+      const defaultStyle = {
+        color: 'bg-gray-100',
+        textColor: 'text-gray-800'
+      }
+
       switch (rideDetails.status) {
         case 'driver_on_the_way':
-          return {
-            label: 'A caminho',
-            color: 'bg-blue-100',
-            textColor: 'text-blue-700'
-          }
+          return { label: 'A caminho da recolha', ...defaultStyle }
         case 'arrived_pickup':
-          return {
-            label: 'No local de recolha',
-            color: 'bg-green-100',
-            textColor: 'text-green-700'
-          }
+          return { label: 'No local de recolha', ...defaultStyle }
         case 'picked_up':
-          return {
-            label: 'Pacote recolhido',
-            color: 'bg-orange-100',
-            textColor: 'text-orange-700'
-          }
+          return { label: 'A caminho da entrega', ...defaultStyle }
         case 'arrived_dropoff':
-          return {
-            label: 'No local de entrega',
-            color: 'bg-purple-100',
-            textColor: 'text-purple-700'
-          }
+          return { label: 'No local de entrega', ...defaultStyle }
         default:
-          return {
-            label: 'Em andamento',
-            color: 'bg-gray-100',
-            textColor: 'text-gray-700'
-          }
+          return { label: 'A iniciar...', ...defaultStyle }
       }
     }
 
     const statusInfo = getStatusInfo()
 
     return (
-      <BottomSheetModal
-        ref={ref}
-        index={0}
-        snapPoints={snapPoints}
-        enablePanDownToClose={false}
-        backgroundStyle={{ borderRadius: 24 }}
-        handleIndicatorStyle={{ backgroundColor: '#D1D5DB' }}
-      >
-        <BottomSheetView style={styles.container}>
-          {/* Header com status */}
-          <View className="flex-row items-center justify-between mb-4">
-            <View className={`px-3 py-1 rounded-full ${statusInfo.color}`}>
-              <Text className={`text-xs font-medium ${statusInfo.textColor}`}>
-                {statusInfo.label}
+      <>
+        <BottomSheetModal
+          ref={ref}
+          index={0}
+          snapPoints={snapPoints}
+          enablePanDownToClose={false}
+          backgroundStyle={{ borderRadius: 24, backgroundColor: '#ffffff' }}
+          handleIndicatorStyle={{
+            backgroundColor: '#E5E7EB',
+            width: 40,
+            height: 4
+          }}
+        >
+          <BottomSheetView className="flex-1 px-5 pt-2 pb-6 bg-white">
+            {/* Header: Status & Ride ID */}
+            <View className="flex-row justify-between items-center mb-6">
+              <View className={`px-3 py-1.5 rounded-full ${statusInfo.color}`}>
+                <Text
+                  className={`text-xs font-bold uppercase tracking-widest ${statusInfo.textColor}`}
+                >
+                  {statusInfo.label}
+                </Text>
+              </View>
+              <Text className="text-gray-400 text-sm font-bold">
+                #{rideDetails.id}
               </Text>
             </View>
-            <Text className="text-gray-500 text-sm">#{rideDetails.id}</Text>
-          </View>
 
-          {/* Informações do cliente */}
-          {rideDetails.user && (
-            <View className="flex-row items-center justify-between mb-4 pb-4 border-b border-gray-200">
+            {/* Client Info */}
+            <View className="flex-row items-center justify-between mb-6">
               <View className="flex-row items-center flex-1">
                 <Image
                   source={{
                     uri:
-                      rideDetails.user.photo ||
+                      rideDetails.user?.photo ||
                       'https://cdn-icons-png.flaticon.com/512/3541/3541871.png'
                   }}
-                  className="w-12 h-12 rounded-full mr-3"
+                  className="w-12 h-12 rounded-full bg-gray-200"
                 />
-                <View className="flex-1">
+                <View className="ml-3 flex-1">
                   <Text
-                    className="font-semibold text-gray-900 text-lg"
+                    className="font-bold text-gray-900 text-base"
                     numberOfLines={1}
                   >
-                    {rideDetails.user.name}
+                    {rideDetails.user?.name || 'Cliente'}
                   </Text>
-                  <Text className="text-gray-600 text-sm" numberOfLines={1}>
-                    {rideDetails.user.email}
-                  </Text>
+                  <View className="flex-row items-center mt-0.5">
+                    <Text
+                      className="text-gray-500 text-sm font-medium"
+                      numberOfLines={1}
+                    >
+                      {rideDetails.user?.phone ||
+                        rideDetails.user?.email ||
+                        'Sem contacto'}
+                    </Text>
+                  </View>
                 </View>
               </View>
 
-              {/* Botões de contato */}
-              <View className="flex-row gap-2">
+              {/* Contact Actions */}
+              <View className="flex-row gap-3 ml-2">
                 <TouchableOpacity
-                  className="p-2 rounded-full bg-green-500"
-                  onPress={handleCall}
-                >
-                  <Phone color="white" size={18} />
-                </TouchableOpacity>
-                <TouchableOpacity
-                  className="p-2 rounded-full bg-blue-500"
+                  className="w-11 h-11 rounded-full bg-gray-100 items-center justify-center active:bg-gray-200"
                   onPress={handleMessage}
                 >
-                  <MessageCircle color="white" size={18} />
+                  <MessageCircle color="#4B5563" size={18} />
+                </TouchableOpacity>
+                <TouchableOpacity
+                  className="w-11 h-11 rounded-full bg-green-100 items-center justify-center active:bg-green-200"
+                  onPress={handleCall}
+                >
+                  <Phone color="#16A34A" size={18} strokeWidth={2.5} />
                 </TouchableOpacity>
               </View>
             </View>
-          )}
 
-          {/* Rotas */}
-          <View className="mb-4">
-            <Text className="font-semibold text-gray-900 mb-3 text-lg">
-              Trajeto da Entrega
-            </Text>
-
-            <View className="gap-2">
-              {/* Origem */}
-              <View className="flex-row items-start">
-                <View className="w-6 h-6 bg-green-500 rounded-full items-center justify-center mr-3 mt-0.5">
-                  <Text className="text-white text-xs font-bold">R</Text>
+            {/* Route Section (Connects Pickup and Dropoff) */}
+            <View className="bg-gray-50 rounded-2xl p-4 mb-6">
+              <View className="flex-row">
+                {/* Icons and Line Column */}
+                <View className="items-center mr-3 mt-1.5 flex-col">
+                  <View className="w-3.5 h-3.5 rounded-full bg-green-500 border-[2px] border-green-200 z-10" />
+                  <View className="w-[2px] flex-1 bg-gray-300 my-1 z-0" />
+                  <View className="w-3.5 h-3.5 rounded-full bg-primary-200 border-[2px] border-primary-50 z-10" />
                 </View>
+
+                {/* Text Column */}
                 <View className="flex-1">
-                  <Text className="text-gray-500 text-sm">Recolher em</Text>
-                  <Text className="text-gray-900 font-medium" numberOfLines={2}>
-                    {rideDetails.pickup.description}
-                  </Text>
+                  {/* Pickup Text */}
+                  <View className="pb-5">
+                    <Text className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-0.5">
+                      Recolha
+                    </Text>
+                    <Text
+                      className="text-gray-800 font-medium text-sm leading-5"
+                      numberOfLines={2}
+                    >
+                      {rideDetails.pickup.description}
+                    </Text>
+                  </View>
+
+                  {/* Dropoff Text */}
+                  <View>
+                    <Text className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-0.5">
+                      Entrega
+                    </Text>
+                    <Text
+                      className="text-gray-800 font-medium text-sm leading-5"
+                      numberOfLines={2}
+                    >
+                      {rideDetails.dropoff.description}
+                    </Text>
+                  </View>
                 </View>
               </View>
 
-              {/* Destino */}
-              <View className="flex-row items-start">
-                <View className="w-6 h-6 bg-red-500 rounded-full items-center justify-center mr-3 mt-0.5">
-                  <Text className="text-white text-xs font-bold">E</Text>
-                </View>
-                <View className="flex-1">
-                  <Text className="text-gray-500 text-sm">Entregar em</Text>
-                  <Text className="text-gray-900 font-medium" numberOfLines={2}>
-                    {rideDetails.dropoff.description}
-                  </Text>
-                </View>
+              {/* Distance Info below dropoff */}
+              <View className="flex-row items-center mt-5 pt-4 border-t border-gray-200/60">
+                <MapPinned size={16} color="#6B7280" />
+                <Text className="text-gray-500 font-medium ml-2 text-sm">
+                  Distância total da viagem:
+                </Text>
+                <Text className="text-gray-900 font-bold ml-auto text-sm">
+                  {distance}
+                </Text>
               </View>
             </View>
 
-            {/* Distância */}
-            <View className="flex-row items-center mt-3">
-              <MapPinned size={16} color="#6B7280" />
-              <Text className="text-gray-600 ml-2">Distância total:</Text>
-              <Text className="text-gray-900 font-semibold ml-1">
-                {distance}
+            <View className="flex-1" />
+
+            {/* Footer: Price and Actions */}
+            <View className="pt-2 pb-6">
+              <Text className="text-gray-400 text-xs font-bold uppercase tracking-widest mb-1 text-center">
+                Valor a Receber
               </Text>
-            </View>
-          </View>
-
-          {/* Preço + ações */}
-          <View className="flex-row items-center justify-between border-t border-gray-200 mb-12">
-            <View>
-              <Text className="text-red-600 text-2xl font-bold">
+              <Text className="text-gray-900 text-2xl font-bold text-center mb-6 tracking-tight">
                 {formatMoney(fareDetails?.total ?? 0)}
               </Text>
-              <Text className="text-gray-600 text-sm">Valor da corrida</Text>
-            </View>
 
-            {/* Botão de cancelamento (disponível apenas em certos status) */}
-            {(rideDetails.status === 'driver_on_the_way' ||
-              rideDetails.status === 'arrived_pickup') && (
-              <TouchableOpacity
-                className="flex-row items-center bg-red-50 border border-red-500 px-4 py-2 rounded-full"
-                onPress={onCancel}
+              {(rideDetails.status === 'driver_on_the_way' ||
+                rideDetails.status === 'arrived_pickup') && (
+                <TouchableOpacity
+                  className="w-full bg-red-50 py-4 rounded-xl border border-red-100 flex-row justify-center items-center active:bg-red-100"
+                  onPress={onCancel}
+                >
+                  <X color="#DC2626" size={20} strokeWidth={3} />
+                  <Text className="text-red-600 font-bold text-sm ml-2">
+                    Cancelar Viagem
+                  </Text>
+                </TouchableOpacity>
+              )}
+            </View>
+          </BottomSheetView>
+        </BottomSheetModal>
+
+        {/* Modal Personalizado de Contacto */}
+        <Modal
+          visible={contactModalVisible}
+          transparent
+          animationType="fade"
+          onRequestClose={() => setContactModalVisible(false)}
+        >
+          <View className="flex-1 justify-center items-center bg-black/50 px-6">
+            <View className="bg-white w-full rounded-3xl p-6 items-center">
+              <View
+                className={`w-16 h-16 rounded-full items-center justify-center mb-4 ${
+                  contactType === 'call' ? 'bg-green-100' : 'bg-gray-100'
+                }`}
               >
-                <X color="#EF4444" size={18} />
-                <Text className="text-red-600 font-semibold ml-2">
-                  Cancelar
+                {contactType === 'call' ? (
+                  <Phone color="#16A34A" size={28} strokeWidth={2.5} />
+                ) : (
+                  <MessageCircle color="#4B5563" size={30} />
+                )}
+              </View>
+
+              <Text className="text-xl font-bold text-gray-900 mb-2 text-center">
+                {contactType === 'call'
+                  ? 'Ligar para o Cliente'
+                  : 'Enviar Mensagem'}
+              </Text>
+
+              <Text className="text-gray-500 text-center mb-8">
+                Deseja {contactType === 'call' ? 'ligar' : 'enviar mensagem'}{' '}
+                para{' '}
+                <Text className="font-bold text-gray-700">
+                  {rideDetails.user?.phone}
                 </Text>
-              </TouchableOpacity>
-            )}
+                ?
+              </Text>
+
+              <View className="flex-row gap-3 w-full">
+                <TouchableOpacity
+                  className="flex-1 py-4 bg-gray-100 rounded-xl items-center active:bg-gray-200"
+                  onPress={() => setContactModalVisible(false)}
+                >
+                  <Text className="text-gray-600 font-bold text-base">
+                    Cancelar
+                  </Text>
+                </TouchableOpacity>
+
+                <TouchableOpacity
+                  className={`flex-1 py-4 rounded-xl items-center ${
+                    contactType === 'call'
+                      ? 'bg-green-600 active:bg-green-700'
+                      : 'bg-gray-800 active:bg-gray-900'
+                  }`}
+                  onPress={() => {
+                    setContactModalVisible(false)
+                    if (contactType === 'call') {
+                      Linking.openURL(`tel:${rideDetails.user?.phone}`)
+                    } else {
+                      Linking.openURL(`sms:${rideDetails.user?.phone}`)
+                    }
+                  }}
+                >
+                  <Text className="text-white font-bold text-base">
+                    {contactType === 'call' ? 'Ligar Agora' : 'Enviar Agora'}
+                  </Text>
+                </TouchableOpacity>
+              </View>
+            </View>
           </View>
-        </BottomSheetView>
-      </BottomSheetModal>
+        </Modal>
+      </>
     )
   }
 )
-
-const styles = StyleSheet.create({
-  container: {
-    padding: 16
-  }
-})
