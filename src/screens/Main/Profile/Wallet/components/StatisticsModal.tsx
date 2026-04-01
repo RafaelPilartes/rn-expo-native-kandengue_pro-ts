@@ -130,7 +130,7 @@ export function StatisticsModal({
             <View className="flex-row gap-3 mb-6">
               <View className="flex-1 bg-emerald-50 p-4 rounded-2xl border border-emerald-100">
                 <View className="bg-emerald-100 w-8 h-8 rounded-full items-center justify-center mb-3">
-                  <ArrowDownLeft size={16} color="#059669" />
+                  <ArrowUpRight size={16} color="#059669" />
                 </View>
                 <Text className="text-emerald-800 text-[10px] font-bold uppercase mb-1">
                   Receitas
@@ -142,7 +142,7 @@ export function StatisticsModal({
 
               <View className="flex-1 bg-red-50 p-4 rounded-2xl border border-red-100">
                 <View className="bg-red-100 w-8 h-8 rounded-full items-center justify-center mb-3">
-                  <ArrowUpRight size={16} color="#DC2626" />
+                  <ArrowDownLeft size={16} color="#DC2626" />
                 </View>
                 <Text className="text-red-800 text-[10px] font-bold uppercase mb-1">
                   Despesas

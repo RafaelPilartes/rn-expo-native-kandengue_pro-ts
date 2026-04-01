@@ -20,8 +20,6 @@ import { NativeStackNavigationProp } from '@react-navigation/native-stack'
 import { InputField } from '@/components/ui/input/InputField'
 import ROUTES from '@/constants/routes'
 import { useTranslation } from 'react-i18next'
-import { LogoRed } from '@/constants/images'
-import { useAuthViewModel } from '@/viewModels/AuthViewModel'
 
 import { useAlert } from '@/context/AlertContext'
 
@@ -32,7 +30,6 @@ export default function SignUpScreen() {
   const { t } = useTranslation(['auth', 'common'])
 
   // 🔹 Hook de autenticação
-  const { register } = useAuthViewModel()
   const { showAlert } = useAlert()
   const [isLoading, setIsLoading] = useState(false)
 
@@ -242,7 +239,7 @@ export default function SignUpScreen() {
               </View>
             </View>
 
-            <LineGradient />
+            {/* <LineGradient /> */}
           </View>
         </ScrollView>
       </TouchableWithoutFeedback>

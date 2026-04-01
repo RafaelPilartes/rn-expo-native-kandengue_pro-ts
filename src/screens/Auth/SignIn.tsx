@@ -21,7 +21,7 @@ import { NativeStackNavigationProp } from '@react-navigation/native-stack'
 import ROUTES from '@/constants/routes'
 import { useTranslation } from 'react-i18next'
 import { LogoRed } from '@/constants/images'
-import { useAuthViewModel } from '@/viewModels/AuthViewModel' // 🔹 ADICIONAR
+import { useAuthViewModel } from '@/viewModels/AuthViewModel' // ADICIONAR
 import { SafeAreaView } from 'react-native-safe-area-context'
 import { useAlert } from '@/context/AlertContext'
 import { mapFirebaseError } from '@/helpers/mapFirebaseError'
@@ -40,7 +40,7 @@ export default function LoginScreen() {
     navigation.navigate(to)
   }
 
-  // 🔹 Hook de autenticação
+  // Hook de autenticação
   const { login, checkEmailVerification, sendEmailVerification } =
     useAuthViewModel()
   const { updateDriver } = useDriversViewModel()
@@ -80,7 +80,7 @@ export default function LoginScreen() {
     return isValid
   }
 
-  // 🔹 Main login logic
+  // Main login logic
   const handleLogin = async () => {
     if (!validateForm()) return
 
@@ -103,54 +103,54 @@ export default function LoginScreen() {
       console.log('✅ Login bem-sucedido para', driver.email)
 
       // 2️⃣ Verificar se email foi validado
-      const isEmailVerified = await checkEmailVerification.mutateAsync()
+      // const isEmailVerified = await checkEmailVerification.mutateAsync()
 
-      if (!isEmailVerified) {
-        console.warn('⚠️ Email não verificado')
+      // if (!isEmailVerified) {
+      //   console.warn('⚠️ Email não verificado')
 
-        // Mostrar alerta mas permitir acesso
-        showAlert({
-          title: 'Email não verificado',
-          message:
-            'Seu email ainda não foi verificado. Verifique seu email e clique no link enviado para ativar sua conta.',
-          type: 'warning',
-          buttons: [
-            {
-              text: 'Entendi',
-              style: 'cancel',
-              onPress: () => {
-                // Navegar para a tela principal mesmo com email não verificado
-                navigation.replace(ROUTES.AuthStack.WELCOME)
-              }
-            },
-            {
-              text: 'Reenviar Verificação',
-              onPress: async () => {
-                try {
-                  await sendEmailVerification.mutateAsync()
-                  showAlert({
-                    title: 'Verificação reenviada',
-                    message: `Um novo email foi enviado para ${email}.`,
-                    type: 'success',
-                    buttons: [{ text: 'OK' }]
-                  })
-                } catch (err) {
-                  showAlert({
-                    title: 'Erro',
-                    message: 'Falha ao reenviar email de verificação.',
-                    type: 'error',
-                    buttons: [{ text: 'OK' }]
-                  })
-                }
-              }
-            }
-          ]
-        })
+      //   // Mostrar alerta mas permitir acesso
+      //   showAlert({
+      //     title: 'Email não verificado',
+      //     message:
+      //       'Seu email ainda não foi verificado. Verifique seu email e clique no link enviado para ativar sua conta.',
+      //     type: 'warning',
+      //     buttons: [
+      //       {
+      //         text: 'Entendi',
+      //         style: 'cancel',
+      //         onPress: () => {
+      //           // Navegar para a tela principal mesmo com email não verificado
+      //           navigation.replace(ROUTES.AuthStack.WELCOME)
+      //         }
+      //       },
+      //       {
+      //         text: 'Reenviar Verificação',
+      //         onPress: async () => {
+      //           try {
+      //             await sendEmailVerification.mutateAsync()
+      //             showAlert({
+      //               title: 'Verificação reenviada',
+      //               message: `Um novo email foi enviado para ${email}.`,
+      //               type: 'success',
+      //               buttons: [{ text: 'OK' }]
+      //             })
+      //           } catch (err) {
+      //             showAlert({
+      //               title: 'Erro',
+      //               message: 'Falha ao reenviar email de verificação.',
+      //               type: 'error',
+      //               buttons: [{ text: 'OK' }]
+      //             })
+      //           }
+      //         }
+      //       }
+      //     ]
+      //   })
 
-        // Faz logout até o email ser verificado
-        zustandLogout()
-        return
-      }
+      //   // Faz logout até o email ser verificado
+      //   zustandLogout()
+      //   return
+      // }
 
       // 3️⃣ Atualiza campo email_verified no Firestore
       try {
@@ -187,7 +187,7 @@ export default function LoginScreen() {
         buttons: [{ text: 'OK' }]
       })
 
-      // 🔹 LIMPAR: senha em caso de erro
+      // LIMPAR: senha em caso de erro
       if (error.message.includes('Senha incorreta')) {
         setPassword('')
       }
@@ -225,7 +225,7 @@ export default function LoginScreen() {
               </Text>
 
               {/* Phone Field */}
-              {/* 🔹 ATUALIZAR: Campo Email (em vez de Phone) */}
+              {/* ATUALIZAR: Campo Email (em vez de Phone) */}
               <InputField
                 label={`${t('auth:input_email_label')}`}
                 icon={
@@ -236,7 +236,7 @@ export default function LoginScreen() {
                 }
                 placeholder={`${t('auth:input_email_placeholder')}`}
                 value={email}
-                onChangeText={text => setEmail(text.toLowerCase())} // 🔹 Converter para minúsculo
+                onChangeText={text => setEmail(text.toLowerCase())}
                 keyboardType="email-address"
                 autoComplete="email"
                 autoCapitalize="none"
