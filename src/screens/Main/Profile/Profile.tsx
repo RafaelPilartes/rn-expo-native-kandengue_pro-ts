@@ -11,7 +11,8 @@ import {
   Shield,
   Book,
   AlertCircle,
-  LogOut
+  LogOut,
+  Target
 } from 'lucide-react-native'
 import { useNavigation } from '@react-navigation/native'
 import ROUTES from '@/constants/routes'
@@ -95,6 +96,15 @@ export default function DriverProfile() {
           icon={CreditCard}
           label="Minha Carteira"
           onPress={() => navigation.navigate(ROUTES.ProfileStack.WALLET)}
+        />
+        <MenuItem
+          icon={Target}
+          label="Missões"
+          onPress={() =>
+            navigation.navigate(ROUTES.MainTab.HOME, {
+              screen: ROUTES.HomeStack.MISSIONS
+            })
+          }
         />
       </View>
 

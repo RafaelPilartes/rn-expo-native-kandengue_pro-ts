@@ -11,11 +11,16 @@ import RideCard from '@/components/RideCard'
 import LocationStatusCard from '@/components/LocationStatusCard'
 import PermissionBlocker from '@/components/PermissionBlocker'
 import AccountBlocker from '@/components/AccountBlocker'
+import { MissionMiniCard } from '@/components/home/MissionMiniCard'
 
 import { useHomeViewModel } from '@/hooks/useHomeViewModel'
+import { useNavigation } from '@react-navigation/native'
+import { NativeStackNavigationProp } from '@react-navigation/native-stack'
 import ROUTES from '@/constants/routes'
+import type { HomeStackParamList } from '@/types/navigation'
 
 export default function HomeScreen() {
+  const homeNavigation = useNavigation<NativeStackNavigationProp<HomeStackParamList>>()
   const {
     currentDriverData,
     wallet,
@@ -112,6 +117,12 @@ export default function HomeScreen() {
             <Statistics
               balance={wallet?.balance || 0}
               totalRides={ridesCount}
+            />
+
+            {/* Missão Ativa */}
+            <MissionMiniCard
+              driverId={currentDriverData?.id}
+              onPress={() => homeNavigation.navigate(ROUTES.HomeStack.MISSIONS)}
             />
 
             {/* Lista de Corridas */}

@@ -19,7 +19,8 @@ const ROUTES = {
   },
   HomeStack: {
     HOME: 'HomeScreen',
-    NOTIFICATIONS: 'NotificationsScreen'
+    NOTIFICATIONS: 'NotificationsScreen',
+    MISSIONS: 'MissionsScreen'
   },
   HistoryStack: {
     HISTORY: 'HistoryScreen',

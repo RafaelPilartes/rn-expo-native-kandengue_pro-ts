@@ -50,8 +50,13 @@ export function useMissionViewModel(
 
   /** 🔹 Atualizar missão */
   const updateMission = useMutation({
-    mutationFn: ({ id, mission }: { id: string; mission: Partial<MissionEntity> }) =>
-      missionUseCase.update(id, mission),
+    mutationFn: ({
+      id,
+      mission
+    }: {
+      id: string
+      mission: Partial<MissionEntity>
+    }) => missionUseCase.update(id, mission),
     onSuccess: () => {
       queryClient.invalidateQueries({
         queryKey: [firebaseCollections.missions.root]
@@ -140,10 +145,8 @@ export function useMissionViewModel(
 
   useEffect(() => {
     return () => {
-      if (activeMissionsListenerRef.current)
-        activeMissionsListenerRef.current()
-      if (driverProgressListenerRef.current)
-        driverProgressListenerRef.current()
+      if (activeMissionsListenerRef.current) activeMissionsListenerRef.current()
+      if (driverProgressListenerRef.current) driverProgressListenerRef.current()
     }
   }, [])
 

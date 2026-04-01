@@ -44,6 +44,7 @@ export type MainTabParamList = {
 export type HomeStackParamList = {
   HomeScreen: undefined
   NotificationsScreen: undefined
+  MissionsScreen: undefined
 
   RideSummaryScreen: {
     id: string
