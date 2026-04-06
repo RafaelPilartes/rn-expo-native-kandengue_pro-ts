@@ -1,5 +1,5 @@
-// src/screens/Main/Profile/Wallet/components/TopupRequestModal.tsx
-import React from 'react'
+// src/screens/Main/Profile/Wallet/components/UnitelMoneyTopupModal.tsx
+import React, { useState, useEffect } from 'react'
 import {
   Modal,
   View,
@@ -10,39 +10,120 @@ import {
   Platform,
   TouchableWithoutFeedback,
   Keyboard,
+  Alert,
+  ActivityIndicator,
   Image
 } from 'react-native'
-import { X } from 'lucide-react-native'
-import { ImagePickerButton } from '@/components/wallet/ImagePickerButton'
+import { X, Smartphone } from 'lucide-react-native'
+import {
+  requestWalletTopup,
+  type WalletTopupApiResponse
+} from '@/modules/Api/rest/walletTopup.api'
 
 const PRIMARY_COLOR = '#b31a24'
 
-type TopupRequestModalProps = {
+type UnitelMoneyTopupModalProps = {
   visible: boolean
   onClose: () => void
-  amount: string
-  onAmountChange: (value: string) => void
-  selectedImage: string | null
-  onPickImage: () => void
-  onClearImage: () => void
-  onSubmit: () => void
-  isSubmitting: boolean
-  isSelectingImage: boolean
+  walletId: string
+  driverPhone: string
+  onSuccess: (response: WalletTopupApiResponse) => void
 }
 
-export function TopupRequestModal({
+export function UnitelMoneyTopupModal({
   visible,
   onClose,
-  amount,
-  onAmountChange,
-  selectedImage,
-  onPickImage,
-  onClearImage,
-  onSubmit,
-  isSubmitting,
-  isSelectingImage
-}: TopupRequestModalProps) {
-  const canSubmit = amount.trim() && selectedImage && !isSubmitting
+  walletId,
+  driverPhone,
+  onSuccess
+}: UnitelMoneyTopupModalProps) {
+  const [amount, setAmount] = useState('')
+  const [phoneNumber, setPhoneNumber] = useState('')
+  const [isSubmitting, setIsSubmitting] = useState(false)
+
+  // Pré-preencher telefone ao abrir
+  useEffect(() => {
+    if (visible) {
+      setPhoneNumber(driverPhone || '')
+      setAmount('')
+    }
+  }, [visible, driverPhone])
+
+  const validateForm = (): boolean => {
+    if (!amount.trim()) {
+      Alert.alert('Erro', 'Por favor, insira o valor do carregamento')
+      return false
+    }
+
+    const amountValue = Number(amount)
+    if (isNaN(amountValue) || amountValue <= 0) {
+      Alert.alert('Erro', 'Por favor, insira um valor válido')
+      return false
+    }
+
+    if (amountValue < 500) {
+      Alert.alert('Erro', 'O valor mínimo de carregamento é 500 AOA')
+      return false
+    }
+
+    if (!phoneNumber.trim()) {
+      Alert.alert('Erro', 'Por favor, insira o número de telefone')
+      return false
+    }
+
+    const cleanPhone = phoneNumber.replace(/\s/g, '')
+    if (cleanPhone.length < 9) {
+      Alert.alert('Erro', 'Número de telefone inválido')
+      return false
+    }
+
+    return true
+  }
+
+  const handleSubmit = async () => {
+    if (!validateForm()) return
+
+    setIsSubmitting(true)
+
+    try {
+      const cleanPhone = phoneNumber.replace(/\s/g, '')
+
+      const response = await requestWalletTopup({
+        walletId,
+        phoneNumber: cleanPhone,
+        amount: Number(amount)
+      })
+
+      // Limpar e fechar
+      setAmount('')
+      setPhoneNumber('')
+
+      Alert.alert(
+        'Pagamento em Processamento',
+        'O pedido foi enviado para o Unitel Money. Irá receber uma notificação no seu telemóvel para confirmar o pagamento.',
+        [
+          {
+            text: 'OK',
+            onPress: () => {
+              onSuccess(response)
+              onClose()
+            }
+          }
+        ]
+      )
+    } catch (error: any) {
+      console.error('Erro ao solicitar topup Unitel Money:', error)
+      Alert.alert(
+        'Erro no Pagamento',
+        error.message ||
+          'Não foi possível processar o pagamento. Tente novamente.'
+      )
+    } finally {
+      setIsSubmitting(false)
+    }
+  }
+
+  const canSubmit = amount.trim() && phoneNumber.trim() && !isSubmitting
 
   return (
     <Modal visible={visible} transparent animationType="slide">
@@ -61,26 +142,19 @@ export function TopupRequestModal({
               {/* Header */}
               <View className="flex-row justify-between items-center px-6 py-4">
                 <View className="flex-row items-center">
-                  <View
-                    className="mr-4 shadow-sm"
-                    style={{ width: 64, height: 64 }}
-                  >
+                  <View className="mr-4 shadow-sm" style={{ width: 64, height: 64 }}>
                     <Image
-                      source={require('@/assets/images/payment/bank.png')}
-                      style={{
-                        width: '100%',
-                        height: '100%',
-                        borderRadius: 16
-                      }}
+                      source={require('@/assets/images/payment/unitel_money.png')}
+                      style={{ width: '100%', height: '100%', borderRadius: 16 }}
                       resizeMode="cover"
                     />
                   </View>
                   <View>
                     <Text className="text-2xl font-extrabold text-gray-900 tracking-tight">
-                      Transferência
+                      Unitel Money
                     </Text>
                     <Text className="text-gray-500 text-sm mt-0.5 font-medium">
-                      Envie o comprovativo
+                      Pagamento Rápido e Seguro
                     </Text>
                   </View>
                 </View>
@@ -106,16 +180,16 @@ export function TopupRequestModal({
                     <Text className="text-red-500">*</Text>
                   </Text>
                   <View className="bg-gray-50 border-2 border-gray-100 rounded-3xl px-5 py-2 flex-row items-center">
-                    <Text className="text-gray-800 text-base font-semibold mr-2">
+                    <Text className="text-gray-800 text-base font-normal mr-2">
                       AOA
                     </Text>
                     <TextInput
                       value={amount}
-                      onChangeText={onAmountChange}
+                      onChangeText={setAmount}
                       placeholder="5000"
                       keyboardType="numeric"
                       editable={!isSubmitting}
-                      className="flex-1 text-black text-lg py-2 font-semibold"
+                      className="flex-1 text-black text-base py-2 font-normal"
                       placeholderTextColor="#9CA3AF"
                     />
                   </View>
@@ -124,34 +198,37 @@ export function TopupRequestModal({
                   </Text>
                 </View>
 
-                {/* Comprovativo */}
+                {/* Número Unitel Money Input */}
                 <View className="mb-8">
                   <Text className="text-sm font-bold text-gray-700 mb-2 ml-1">
-                    Comprovativo de Pagamento{' '}
-                    <Text className="text-red-500">*</Text>
+                    Número Unitel Money <Text className="text-red-500">*</Text>
                   </Text>
-                  <View className="rounded-3xl border-2 border-dashed border-gray-200 bg-gray-50/50 p-2 overflow-hidden">
-                    <ImagePickerButton
-                      imageUri={selectedImage}
-                      onPickImage={onPickImage}
-                      onClearImage={onClearImage}
-                      isLoading={isSelectingImage}
-                      label="Anexar Comprovativo"
+                  <View className="bg-gray-50 border-2 border-gray-100 rounded-3xl px-5 py-2 flex-row items-center">
+                    <Smartphone size={20} color="#6B7280" className="mr-3" />
+                    <TextInput
+                      value={phoneNumber}
+                      onChangeText={setPhoneNumber}
+                      placeholder="923 456 789"
+                      keyboardType="phone-pad"
+                      editable={!isSubmitting}
+                      maxLength={15}
+                      className="flex-1 text-black text-base py-2 font-normal tracking-wider"
+                      placeholderTextColor="#9CA3AF"
                     />
                   </View>
                 </View>
 
-                {/* Info Box */}
+                {/* Premium Info Box */}
                 <View className="bg-gray-50 rounded-3xl p-5 border border-gray-100">
                   <View className="flex-row items-start">
                     <View className="bg-white w-8 h-8 rounded-full items-center justify-center mr-3 shadow-sm border border-gray-50">
-                      <Text className="text-base text-blue-500 font-bold">
+                      <Text className="text-base text-gray-500 font-bold">
                         💡
                       </Text>
                     </View>
                     <Text className="flex-1 text-sm text-gray-700 leading-relaxed font-medium">
-                      O valor inserido deve corresponder ao comprovativo. Seu
-                      saldo será creditado após ser validado.
+                      Ao Confirmar, irá receber uma notificação no seu
+                      dispositivo para autorizar e debitar do Unitel Money.
                     </Text>
                   </View>
                 </View>
@@ -163,7 +240,7 @@ export function TopupRequestModal({
                 style={{ paddingBottom: Platform.OS === 'ios' ? 34 : 24 }}
               >
                 <TouchableOpacity
-                  onPress={onSubmit}
+                  onPress={handleSubmit}
                   disabled={!canSubmit}
                   activeOpacity={0.8}
                   className="py-4 rounded-full flex-row items-center justify-center"
@@ -171,14 +248,15 @@ export function TopupRequestModal({
                     backgroundColor: !canSubmit ? '#E5E7EB' : PRIMARY_COLOR
                   }}
                 >
+                  {isSubmitting ? (
+                    <ActivityIndicator color="white" className="mr-3" />
+                  ) : null}
                   <Text
                     className={`text-center font-extrabold text-lg ${
                       !canSubmit ? 'text-gray-400' : 'text-white'
                     }`}
                   >
-                    {isSubmitting
-                      ? 'Enviando Solicitação...'
-                      : 'Enviar Solicitação'}
+                    {isSubmitting ? 'A Processar...' : 'Pagar Agora'}
                   </Text>
                 </TouchableOpacity>
               </View>

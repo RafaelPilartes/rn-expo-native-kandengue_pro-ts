@@ -32,8 +32,8 @@ export const transactionCategoryOptions: OptionType[] = [
 ]
 
 export const walletTopupMethodOptions: OptionType[] = [
+  { value: 'unitel_money', label: 'Unitel Money' },
   { value: 'bank_transfer', label: 'Transferência Bancária' },
-  { value: 'automated', label: 'Automático' },
   { value: 'cash', label: 'Dinheiro' }
 ]
 export const userStatusOptions: OptionType[] = [

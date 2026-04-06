@@ -18,19 +18,32 @@ export const TopupRequestCard: React.FC<TopupRequestCardProps> = ({
   const getStatusConfig = (status: string) => {
     switch (status) {
       case 'approved':
+      case 'success':
         return {
           icon: CheckCircle,
           color: 'text-green-600',
           bg: 'bg-green-100',
-          label: 'Aprovado',
+          label: status === 'success' ? 'Sucesso' : 'Aprovado',
         };
       case 'rejected':
+      case 'failed':
+      case 'cancelled':
+      case 'timeout':
+      case 'reversed':
         return {
           icon: XCircle,
           color: 'text-red-600',
           bg: 'bg-red-100',
-          label: 'Rejeitado',
+          label: status === 'failed' ? 'Falhou' : status === 'cancelled' ? 'Cancelado' : status === 'timeout' ? 'Expirou' : status === 'reversed' ? 'Estornado' : 'Rejeitado',
         };
+      case 'processing':
+        return {
+          icon: Clock,
+          color: 'text-blue-600',
+          bg: 'bg-blue-100',
+          label: 'Processando',
+        };
+      case 'pending':
       default:
         return {
           icon: Clock,
@@ -95,6 +108,7 @@ export const TopupRequestCard: React.FC<TopupRequestCardProps> = ({
 
 const getMethodLabel = (method: string): string => {
   const methods = {
+    unitel_money: 'Unitel Money',
     bank_transfer: 'Transferência Bancária',
     automated: 'Automático',
     cash: 'Dinheiro',

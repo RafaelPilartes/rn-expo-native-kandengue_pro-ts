@@ -75,7 +75,7 @@ const RideMapContainer = memo(
       })
     }
 
-    // Build polylines array - Option C: Dynamic Routes + Movement State
+    // Build polylines array - Dynamic Routes + Movement State
     const polylines: any[] = []
 
     // 1. Preview da rota completa (idle) - Verde claro

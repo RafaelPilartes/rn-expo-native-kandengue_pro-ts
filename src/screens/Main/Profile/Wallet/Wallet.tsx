@@ -26,6 +26,9 @@ import { TopupRequestModal } from './components/TopupRequestModal'
 import { StatisticsModal } from './components/StatisticsModal'
 import { RequestDetailsModal } from './components/RequestDetailsModal'
 import { TransactionDetailsModal } from './components/TransactionDetailsModal'
+import { PaymentMethodModal } from './components/PaymentMethodModal'
+import { UnitelMoneyTopupModal } from './components/UnitelMoneyTopupModal'
+import type { WalletTopupApiResponse } from '@/modules/Api/rest/walletTopup.api'
 
 // ViewModels
 import { useImagePicker } from '@/hooks/useImagePicker'
@@ -41,6 +44,7 @@ import { useAppProvider } from '@/providers/AppProvider'
 import { useWalletTopupRequestsViewModel } from '@/viewModels/WalletTopupRequestViewModel'
 import { formatMoney } from '@/utils/formattedNumber'
 import { useAuthStore } from '@/storage/store/useAuthStore'
+import { generateId } from '@/helpers/generateId'
 
 const PRIMARY_COLOR = '#b31a24'
 
@@ -53,6 +57,9 @@ export default function WalletScreen() {
   // State
   const [activeTab, setActiveTab] = useState<ActiveTab>('transactions')
   const [modalVisible, setModalVisible] = useState(false)
+  const [paymentMethodModalVisible, setPaymentMethodModalVisible] =
+    useState(false)
+  const [unitelMoneyModalVisible, setUnitelMoneyModalVisible] = useState(false)
   const [statisticsModalVisible, setStatisticsModalVisible] = useState(false)
   const [detailsModalVisible, setDetailsModalVisible] = useState(false)
   const [transactionDetailsModalVisible, setTransactionDetailsModalVisible] =
@@ -85,7 +92,7 @@ export default function WalletScreen() {
     isUploadingSomeImageForUser: isUploadingFile
   } = useFileUploadViewModel()
 
-  // 🔹 Carregar transações da carteira
+  // Carregar transações da carteira
   const loadTransactions = async () => {
     if (!wallet?.id) {
       setIsLoadingTransactions(false)
@@ -108,7 +115,7 @@ export default function WalletScreen() {
     }
   }
 
-  // 🔹 Carregar solicitações
+  // Carregar solicitações
   const loadTopupRequests = async () => {
     if (!wallet?.id) return
 
@@ -128,7 +135,7 @@ export default function WalletScreen() {
     }
   }
 
-  // 🔹 Carregar dados iniciais
+  // Carregar dados iniciais
   useEffect(() => {
     if (wallet?.id) {
       loadTransactions()
@@ -139,7 +146,7 @@ export default function WalletScreen() {
     }
   }, [wallet?.id])
 
-  // 🔹 Atualizar dados ao puxar para refresh
+  // Atualizar dados ao puxar para refresh
   const handleRefresh = async () => {
     setRefreshing(true)
     try {
@@ -154,7 +161,7 @@ export default function WalletScreen() {
     }
   }
 
-  // 🔹 Selecionar imagem do comprovativo
+  // Selecionar imagem do comprovativo
   const handlePickImage = async () => {
     try {
       const imageUri = await pickImage(
@@ -173,12 +180,12 @@ export default function WalletScreen() {
     }
   }
 
-  // 🔹 Limpar imagem selecionada
+  // Limpar imagem selecionada
   const handleClearImage = () => {
     setSelectedImage(null)
   }
 
-  // 🔹 Validar formulário de carregamento
+  // Validar formulário de carregamento
   const validateForm = (): boolean => {
     if (!amount.trim()) {
       Alert.alert('Erro', 'Por favor, insira o valor do carregamento')
@@ -204,7 +211,7 @@ export default function WalletScreen() {
     return true
   }
 
-  // 🔹 Submeter solicitação de carregamento
+  // Submeter solicitação de carregamento
   const handleSubmitRequest = async () => {
     if (!validateForm()) return
     if (!wallet?.id) {
@@ -227,10 +234,13 @@ export default function WalletScreen() {
       // Criar solicitação de carregamento
       await createWalletTopupRequest.mutateAsync({
         wallet_id: wallet.id,
+        user_id: driver?.id as string,
         amount: Number(amount),
+        currency: 'AOA',
         proof_url: uploadResult.url,
         status: 'pending',
-        method: 'bank_transfer'
+        method: 'bank_transfer',
+        idempotency_key: generateId('idk')
       })
 
       // Limpar formulário
@@ -252,19 +262,39 @@ export default function WalletScreen() {
     }
   }
 
-  // 🔹 Abrir detalhes da solicitação
+  // Selecionar método de pagamento
+  const handleSelectPaymentMethod = (
+    method: 'unitel_money' | 'bank_transfer'
+  ) => {
+    setPaymentMethodModalVisible(false)
+    if (method === 'unitel_money') {
+      setUnitelMoneyModalVisible(true)
+    } else {
+      setModalVisible(true)
+    }
+  }
+
+  // Callback após sucesso do Unitel Money
+  const handleUnitelMoneySuccess = async (
+    _response: WalletTopupApiResponse
+  ) => {
+    setUnitelMoneyModalVisible(false)
+    await loadTopupRequests()
+  }
+
+  // Abrir detalhes da solicitação
   const handleOpenRequestDetails = (request: WalletTopupRequestInterface) => {
     setSelectedRequest(request)
     setDetailsModalVisible(true)
   }
 
-  // 🔹 Abrir detalhes da transação
+  // Abrir detalhes da transação
   const handleOpenTransactionDetails = (transaction: TransactionInterface) => {
     setSelectedTransaction(transaction)
     setTransactionDetailsModalVisible(true)
   }
 
-  // 🔹 Calcular estatísticas
+  // Calcular estatísticas
   const calculateStatistics = () => {
     const totalIncome = transactions
       .filter(t => t.type === 'credit' && t.category === 'ride_fee')
@@ -293,7 +323,7 @@ export default function WalletScreen() {
 
   const statistics = calculateStatistics()
 
-  // 🔹 Renderizar item da lista de transações
+  // Renderizar item da lista de transações
   const renderTransaction = ({ item }: { item: TransactionInterface }) => (
     <TransactionCard
       transaction={item}
@@ -301,7 +331,7 @@ export default function WalletScreen() {
     />
   )
 
-  // 🔹 Renderizar item da lista de solicitações
+  // Renderizar item da lista de solicitações
   const renderRequest = ({ item }: { item: WalletTopupRequestInterface }) => (
     <TopupRequestCard
       request={item}
@@ -312,7 +342,7 @@ export default function WalletScreen() {
   // Loading states combinados
   const isSubmitting = createWalletTopupRequest.isPending || isUploadingFile
 
-  // 🔹 Renderizar conteúdo baseado na tab ativa
+  // Renderizar conteúdo baseado na tab ativa
   const renderContent = () => {
     if (activeTab === 'transactions') {
       if (isLoadingTransactions) {
@@ -445,7 +475,7 @@ export default function WalletScreen() {
           <View className="flex-row items-center justify-center mt-6 gap-3 px-4">
             {/* Botão Carregar Saldo */}
             <TouchableOpacity
-              onPress={() => setModalVisible(true)}
+              onPress={() => setPaymentMethodModalVisible(true)}
               disabled={isLoadingWalletTopupRequests}
               className="bg-primary-200 px-6 py-4 rounded-full flex-row items-center flex-1"
               style={{
@@ -540,6 +570,20 @@ export default function WalletScreen() {
       {renderContent()}
 
       {/* Modals */}
+      <PaymentMethodModal
+        visible={paymentMethodModalVisible}
+        onClose={() => setPaymentMethodModalVisible(false)}
+        onSelectMethod={handleSelectPaymentMethod}
+      />
+
+      <UnitelMoneyTopupModal
+        visible={unitelMoneyModalVisible}
+        onClose={() => setUnitelMoneyModalVisible(false)}
+        walletId={wallet?.id || ''}
+        driverPhone={driver?.phone || ''}
+        onSuccess={handleUnitelMoneySuccess}
+      />
+
       <TopupRequestModal
         visible={modalVisible}
         onClose={() => setModalVisible(false)}
