@@ -23,6 +23,7 @@ export interface IAuthRepository {
   login(credentials: LoginCredentials): Promise<AuthResponse>;
   register(driverData: RegisterData): Promise<AuthResponse>;
   logout(): Promise<void>;
+  deleteAccount(): Promise<void>;
 
   // Estado da autenticação
   getCurrentDriver(): Promise<DriverInterface | null>;

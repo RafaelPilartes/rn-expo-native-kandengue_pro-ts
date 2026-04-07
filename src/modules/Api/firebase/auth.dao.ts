@@ -65,6 +65,7 @@ export class FirebaseAuthDAO implements IAuthRepository {
         phone_verified: false,
         vehicle: undefined,
         is_online: false,
+        is_invisible: false, // 🔹 Adicionado para corrigir tipo
         rating: 0,
         created_at: new Date(),
         firebase_uid: firebaseUser.uid
@@ -144,6 +145,7 @@ export class FirebaseAuthDAO implements IAuthRepository {
         phone_verified: driverData.phone_verified || false,
         vehicle: driverData.vehicle || undefined,
         is_online: driverData.is_online || false,
+        is_invisible: driverData.is_invisible || false, // 🔹 Adicionado para corrigir tipo
         rating: driverData.rating || 0,
         firebase_uid: driverData.firebase_uid || firebaseUser.uid, // 🔹 MANTER referência
         created_at:
@@ -176,6 +178,40 @@ export class FirebaseAuthDAO implements IAuthRepository {
     } catch (error: any) {
       console.error('Erro no logout:', error)
       throw new Error('Erro ao sair')
+    }
+  }
+
+  // 🔹 APAGAR CONTA
+  async deleteAccount(): Promise<void> {
+    try {
+      const currentUser = this.auth.currentUser
+      if (!currentUser) throw new Error('Utilizador não autenticado')
+
+      // Atualizar status no Firestore para 'deleted' se existir
+      const uidQuery = query(
+        collection(db, this.driversRef),
+        where('firebase_uid', '==', currentUser.uid)
+      )
+      const uidSnapshot = await getDocs(uidQuery)
+      
+      if (!uidSnapshot.empty) {
+        const driverDoc = uidSnapshot.docs[0]
+        await updateDoc(doc(db, this.driversRef, driverDoc.id), {
+          status: 'deleted',
+          updated_at: new Date()
+        })
+      }
+
+      // Apagar utilizador do Firebase Auth
+      await currentUser.delete()
+      console.log('✅ Conta eliminada com sucesso')
+    } catch (error: any) {
+      console.error('Erro ao eliminar conta:', error)
+      // Traduzir erro para se precisar de reautenticação
+      if (error.code === 'auth/requires-recent-login') {
+        throw new Error('Por medidas de segurança, faça o login novamente antes de eliminar a conta.')
+      }
+      throw new Error(mapFirebaseError(error) || 'Erro ao eliminar conta')
     }
   }
 
@@ -241,6 +277,7 @@ export class FirebaseAuthDAO implements IAuthRepository {
         phone_verified: driverData.phone_verified || false,
         vehicle: driverData.vehicle || undefined,
         is_online: driverData.is_online || false,
+        is_invisible: driverData.is_invisible || false,
         rating: driverData.rating || 0,
         firebase_uid: driverData.firebase_uid || firebaseUser.uid,
         created_at:

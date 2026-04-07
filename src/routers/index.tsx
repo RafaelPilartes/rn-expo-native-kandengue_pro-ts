@@ -84,22 +84,23 @@ export default function AppRouter() {
       // Se Firebase tem um driver autenticado
       if (currentDriver && isFirebaseAuthenticated) {
         // Verifica email via mutation exposta (se existir)
+        // let isEmailVerified = false
         let isEmailVerified = false
 
-        try {
-          // checkEmailVerification é um objeto de mutation (useMutation)
-          // se não existir no VM, este call falhará e assumimos false temporariamente
-          if (checkEmailVerification?.mutateAsync) {
-            isEmailVerified = await checkEmailVerification.mutateAsync()
-          }
-        } catch (e) {
-          console.warn(
-            '⚠️ Falha ao verificar email (assumindo estado atual).',
-            e
-          )
-        }
+        // try {
+        //   // checkEmailVerification é um objeto de mutation (useMutation)
+        //   if (checkEmailVerification?.mutateAsync) {
+        //     isEmailVerified = await checkEmailVerification.mutateAsync()
+        //   }
+        // } catch (e) {
+        //   console.warn(
+        //     '⚠️ Falha ao verificar email (assumindo estado atual).',
+        //     e
+        //   )
+        // }
 
-        const isValid = isUserValidForApp(currentDriver) && !!isEmailVerified
+        // const isValid = isUserValidForApp(currentDriver) && !!isEmailVerified
+        const isValid = isUserValidForApp(currentDriver)
 
         if (isValid) {
           // sincroniza Zustand apenas se necessário
@@ -148,7 +149,8 @@ export default function AppRouter() {
         if (!isVerified) {
           showAlert({
             title: 'Email não verificado',
-            message: 'Por favor, verifique seu email antes de acessar o aplicativo.',
+            message:
+              'Por favor, verifique seu email antes de acessar o aplicativo.',
             type: 'error',
             buttons: [{ text: 'OK' }]
           })
@@ -213,7 +215,7 @@ export default function AppRouter() {
 
   const canAccessApp =
     !!currentDriver && // firebase has driver
-    isFirebaseAuthenticated && // vm indicates authenticated
+    // isFirebaseAuthenticated && // vm indicates authenticated
     zustandIsAuthed && // persisted local store has driver
     currentDriver?.id === zustandDriver?.id && // same user
     isUserValidForApp(currentDriver)

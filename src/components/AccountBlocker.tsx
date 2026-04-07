@@ -93,7 +93,7 @@ const AccountBlocker: React.FC<AccountBlockerProps> = ({
 
       {current.action && current.onPress && (
         <TouchableOpacity
-          className="w-full bg-primary py-4 rounded-xl items-center shadow-sm"
+          className="w-full bg-primary-200 py-4 rounded-xl items-center"
           onPress={current.onPress}
           activeOpacity={0.8}
         >

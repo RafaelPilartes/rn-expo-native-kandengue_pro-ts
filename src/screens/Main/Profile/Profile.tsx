@@ -19,9 +19,11 @@ import ROUTES from '@/constants/routes'
 import { useAuthViewModel } from '@/viewModels/AuthViewModel'
 import { useAuthStore } from '@/storage/store/useAuthStore'
 import { getVehicleTypeLabel } from '@/utils/gettersLabels'
+import { useAlert } from '@/context/AlertContext'
 
 export default function DriverProfile() {
   const navigation = useNavigation<any>()
+  const { showAlert } = useAlert()
 
   const { logout } = useAuthViewModel()
 
@@ -34,14 +36,27 @@ export default function DriverProfile() {
   const MenuItem = ({
     icon: Icon,
     label,
-    onPress
+    onPress,
+    requiresActive = true
   }: {
     icon: any
     label: string
     onPress: () => void
+    requiresActive?: boolean
   }) => (
     <TouchableOpacity
-      onPress={onPress}
+      onPress={() => {
+        if (requiresActive && driver?.status !== 'active') {
+          showAlert({
+            title: 'Conta Restrita',
+            message:
+              'A sua conta encontra-se pendente ou inativa. Para aceder a esta secção, a sua conta tem de estar ativa.',
+            type: 'warning'
+          })
+          return
+        }
+        onPress()
+      }}
       className="flex-row items-center px-4 py-3 bg-white border-b border-gray-100"
     >
       <Icon size={20} color="black" />
@@ -80,6 +95,7 @@ export default function DriverProfile() {
         <MenuItem
           icon={Edit}
           label="Editar Perfil"
+          requiresActive={false}
           onPress={() => navigation.navigate(ROUTES.ProfileStack.EDIT)}
         />
         <MenuItem
@@ -89,6 +105,7 @@ export default function DriverProfile() {
         />
         <MenuItem
           icon={FileText}
+          requiresActive={false}
           label="Meus Documentos"
           onPress={() => navigation.navigate(ROUTES.ProfileStack.DOCUMENTS)}
         />
@@ -132,18 +149,25 @@ export default function DriverProfile() {
         <MenuItem
           icon={Shield}
           label="Política de Privacidade"
+          requiresActive={false}
           onPress={() => navigation.navigate(ROUTES.ProfileStack.PRIVATE)}
         />
         <MenuItem
           icon={Book}
           label="Termos e Condições"
+          requiresActive={false}
           onPress={() => navigation.navigate(ROUTES.ProfileStack.TERMS)}
         />
       </View>
 
       {/* Logout */}
       <View className="bg-white mb-4 px-6 rounded-b-3xl">
-        <MenuItem icon={LogOut} label="Sair" onPress={handleLogout} />
+        <MenuItem
+          icon={LogOut}
+          label="Sair"
+          requiresActive={false}
+          onPress={handleLogout}
+        />
       </View>
     </ScrollView>
   )

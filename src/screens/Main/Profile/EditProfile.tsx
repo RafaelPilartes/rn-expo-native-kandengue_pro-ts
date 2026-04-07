@@ -14,6 +14,7 @@ import { useNavigation } from '@react-navigation/native'
 import { useAuthStore } from '@/storage/store/useAuthStore'
 import PrimaryButton from '@/components/ui/button/PrimaryButton'
 import { useDriversViewModel } from '@/viewModels/DriverViewModel'
+import { useAuthViewModel } from '@/viewModels/AuthViewModel'
 import { useImagePicker } from '@/hooks/useImagePicker'
 import { ImagePickerPresets } from '@/services/picker/imagePickerPresets'
 import { useFileUploadViewModel } from '@/viewModels/FileUploadViewModel'
@@ -30,6 +31,7 @@ export default function EditProfileScreen() {
     isUploadingProfile: isUploadingProfileImage,
     uploadProfileError: uploadProfileErrorImage
   } = useFileUploadViewModel()
+  const { deleteAccount } = useAuthViewModel()
 
   const {
     pickImage,
@@ -39,6 +41,7 @@ export default function EditProfileScreen() {
   } = useImagePicker()
 
   const [isLoading, setIsLoading] = useState(false)
+  const [isDeletingAccount, setIsDeletingAccount] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [selectedFile, setSelectedFile] = useState<string | null>(null)
   const { showAlert } = useAlert()
@@ -99,6 +102,38 @@ export default function EditProfileScreen() {
     }))
   }
 
+  // 🔹 APAGAR: Conta
+  const handleDeleteAccount = () => {
+    showAlert({
+      title: 'Apagar Conta',
+      message:
+        'Tem a absoluta certeza que pretende apagar a sua conta? Esta ação é completamente irreversível e perderá o acesso a todo o seu histórico e ganhos associados.',
+      type: 'error',
+      buttons: [
+        { text: 'Cancelar', style: 'cancel' },
+        {
+          text: 'Apagar',
+          style: 'destructive',
+          onPress: async () => {
+            setIsDeletingAccount(true)
+            try {
+              await deleteAccount.mutateAsync()
+              // Logout/Clear UI cache é tratado pelo AuthViewModel onSuccess
+            } catch (error: any) {
+              showAlert({
+                title: 'Erro',
+                message:
+                  error.message || 'Erro ao apagar conta. Tente novamente.',
+                type: 'error'
+              })
+              setIsDeletingAccount(false)
+            }
+          }
+        }
+      ]
+    })
+  }
+
   // 🔹 UPLOAD: de imagem
   const handleImagePicker = async () => {
     clearError()
@@ -118,7 +153,11 @@ export default function EditProfileScreen() {
       }
     } catch (error) {
       console.error('Erro ao abrir image picker:', error)
-      showAlert({ title: 'Erro', message: 'Não foi possível abrir a galeria', type: 'error' })
+      showAlert({
+        title: 'Erro',
+        message: 'Não foi possível abrir a galeria',
+        type: 'error'
+      })
     }
   }
 
@@ -155,7 +194,11 @@ export default function EditProfileScreen() {
       return url
     } catch (err) {
       console.error('❌ Erro no upload:', err)
-      showAlert({ title: 'Erro', message: 'Erro ao carregar ficheiro', type: 'error' })
+      showAlert({
+        title: 'Erro',
+        message: 'Erro ao carregar ficheiro',
+        type: 'error'
+      })
       throw err
     }
   }
@@ -220,13 +263,15 @@ export default function EditProfileScreen() {
         title: 'Sucesso',
         message: 'Perfil atualizado com sucesso!',
         type: 'success',
-        buttons: [
-          { text: 'OK', onPress: () => navigation.goBack() }
-        ]
+        buttons: [{ text: 'OK', onPress: () => navigation.goBack() }]
       })
     } catch (error) {
       console.error('Erro ao atualizar o perfil:', error)
-      showAlert({ title: 'Erro', message: 'Ocorreu um erro ao atualizar o perfil', type: 'error' })
+      showAlert({
+        title: 'Erro',
+        message: 'Ocorreu um erro ao atualizar o perfil',
+        type: 'error'
+      })
     } finally {
       setIsLoading(false)
     }
@@ -378,6 +423,36 @@ export default function EditProfileScreen() {
               ? new Date(driver.created_at).toLocaleDateString('pt-BR')
               : '--'}
           </Text>
+        </View>
+
+        {/* Zona de Perigo - Apagar Conta */}
+        <View className="mt-8 pt-6 border-t border-gray-200">
+          <Text className="text-sm font-medium text-red-600 mb-3 ml-1 uppercase tracking-wider">
+            Zona de Perigo
+          </Text>
+          <TouchableOpacity
+            onPress={handleDeleteAccount}
+            disabled={isDeletingAccount || isLoading}
+            className={`border p-4 rounded-xl flex-row justify-between items-center ${
+              isDeletingAccount
+                ? 'bg-gray-100 border-gray-200'
+                : 'bg-red-50 border-red-200'
+            }`}
+          >
+            <View className="flex-1 mr-4">
+              <Text className="text-red-700 font-bold text-base">
+                Apagar Conta
+              </Text>
+              <Text className="text-red-500 text-xs mt-1">
+                Ação irreversível.
+              </Text>
+            </View>
+            {isDeletingAccount ? (
+              <ActivityIndicator size="small" color="#EF4444" />
+            ) : (
+              <Text className="text-red-600 font-bold text-xl">{'»'}</Text>
+            )}
+          </TouchableOpacity>
         </View>
 
         {/* Debug info (apenas desenvolvimento) */}

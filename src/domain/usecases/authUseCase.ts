@@ -61,6 +61,16 @@ export class AuthUseCase {
     }
   }
 
+  // 🔹 Apagar Conta
+  async deleteAccount(): Promise<void> {
+    try {
+      await this.repository.deleteAccount();
+    } catch (error: any) {
+      console.error('Erro no caso de uso de apagar conta:', error);
+      throw new Error(error.message || 'Erro ao apagar conta');
+    }
+  }
+
   // 🔹 Enviar verificação por email
   async sendEmailVerification(): Promise<void> {
     try {

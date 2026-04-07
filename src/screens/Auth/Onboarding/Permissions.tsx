@@ -12,7 +12,7 @@ import { useTranslation } from 'react-i18next'
 import { Check, Mic, Navigation, X } from 'lucide-react-native'
 import { LocationPermission } from '@/constants/images'
 import { usePermissionsStore } from '@/storage/store/usePermissionsStore'
-import LocationDisclosureModal from '@/components/modals/LocationDisclosureModal'
+// import LocationDisclosureModal from '@/components/modals/LocationDisclosureModal'
 import { useAlert } from '@/context/AlertContext'
 import {
   checkNotificationPermission,
@@ -42,9 +42,9 @@ const Permissions = () => {
   const [isLoading, setIsLoading] = useState(false)
   const { showAlert } = useAlert()
 
-  const [showLocationDisclosure, setShowLocationDisclosure] = useState(false)
+  // const [showLocationDisclosure, setShowLocationDisclosure] = useState(false)
 
-  // 🔹 Verificar status atual das permissões (usando expo-location)
+  // Verificar status atual das permissões (usando expo-location)
   const checkAllPermissions = async () => {
     try {
       const { status: locStatus, canAskAgain } =
@@ -81,7 +81,7 @@ const Permissions = () => {
     }
   }
 
-  // 🔹 Mapear status das notificações
+  // Mapear status das notificações
   const mapNotificationStatus = (
     status: NotificationPermissionResponse
   ): PermissionStatus => {
@@ -91,14 +91,14 @@ const Permissions = () => {
     return 'pending'
   }
 
-  // 🔹 Solicitar permissão individual
+  // Solicitar permissão individual
   const requestPermission = async (
     permissionId: 'location' | 'notifications'
   ) => {
-    if (permissionId === 'location') {
-      setShowLocationDisclosure(true)
-      return
-    }
+    // if (permissionId === 'location') {
+    //   setShowLocationDisclosure(true)
+    //   return
+    // }
 
     await processPermissionRequest(permissionId)
   }
@@ -148,27 +148,31 @@ const Permissions = () => {
       }
     } catch (error) {
       console.error(`Erro ao solicitar permissão ${permissionId}:`, error)
-      showAlert({ title: 'Erro', message: 'Erro na solicitação da permissão', type: 'error' })
+      showAlert({
+        title: 'Erro',
+        message: 'Erro na solicitação da permissão',
+        type: 'error'
+      })
     } finally {
       setIsLoading(false)
     }
   }
 
-  const handleAcceptLocationDisclosure = async () => {
-    setShowLocationDisclosure(false)
-    // Wait for modal to close (iOS fix)
-    setTimeout(async () => {
-      await processPermissionRequest('location')
-    }, 500)
-  }
+  // const handleAcceptLocationDisclosure = async () => {
+  //   setShowLocationDisclosure(false)
+  //   // Wait for modal to close (iOS fix)
+  //   setTimeout(async () => {
+  //     await processPermissionRequest('location')
+  //   }, 500)
+  // }
 
-  // 🔹 Feedback visual quando permissão é concedida
+  // Feedback visual quando permissão é concedida
   const showPermissionGrantedFeedback = (permissionId: string) => {
     // Feedback visual será mostrado através do ícone no PermissionCard
     console.log(`Permissão ${permissionId} concedida!`)
   }
 
-  // 🔹 Feedback quando permissão é negada
+  // Feedback quando permissão é negada
   const showPermissionDeniedFeedback = (permissionId: string) => {
     const permissionName =
       permissionId === 'location'
@@ -177,7 +181,9 @@ const Permissions = () => {
 
     showAlert({
       title: t('onboarding:permission_denied_title'),
-      message: t('onboarding:permission_denied_message', { permission: permissionName }),
+      message: t('onboarding:permission_denied_message', {
+        permission: permissionName
+      }),
       type: 'error',
       buttons: [
         {
@@ -199,7 +205,7 @@ const Permissions = () => {
     })
   }
 
-  // 🔹 Ir para próxima tela
+  // Ir para próxima tela
   const goToNextStep = () => {
     try {
       // Marcar que o usuário já viu as permissões
@@ -213,11 +219,11 @@ const Permissions = () => {
     }
   }
 
-  // 🔹 Verificar se pode continuar (todas as permissões foram tratadas)
+  // Verificar se pode continuar (todas as permissões foram tratadas)
   // [MODIFIED] Permissões agora são opcionais
   const canContinue = true
 
-  // 🔹 Obter ícone baseado no status
+  // Obter ícone baseado no status
   const getStatusIcon = (status: PermissionStatus) => {
     switch (status) {
       case 'granted':
@@ -230,7 +236,7 @@ const Permissions = () => {
     }
   }
 
-  // 🔹 Obter cor do status
+  // Obter cor do status
   const getStatusColor = (status: PermissionStatus) => {
     switch (status) {
       case 'granted':
@@ -243,7 +249,7 @@ const Permissions = () => {
     }
   }
 
-  // 🔹 Inicializar estados das permissões
+  // Inicializar estados das permissões
   useEffect(() => {
     checkAllPermissions()
   }, [])
@@ -294,10 +300,10 @@ const Permissions = () => {
       {/* line linear gradient */}
       <LineGradient />
 
-      <LocationDisclosureModal
+      {/* <LocationDisclosureModal
         visible={showLocationDisclosure}
         onAccept={handleAcceptLocationDisclosure}
-      />
+      /> */}
     </View>
   )
 }
