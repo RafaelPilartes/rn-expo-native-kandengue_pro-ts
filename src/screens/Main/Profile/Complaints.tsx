@@ -5,9 +5,9 @@ import {
   Text,
   TextInput,
   TouchableOpacity,
-  ScrollView,
-  Alert
+  ScrollView
 } from 'react-native'
+import { useAlert } from '@/context/AlertContext'
 import {
   Send,
   AlertTriangle,
@@ -33,6 +33,7 @@ export default function ComplaintsScreen() {
   const navigation = useNavigation<any>()
   const { driver } = useAuthStore()
   const { createComplaint, isLoadingUpdateComplaint } = useComplaintsViewModel()
+  const { showAlert } = useAlert()
 
   const [formData, setFormData] = useState({
     type: '' as ComplaintType,
@@ -115,22 +116,22 @@ export default function ComplaintsScreen() {
 
   const handleSubmit = async () => {
     if (!driver?.id) {
-      Alert.alert('Erro', 'Usuário não identificado. Faça login novamente.')
+      showAlert({ title: 'Erro', message: 'Usuário não identificado. Faça login novamente.', type: 'error' })
       return
     }
 
     if (!formData.type) {
-      Alert.alert('Atenção', 'Por favor, selecione o tipo de problema.')
+      showAlert({ title: 'Atenção', message: 'Por favor, selecione o tipo de problema.', type: 'error' })
       return
     }
 
     if (!formData.subject.trim()) {
-      Alert.alert('Atenção', 'Por favor, informe o assunto.')
+      showAlert({ title: 'Atenção', message: 'Por favor, informe o assunto.', type: 'error' })
       return
     }
 
     if (!formData.description.trim()) {
-      Alert.alert('Atenção', 'Por favor, descreva o problema.')
+      showAlert({ title: 'Atenção', message: 'Por favor, descreva o problema.', type: 'error' })
       return
     }
 
@@ -151,23 +152,24 @@ export default function ComplaintsScreen() {
 
       const validation = complaintEntity.validate()
       if (!validation.isValid) {
-        Alert.alert('Erro de Validação', validation.errors.join('\n'))
+        showAlert({ title: 'Erro de Validação', message: validation.errors.join('\n'), type: 'error' })
         return
       }
 
       // Enviar para o backend
       await createComplaint.mutateAsync(complaintEntity.toJSON())
 
-      Alert.alert(
-        'Reclamação Enviada',
-        `Sua reclamação foi registrada com sucesso. \n\nTempo estimado para resolução: ${complaintEntity.getEstimatedResolutionTime()}`,
-        [
+      showAlert({
+        title: 'Reclamação Enviada',
+        message: `Sua reclamação foi registrada com sucesso. \n\nTempo estimado para resolução: ${complaintEntity.getEstimatedResolutionTime()}`,
+        type: 'success',
+        buttons: [
           {
             text: 'OK',
             onPress: () => navigation.goBack()
           }
         ]
-      )
+      })
 
       // Reset form
       setFormData({
@@ -180,11 +182,11 @@ export default function ComplaintsScreen() {
       })
     } catch (error: any) {
       console.error('Erro ao enviar reclamação:', error)
-      Alert.alert(
-        'Erro',
-        error.message ||
-          'Não foi possível enviar sua reclamação. Tente novamente.'
-      )
+      showAlert({
+        title: 'Erro',
+        message: error.message || 'Não foi possível enviar sua reclamação. Tente novamente.',
+        type: 'error'
+      })
     }
   }
 

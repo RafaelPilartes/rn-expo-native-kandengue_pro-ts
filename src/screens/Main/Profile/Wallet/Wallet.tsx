@@ -5,7 +5,6 @@ import {
   Text,
   TouchableOpacity,
   FlatList,
-  Alert,
   RefreshControl,
   ActivityIndicator
 } from 'react-native'
@@ -45,6 +44,7 @@ import { useWalletTopupRequestsViewModel } from '@/viewModels/WalletTopupRequest
 import { formatMoney } from '@/utils/formattedNumber'
 import { useAuthStore } from '@/storage/store/useAuthStore'
 import { generateId } from '@/helpers/generateId'
+import { useAlert } from '@/context/AlertContext'
 
 const PRIMARY_COLOR = '#b31a24'
 
@@ -53,6 +53,7 @@ type ActiveTab = 'transactions' | 'requests'
 export default function WalletScreen() {
   const { driver } = useAuthStore()
   const { wallet } = useAppProvider()
+  const { showAlert } = useAlert()
 
   // State
   const [activeTab, setActiveTab] = useState<ActiveTab>('transactions')
@@ -109,7 +110,7 @@ export default function WalletScreen() {
       setTransactions(transactionsResponse?.data || [])
     } catch (error) {
       console.error('Erro ao carregar transações:', error)
-      Alert.alert('Erro', 'Não foi possível carregar as transações')
+      showAlert({ title: 'Erro', message: 'Não foi possível carregar as transações', type: 'error' })
     } finally {
       setIsLoadingTransactions(false)
     }
@@ -129,7 +130,7 @@ export default function WalletScreen() {
       setWalletTopupRequests(topupRequestsResponse?.data || [])
     } catch (error) {
       console.error('Erro ao carregar solicitações:', error)
-      Alert.alert('Erro', 'Não foi possível carregar as solicitações')
+      showAlert({ title: 'Erro', message: 'Não foi possível carregar as solicitações', type: 'error' })
     } finally {
       setIsLoadingWalletTopupRequests(false)
     }
@@ -173,10 +174,11 @@ export default function WalletScreen() {
         setSelectedImage(imageUri)
       }
     } catch (error: any) {
-      Alert.alert(
-        'Erro',
-        error.message || 'Não foi possível selecionar a imagem'
-      )
+      showAlert({
+        title: 'Erro',
+        message: error.message || 'Não foi possível selecionar a imagem',
+        type: 'error'
+      })
     }
   }
 
@@ -188,23 +190,23 @@ export default function WalletScreen() {
   // Validar formulário de carregamento
   const validateForm = (): boolean => {
     if (!amount.trim()) {
-      Alert.alert('Erro', 'Por favor, insira o valor do carregamento')
+      showAlert({ title: 'Erro', message: 'Por favor, insira o valor do carregamento', type: 'error' })
       return false
     }
 
     const amountValue = Number(amount)
     if (isNaN(amountValue) || amountValue <= 0) {
-      Alert.alert('Erro', 'Por favor, insira um valor válido')
+      showAlert({ title: 'Erro', message: 'Por favor, insira um valor válido', type: 'error' })
       return false
     }
 
     if (amountValue < 500) {
-      Alert.alert('Erro', 'O valor mínimo de carregamento é 500 AOA')
+      showAlert({ title: 'Erro', message: 'O valor mínimo de carregamento é 500 AOA', type: 'error' })
       return false
     }
 
     if (!selectedImage) {
-      Alert.alert('Erro', 'Por favor, carregue o comprovativo de pagamento')
+      showAlert({ title: 'Erro', message: 'Por favor, carregue o comprovativo de pagamento', type: 'error' })
       return false
     }
 
@@ -215,7 +217,7 @@ export default function WalletScreen() {
   const handleSubmitRequest = async () => {
     if (!validateForm()) return
     if (!wallet?.id) {
-      Alert.alert('Erro', 'Carteira não encontrada')
+      showAlert({ title: 'Erro', message: 'Carteira não encontrada', type: 'error' })
       return
     }
 
@@ -251,14 +253,15 @@ export default function WalletScreen() {
       // Recarregar solicitações
       await loadTopupRequests()
 
-      Alert.alert(
-        'Sucesso',
-        'Solicitação de carregamento enviada com sucesso!',
-        [{ text: 'OK' }]
-      )
+      showAlert({
+        title: 'Sucesso',
+        message: 'Solicitação de carregamento enviada com sucesso!',
+        type: 'success',
+        buttons: [{ text: 'OK' }]
+      })
     } catch (error: any) {
       console.error('Erro ao enviar solicitação:', error)
-      Alert.alert('Erro', error.message || 'Erro ao enviar solicitação')
+      showAlert({ title: 'Erro', message: error.message || 'Erro ao enviar solicitação', type: 'error' })
     }
   }
 

@@ -7,7 +7,6 @@ import {
   TouchableOpacity,
   ScrollView,
   Image,
-  Alert,
   TouchableWithoutFeedback,
   Keyboard,
   KeyboardAvoidingView,
@@ -21,6 +20,7 @@ import PrimaryButton from '@/components/ui/button/PrimaryButton'
 import { SelectField } from '@/components/ui/select/SelectField'
 import { vehicleTypeOptions } from '@/data/selectOption'
 import { InputField } from '@/components/ui/input/InputField'
+import { useAlert } from '@/context/AlertContext'
 
 const PRIMARY_COLOR = '#b31a24'
 
@@ -42,6 +42,7 @@ export default function VehicleModal({
   const { pickImage, takePhoto, clearError } = useImagePicker()
   const [selectedFile, setSelectedFile] = useState<string | null>(null)
   const [errors, setErrors] = useState<Record<string, string>>({})
+  const { showAlert } = useAlert()
 
   const [formData, setFormData] = useState<Partial<VehicleInterface>>({
     type: 'motorcycle',
@@ -110,7 +111,7 @@ export default function VehicleModal({
         setFormData(prev => ({ ...prev, image: imageUri }))
       }
     } catch (error) {
-      Alert.alert('Erro', 'Não foi possível acessar a galeria.')
+      showAlert({ title: 'Erro', message: 'Não foi possível acessar a galeria.', type: 'error' })
     }
   }
 
@@ -126,7 +127,7 @@ export default function VehicleModal({
         setFormData(prev => ({ ...prev, image: imageUri }))
       }
     } catch (error) {
-      Alert.alert('Erro', 'Não foi possível acessar a câmera.')
+      showAlert({ title: 'Erro', message: 'Não foi possível acessar a câmera.', type: 'error' })
     }
   }
 

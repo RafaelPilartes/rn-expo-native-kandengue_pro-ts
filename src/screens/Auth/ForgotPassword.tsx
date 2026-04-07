@@ -5,9 +5,9 @@ import {
   TouchableOpacity,
   TouchableWithoutFeedback,
   Keyboard,
-  ScrollView,
-  Alert
+  ScrollView
 } from 'react-native'
+import { useAlert } from '@/context/AlertContext'
 import { Mail } from 'lucide-react-native'
 import PrimaryButton from '@/components/ui/button/PrimaryButton'
 import LineGradient from '@/components/LineGradient'
@@ -38,6 +38,7 @@ export default function ForgotPasswordScreen() {
 
   const [email, setEmail] = useState('')
   const [error, setError] = useState('')
+  const { showAlert } = useAlert()
 
   const handleRecover = async () => {
     // Validação local
@@ -72,9 +73,12 @@ export default function ForgotPasswordScreen() {
           let errorMessage =
             mapFirebaseError(error) || 'Erro ao enviar email de recuperação'
 
-          Alert.alert('Erro ao solicitar recuperação', errorMessage, [
-            { text: 'OK' }
-          ])
+          showAlert({
+            title: 'Erro ao solicitar recuperação',
+            message: errorMessage,
+            type: 'error',
+            buttons: [{ text: 'OK' }]
+          })
         })
     } catch (error: any) {
       console.error('❌ Erro ao solicitar recuperação:', error)
@@ -83,9 +87,12 @@ export default function ForgotPasswordScreen() {
       let errorMessage =
         mapFirebaseError(error) || 'Erro ao enviar email de recuperação'
 
-      Alert.alert('Erro ao solicitar recuperação', errorMessage, [
-        { text: 'OK' }
-      ])
+      showAlert({
+        title: 'Erro ao solicitar recuperação',
+        message: errorMessage,
+        type: 'error',
+        buttons: [{ text: 'OK' }]
+      })
     } finally {
       setIsLoading(false)
     }

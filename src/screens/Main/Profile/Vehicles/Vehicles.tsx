@@ -5,9 +5,9 @@ import {
   Text,
   TouchableOpacity,
   ScrollView,
-  Image,
-  Alert
+  Image
 } from 'react-native'
+import { useAlert } from '@/context/AlertContext'
 import {
   Plus,
   Car,
@@ -30,6 +30,7 @@ import { BaseLoadingPage } from '@/components/loadingPage'
 
 export default function VehiclesScreen() {
   const { driver } = useAuthStore()
+  const { showAlert } = useAlert()
   const {
     fetchAllVehiclesByField,
     createVehicle,
@@ -88,7 +89,7 @@ export default function VehiclesScreen() {
       return url
     } catch (err) {
       console.error('Upload failed:', err)
-      Alert.alert('Erro', 'Falha ao fazer upload da imagem.')
+      showAlert({ title: 'Erro', message: 'Falha ao fazer upload da imagem.', type: 'error' })
       throw err
     }
   }
@@ -133,16 +134,17 @@ export default function VehiclesScreen() {
 
       setShowModal(false)
       setVehicleToEdit(null)
-      Alert.alert(
-        'Sucesso',
-        vehicleToEdit
+      showAlert({
+        title: 'Sucesso',
+        message: vehicleToEdit
           ? 'Veículo atualizado e enviado para análise.'
-          : 'Veículo adicionado com sucesso!'
-      )
+          : 'Veículo adicionado com sucesso!',
+        type: 'success'
+      })
       fetchAllVehicles()
     } catch (error) {
       console.error('Save error:', error)
-      Alert.alert('Erro', 'Não foi possível salvar o veículo.')
+      showAlert({ title: 'Erro', message: 'Não foi possível salvar o veículo.', type: 'error' })
     } finally {
       setIsSubmitting(false)
     }
@@ -150,10 +152,10 @@ export default function VehiclesScreen() {
 
   // 🔹 Delete Vehicle
   const handleDeleteVehicle = (vehicle: VehicleInterface) => {
-    Alert.alert(
-      'Excluir Veículo',
-      `Tem certeza que deseja remover ${vehicle.brand} ${vehicle.model}?`,
-      [
+    showAlert({
+      title: 'Excluir Veículo',
+      message: `Tem certeza que deseja remover ${vehicle.brand} ${vehicle.model}?`,
+      buttons: [
         { text: 'Cancelar', style: 'cancel' },
         {
           text: 'Excluir',
@@ -163,12 +165,12 @@ export default function VehiclesScreen() {
               await deleteVehicle.mutateAsync(vehicle.id!)
               fetchAllVehicles()
             } catch (error) {
-              Alert.alert('Erro', 'Falha ao excluir veículo.')
+              showAlert({ title: 'Erro', message: 'Falha ao excluir veículo.', type: 'error' })
             }
           }
         }
       ]
-    )
+    })
   }
 
   // 🔹 Open Modals

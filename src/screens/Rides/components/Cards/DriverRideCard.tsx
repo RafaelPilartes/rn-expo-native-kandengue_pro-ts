@@ -7,10 +7,10 @@ import {
   TouchableOpacity,
   Image,
   StyleSheet,
-  Alert,
   Linking,
   Modal
 } from 'react-native'
+import { useAlert } from '@/context/AlertContext'
 import { BottomSheetModal, BottomSheetView } from '@gorhom/bottom-sheet'
 import { RideInterface } from '@/interfaces/IRide'
 import { RideFareInterface } from '@/interfaces/IRideFare'
@@ -31,13 +31,14 @@ export const DriverRideSheet = forwardRef<BottomSheetModal, Props>(
     const [contactType, setContactType] = useState<'call' | 'message' | null>(
       null
     )
+    const { showAlert } = useAlert()
 
     const handleCall = () => {
       if (rideDetails.user?.phone) {
         setContactType('call')
         setContactModalVisible(true)
       } else {
-        Alert.alert('Erro', 'Número de telefone não disponível')
+        showAlert({ title: 'Erro', message: 'Número de telefone não disponível', type: 'error' })
       }
     }
 
@@ -46,7 +47,7 @@ export const DriverRideSheet = forwardRef<BottomSheetModal, Props>(
         setContactType('message')
         setContactModalVisible(true)
       } else {
-        Alert.alert('Erro', 'Número de telefone não disponível')
+        showAlert({ title: 'Erro', message: 'Número de telefone não disponível', type: 'error' })
       }
     }
 

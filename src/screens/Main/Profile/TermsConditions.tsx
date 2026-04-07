@@ -5,9 +5,9 @@ import {
   Text,
   ScrollView,
   TouchableOpacity,
-  Linking,
-  Alert
+  Linking
 } from 'react-native'
+import { useAlert } from '@/context/AlertContext'
 import {
   FileText,
   Shield,
@@ -26,6 +26,7 @@ export default function TermsConditionsScreen() {
   const [expandedSections, setExpandedSections] = useState<Set<string>>(
     new Set(['acceptance'])
   )
+  const { showAlert } = useAlert()
 
   const toggleSection = (section: string) => {
     const newSections = new Set(expandedSections)
@@ -41,7 +42,7 @@ export default function TermsConditionsScreen() {
 
   const handleContactLegal = () => {
     Linking.openURL('mailto:comercial@kandengueatrevido.ao').catch(() =>
-      Alert.alert('Erro', 'Não foi possível abrir o email.')
+      showAlert({ title: 'Erro', message: 'Não foi possível abrir o email.', type: 'error' })
     )
   }
 

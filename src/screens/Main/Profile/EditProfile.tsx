@@ -6,9 +6,9 @@ import {
   TouchableOpacity,
   Image,
   ScrollView,
-  Alert,
   ActivityIndicator
 } from 'react-native'
+import { useAlert } from '@/context/AlertContext'
 import { Camera, Mail, Phone, User } from 'lucide-react-native'
 import { useNavigation } from '@react-navigation/native'
 import { useAuthStore } from '@/storage/store/useAuthStore'
@@ -41,6 +41,7 @@ export default function EditProfileScreen() {
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [selectedFile, setSelectedFile] = useState<string | null>(null)
+  const { showAlert } = useAlert()
 
   // Estado local do formulário
   const [formData, setFormData] = useState({
@@ -117,7 +118,7 @@ export default function EditProfileScreen() {
       }
     } catch (error) {
       console.error('Erro ao abrir image picker:', error)
-      Alert.alert('Erro', 'Não foi possível abrir a galeria')
+      showAlert({ title: 'Erro', message: 'Não foi possível abrir a galeria', type: 'error' })
     }
   }
 
@@ -146,7 +147,7 @@ export default function EditProfileScreen() {
         const errorMsg =
           uploadProfileErrorImage?.message || 'Erro ao carregar ficheiro'
         console.error('❌ Upload falhou:', errorMsg)
-        Alert.alert('Erro', errorMsg)
+        showAlert({ title: 'Erro', message: errorMsg, type: 'error' })
         throw new Error('Upload inválido')
       }
 
@@ -154,7 +155,7 @@ export default function EditProfileScreen() {
       return url
     } catch (err) {
       console.error('❌ Erro no upload:', err)
-      Alert.alert('Erro', 'Erro ao carregar ficheiro')
+      showAlert({ title: 'Erro', message: 'Erro ao carregar ficheiro', type: 'error' })
       throw err
     }
   }
@@ -215,12 +216,17 @@ export default function EditProfileScreen() {
 
       console.log('✅ Perfil atualizado com sucesso!')
 
-      Alert.alert('Sucesso', 'Perfil atualizado com sucesso!', [
-        { text: 'OK', onPress: () => navigation.goBack() }
-      ])
+      showAlert({
+        title: 'Sucesso',
+        message: 'Perfil atualizado com sucesso!',
+        type: 'success',
+        buttons: [
+          { text: 'OK', onPress: () => navigation.goBack() }
+        ]
+      })
     } catch (error) {
       console.error('Erro ao atualizar o perfil:', error)
-      Alert.alert('Erro', 'Ocorreu um erro ao atualizar o perfil')
+      showAlert({ title: 'Erro', message: 'Ocorreu um erro ao atualizar o perfil', type: 'error' })
     } finally {
       setIsLoading(false)
     }

@@ -5,9 +5,9 @@ import {
   Text,
   Keyboard,
   TouchableWithoutFeedback,
-  ScrollView,
-  Alert
+  ScrollView
 } from 'react-native'
+import { useAlert } from '@/context/AlertContext'
 import { Lock } from 'lucide-react-native'
 import PrimaryButton from '@/components/ui/button/PrimaryButton'
 import LineGradient from '@/components/LineGradient'
@@ -29,6 +29,7 @@ export default function CreatePasswordScreen({ route }: CreatePasswordProps) {
   // 🔹 Usar o hook de autenticação
   const { register } = useAuthViewModel()
   const [isLoading, setIsLoading] = useState(false)
+  const { showAlert } = useAlert()
 
   const { fullName, email, phoneNumber } = route.params
 
@@ -113,7 +114,7 @@ export default function CreatePasswordScreen({ route }: CreatePasswordProps) {
           'Erro de conexão. Verifique sua internet e tente novamente.'
       }
 
-      Alert.alert('Erro', errorMessage)
+      showAlert({ title: 'Erro', message: errorMessage, type: 'error' })
     } finally {
       setIsLoading(false)
     }

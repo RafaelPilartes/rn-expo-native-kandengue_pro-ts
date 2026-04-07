@@ -8,11 +8,12 @@ import { Alert, Platform } from 'react-native'
 import Constants from 'expo-constants'
 import VersionCheck from 'react-native-version-check'
 
-import { useAuthViewModel } from '@/viewModels/AuthViewModel'
 import { useAuthStore } from '@/storage/store/useAuthStore'
 import { DriverInterface } from '@/interfaces/IDriver'
 import UpdateAppScreen from '@/screens/UpdateApp'
 import { AppConfigInfo } from '@/constants/config'
+import { useAuthViewModel } from '@/viewModels/AuthViewModel'
+import { useAlert } from '@/context/AlertContext'
 
 const Stack = createNativeStackNavigator()
 
@@ -40,6 +41,8 @@ export default function AppRouter() {
     setDriver: setZustandDriver,
     logout: zustandLogout
   } = useAuthStore()
+
+  const { showAlert } = useAlert()
 
   // =========================================================
   // 🔹 FUNÇÃO AUXILIAR: Validations for app access — adapta conforme os campos reais do DriverInterface
@@ -143,24 +146,27 @@ export default function AppRouter() {
         const status = driver.status ?? 'active'
 
         if (!isVerified) {
-          Alert.alert(
-            'Email não verificado',
-            'Por favor, verifique seu email antes de acessar o aplicativo.',
-            [{ text: 'OK' }]
-          )
+          showAlert({
+            title: 'Email não verificado',
+            message: 'Por favor, verifique seu email antes de acessar o aplicativo.',
+            type: 'error',
+            buttons: [{ text: 'OK' }]
+          })
         } else if (status !== 'active') {
-          Alert.alert(
-            'Conta inativa',
-            'Sua conta está inativa. Entre em contato com o suporte.',
-            [{ text: 'OK' }]
-          )
+          showAlert({
+            title: 'Conta inativa',
+            message: 'Sua conta está inativa. Entre em contato com o suporte.',
+            type: 'error',
+            buttons: [{ text: 'OK' }]
+          })
         }
       } else {
         // fallback genérico
-        Alert.alert(
-          'Acesso negado',
-          'Conta inválida. Faça login novamente ou contate o suporte.'
-        )
+        showAlert({
+          title: 'Acesso negado',
+          message: 'Conta inválida. Faça login novamente ou contate o suporte.',
+          type: 'error'
+        })
       }
     } catch (error) {
       console.error('Erro ao tratar usuário inválido:', error)

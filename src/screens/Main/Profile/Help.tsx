@@ -5,9 +5,9 @@ import {
   Text,
   ScrollView,
   TouchableOpacity,
-  Linking,
-  Alert
+  Linking
 } from 'react-native'
+import { useAlert } from '@/context/AlertContext'
 import {
   MessageCircle,
   Phone,
@@ -30,6 +30,7 @@ import {
 export default function HelpScreen() {
   const navigation = useNavigation<any>()
   const [expandedFAQ, setExpandedFAQ] = useState<string | null>(null)
+  const { showAlert } = useAlert()
 
   const toggleFAQ = (id: string) => {
     setExpandedFAQ(expandedFAQ === id ? null : id)
@@ -37,7 +38,7 @@ export default function HelpScreen() {
 
   const handleCall = () => {
     Linking.openURL(`tel:${VOICE_NUMBER}`).catch(() =>
-      Alert.alert('Erro', 'Não foi possível iniciar a chamada.')
+      showAlert({ title: 'Erro', message: 'Não foi possível iniciar a chamada.', type: 'error' })
     )
   }
 
@@ -45,13 +46,13 @@ export default function HelpScreen() {
     // Ideally format number to international format without spaces/dashes
     Linking.openURL(
       `https://wa.me/244${WHATSAPP_NUMBER.replace(/\s/g, '')}`
-    ).catch(() => Alert.alert('Erro', 'Não foi possível abrir o WhatsApp.'))
+    ).catch(() => showAlert({ title: 'Erro', message: 'Não foi possível abrir o WhatsApp.', type: 'error' }))
   }
 
   const handleEmail = () => {
     Linking.openURL(
       `mailto:${EMAIL_SUPPORT}?subject=Suporte - Kandengue Atrevido`
-    ).catch(() => Alert.alert('Erro', 'Não foi possível abrir o email.'))
+    ).catch(() => showAlert({ title: 'Erro', message: 'Não foi possível abrir o email.', type: 'error' }))
   }
 
   const faqCategories = [

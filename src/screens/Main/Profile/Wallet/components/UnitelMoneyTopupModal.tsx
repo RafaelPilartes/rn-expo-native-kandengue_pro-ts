@@ -10,10 +10,10 @@ import {
   Platform,
   TouchableWithoutFeedback,
   Keyboard,
-  Alert,
   ActivityIndicator,
   Image
 } from 'react-native'
+import { useAlert } from '@/context/AlertContext'
 import { X, Smartphone } from 'lucide-react-native'
 import {
   requestWalletTopup,
@@ -40,6 +40,7 @@ export function UnitelMoneyTopupModal({
   const [amount, setAmount] = useState('')
   const [phoneNumber, setPhoneNumber] = useState('')
   const [isSubmitting, setIsSubmitting] = useState(false)
+  const { showAlert } = useAlert()
 
   // Pré-preencher telefone ao abrir
   useEffect(() => {
@@ -51,29 +52,29 @@ export function UnitelMoneyTopupModal({
 
   const validateForm = (): boolean => {
     if (!amount.trim()) {
-      Alert.alert('Erro', 'Por favor, insira o valor do carregamento')
+      showAlert({ title: 'Erro', message: 'Por favor, insira o valor do carregamento', type: 'error' })
       return false
     }
 
     const amountValue = Number(amount)
     if (isNaN(amountValue) || amountValue <= 0) {
-      Alert.alert('Erro', 'Por favor, insira um valor válido')
+      showAlert({ title: 'Erro', message: 'Por favor, insira um valor válido', type: 'error' })
       return false
     }
 
     if (amountValue < 500) {
-      Alert.alert('Erro', 'O valor mínimo de carregamento é 500 AOA')
+      showAlert({ title: 'Erro', message: 'O valor mínimo de carregamento é 500 AOA', type: 'error' })
       return false
     }
 
     if (!phoneNumber.trim()) {
-      Alert.alert('Erro', 'Por favor, insira o número de telefone')
+      showAlert({ title: 'Erro', message: 'Por favor, insira o número de telefone', type: 'error' })
       return false
     }
 
     const cleanPhone = phoneNumber.replace(/\s/g, '')
     if (cleanPhone.length < 9) {
-      Alert.alert('Erro', 'Número de telefone inválido')
+      showAlert({ title: 'Erro', message: 'Número de telefone inválido', type: 'error' })
       return false
     }
 
@@ -98,26 +99,25 @@ export function UnitelMoneyTopupModal({
       setAmount('')
       setPhoneNumber('')
 
-      Alert.alert(
-        'Pagamento em Processamento',
-        'O pedido foi enviado para o Unitel Money. Irá receber uma notificação no seu telemóvel para confirmar o pagamento.',
-        [
-          {
-            text: 'OK',
-            onPress: () => {
-              onSuccess(response)
-              onClose()
-            }
+      showAlert({
+        title: 'Pagamento em Processamento',
+        message: 'O pedido foi enviado para o Unitel Money. Irá receber uma notificação no seu telemóvel para confirmar o pagamento.',
+        type: 'success',
+        buttons: [{
+          text: 'OK',
+          onPress: () => {
+            onSuccess(response)
+            onClose()
           }
-        ]
-      )
+        }]
+      })
     } catch (error: any) {
       console.error('Erro ao solicitar topup Unitel Money:', error)
-      Alert.alert(
-        'Erro no Pagamento',
-        error.message ||
-          'Não foi possível processar o pagamento. Tente novamente.'
-      )
+      showAlert({
+        title: 'Erro no Pagamento',
+        message: error.message || 'Não foi possível processar o pagamento. Tente novamente.',
+        type: 'error'
+      })
     } finally {
       setIsSubmitting(false)
     }

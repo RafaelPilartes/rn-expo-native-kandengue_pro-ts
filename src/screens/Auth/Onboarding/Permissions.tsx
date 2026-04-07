@@ -1,5 +1,5 @@
 import React, { JSX, useEffect, useState } from 'react'
-import { View, Text, ScrollView, Alert, Platform, Linking } from 'react-native'
+import { View, Text, ScrollView, Platform, Linking } from 'react-native'
 import * as Location from 'expo-location'
 import PermissionCard from '@/components/ui/card/PermissionCard'
 import PrimaryButton from '@/components/ui/button/PrimaryButton'
@@ -13,6 +13,7 @@ import { Check, Mic, Navigation, X } from 'lucide-react-native'
 import { LocationPermission } from '@/constants/images'
 import { usePermissionsStore } from '@/storage/store/usePermissionsStore'
 import LocationDisclosureModal from '@/components/modals/LocationDisclosureModal'
+import { useAlert } from '@/context/AlertContext'
 import {
   checkNotificationPermission,
   requestNotificationPermission,
@@ -39,6 +40,7 @@ const Permissions = () => {
 
   const [permissions, setPermissions] = useState<PermissionItem[]>([])
   const [isLoading, setIsLoading] = useState(false)
+  const { showAlert } = useAlert()
 
   const [showLocationDisclosure, setShowLocationDisclosure] = useState(false)
 
@@ -146,7 +148,7 @@ const Permissions = () => {
       }
     } catch (error) {
       console.error(`Erro ao solicitar permissão ${permissionId}:`, error)
-      Alert.alert('Erro', 'Erro na solicitação da permissão')
+      showAlert({ title: 'Erro', message: 'Erro na solicitação da permissão', type: 'error' })
     } finally {
       setIsLoading(false)
     }
@@ -173,10 +175,11 @@ const Permissions = () => {
         ? t('onboarding:permissions_title_1')
         : t('onboarding:permissions_title_2')
 
-    Alert.alert(
-      t('onboarding:permission_denied_title'),
-      t('onboarding:permission_denied_message', { permission: permissionName }),
-      [
+    showAlert({
+      title: t('onboarding:permission_denied_title'),
+      message: t('onboarding:permission_denied_message', { permission: permissionName }),
+      type: 'error',
+      buttons: [
         {
           text: t('common:buttons.settings'),
           onPress: () => {
@@ -193,7 +196,7 @@ const Permissions = () => {
           style: 'cancel'
         }
       ]
-    )
+    })
   }
 
   // 🔹 Ir para próxima tela

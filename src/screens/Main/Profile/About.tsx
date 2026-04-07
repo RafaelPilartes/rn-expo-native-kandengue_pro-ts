@@ -5,9 +5,9 @@ import {
   Text,
   ScrollView,
   TouchableOpacity,
-  Linking,
-  Alert
+  Linking
 } from 'react-native'
+import { useAlert } from '@/context/AlertContext'
 import {
   Info,
   Mail,
@@ -19,6 +19,7 @@ import PageHeader from '@/components/PageHeader'
 import { APP_VERSION, BUILD_NUMBER } from '@/constants/config'
 
 export default function AboutScreen() {
+  const { showAlert } = useAlert()
   const handleContact = (type: 'site' | 'email' | 'tel') => {
     let url = ''
     switch (type) {
@@ -34,7 +35,7 @@ export default function AboutScreen() {
     }
 
     Linking.openURL(url).catch(() =>
-      Alert.alert('Erro', 'Não foi possível abrir o link.')
+      showAlert({ title: 'Erro', message: 'Não foi possível abrir o link.', type: 'error' })
     )
   }
 

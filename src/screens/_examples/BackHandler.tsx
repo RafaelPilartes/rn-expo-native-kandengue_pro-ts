@@ -1,18 +1,25 @@
 import React, { useEffect } from 'react';
-import { Text, StyleSheet, BackHandler, Alert } from 'react-native';
+import { Text, StyleSheet, BackHandler } from 'react-native';
 import { SafeAreaView, SafeAreaProvider } from 'react-native-safe-area-context';
+import { useAlert } from '@/context/AlertContext';
 
 const App = () => {
+  const { showAlert } = useAlert();
+
   useEffect(() => {
     const backAction = () => {
-      Alert.alert('Hold on!', 'Are you sure you want to go back?', [
-        {
-          text: 'Cancel',
-          onPress: () => null,
-          style: 'cancel',
-        },
-        { text: 'YES', onPress: () => BackHandler.exitApp() },
-      ]);
+      showAlert({
+        title: 'Hold on!',
+        message: 'Are you sure you want to go back?',
+        buttons: [
+          {
+            text: 'Cancel',
+            onPress: () => null,
+            style: 'cancel',
+          },
+          { text: 'YES', onPress: () => BackHandler.exitApp() },
+        ]
+      });
       return true;
     };
 

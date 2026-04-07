@@ -6,9 +6,9 @@ import {
   TouchableOpacity,
   Image,
   ScrollView,
-  Alert,
   ActivityIndicator
 } from 'react-native'
+import { useAlert } from '@/context/AlertContext'
 import {
   Upload,
   CheckCircle,
@@ -75,6 +75,7 @@ export default function DocumentsScreen() {
   // 🔹 ESTADOS
   const [documents, setDocuments] = useState<DocumentInterface[]>([])
   const [isLoading, setIsLoading] = useState(true)
+  const { showAlert } = useAlert()
 
   const [uploadingDocuments, setUploadingDocuments] = useState<Set<string>>(
     new Set()
@@ -134,23 +135,24 @@ export default function DocumentsScreen() {
       }
     } catch (error: any) {
       console.error('❌ Erro ao selecionar imagem:', error)
-      Alert.alert(
-        'Erro',
-        error.message || 'Não foi possível selecionar a imagem'
-      )
+      showAlert({
+        title: 'Erro',
+        message: error.message || 'Não foi possível selecionar a imagem',
+        type: 'error'
+      })
     }
   }
 
   // 🔹 FUNÇÃO: Salvar documento individual
   const handleSaveDocument = async (documentType: DocumentType) => {
     if (!driver?.id) {
-      Alert.alert('Erro', 'ID do motorista não encontrado')
+      showAlert({ title: 'Erro', message: 'ID do motorista não encontrado', type: 'error' })
       return
     }
 
     const fileUri = selectedFiles[documentType]
     if (!fileUri) {
-      Alert.alert('Aviso', 'Por favor, selecione uma imagem primeiro')
+      showAlert({ title: 'Aviso', message: 'Por favor, selecione uma imagem primeiro', type: 'error' })
       return
     }
 
@@ -197,10 +199,10 @@ export default function DocumentsScreen() {
       })
       fetchDocuments()
 
-      Alert.alert('Sucesso', 'Documento enviado para análise!')
+      showAlert({ title: 'Sucesso', message: 'Documento enviado para análise!', type: 'success' })
     } catch (error: any) {
       console.error(`❌ Erro ao salvar documento ${documentType}:`, error)
-      Alert.alert('Erro', error.message || 'Erro ao salvar documento')
+      showAlert({ title: 'Erro', message: error.message || 'Erro ao salvar documento', type: 'error' })
     } finally {
       // 🔹 REMOVER do conjunto de uploads em andamento
       setUploadingDocuments(prev => {
@@ -214,17 +216,17 @@ export default function DocumentsScreen() {
   // 🔹 FUNÇÃO: Enviar todos os documentos para análise
   const handleSubmitAllDocuments = async () => {
     if (!driver?.id) {
-      Alert.alert('Erro', 'ID do motorista não encontrado')
+      showAlert({ title: 'Erro', message: 'ID do motorista não encontrado', type: 'error' })
       return
     }
 
     // Verificar se há documentos pendentes de upload
     const pendingUploads = Object.keys(selectedFiles)
     if (pendingUploads.length > 0) {
-      Alert.alert(
-        'Documentos Pendentes',
-        `Você tem ${pendingUploads.length} documento(s) pendentes de upload. Deseja enviá-los primeiro?`,
-        [
+      showAlert({
+        title: 'Documentos Pendentes',
+        message: `Você tem ${pendingUploads.length} documento(s) pendentes de upload. Deseja enviá-los primeiro?`,
+        buttons: [
           { text: 'Cancelar', style: 'cancel' },
           {
             text: 'Enviar Agora',
@@ -236,7 +238,7 @@ export default function DocumentsScreen() {
             }
           }
         ]
-      )
+      })
       return
     }
 
@@ -251,35 +253,37 @@ export default function DocumentsScreen() {
 
     if (uploadedDocs.length < requiredDocs.length) {
       const missingCount = requiredDocs.length - uploadedDocs.length
-      Alert.alert(
-        'Documentos Faltantes',
-        `Você precisa enviar ${missingCount} documento(s) obrigatório(s) antes de enviar para análise.`
-      )
+      showAlert({
+        title: 'Documentos Faltantes',
+        message: `Você precisa enviar ${missingCount} documento(s) obrigatório(s) antes de enviar para análise.`,
+        type: 'error'
+      })
       return
     }
 
-    Alert.alert(
-      'Enviar para Análise',
-      'Todos os documentos serão enviados para análise. Esta ação não pode ser desfeita.',
-      [
+    showAlert({
+      title: 'Enviar para Análise',
+      message: 'Todos os documentos serão enviados para análise. Esta ação não pode ser desfeita.',
+      buttons: [
         { text: 'Cancelar', style: 'cancel' },
         {
           text: 'Enviar',
           onPress: async () => {
             try {
               // Aqui você pode adicionar lógica adicional se necessário
-              Alert.alert(
-                'Sucesso',
-                'Documentos enviados para análise com sucesso!'
-              )
+              showAlert({
+                title: 'Sucesso',
+                message: 'Documentos enviados para análise com sucesso!',
+                type: 'success'
+              })
             } catch (error) {
               console.error('❌ Erro ao enviar documentos:', error)
-              Alert.alert('Erro', 'Erro ao enviar documentos para análise')
+              showAlert({ title: 'Erro', message: 'Erro ao enviar documentos para análise', type: 'error' })
             }
           }
         }
       ]
-    )
+    })
   }
 
   // BUSCAR documentos
@@ -391,11 +395,12 @@ export default function DocumentsScreen() {
         <TouchableOpacity
           onPress={() => {
             if (driverDocument?.status === 'approved') {
-              Alert.alert(
-                'Documento já aprovado',
-                'Você não pode alterar um documento já aprovado.',
-                [{ text: 'Percebi' }]
-              )
+              showAlert({
+                title: 'Documento já aprovado',
+                message: 'Você não pode alterar um documento já aprovado.',
+                type: 'error',
+                buttons: [{ text: 'Percebi' }]
+              })
               return
             }
             handlePickImage(documentConfig.id)
