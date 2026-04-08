@@ -26,7 +26,7 @@ export default function CreatePasswordScreen({ route }: CreatePasswordProps) {
     useNavigation<NativeStackNavigationProp<AuthStackParamList>>()
   const { t } = useTranslation(['auth', 'common'])
 
-  // 🔹 Usar o hook de autenticação
+  // Usar o hook de autenticação
   const { register } = useAuthViewModel()
   const [isLoading, setIsLoading] = useState(false)
   const { showAlert } = useAlert()
@@ -40,7 +40,7 @@ export default function CreatePasswordScreen({ route }: CreatePasswordProps) {
     confirmPassword: ''
   })
 
-  // 🔹 Validar força da senha
+  // Validar força da senha
   const validatePasswordStrength = (password: string) => {
     const requirements = {
       minLength: password.length >= 6,
@@ -81,9 +81,7 @@ export default function CreatePasswordScreen({ route }: CreatePasswordProps) {
     try {
       console.log('Iniciando registro para:', email)
 
-      // const verificationId = await verifyPhone.mutateAsync(phoneNumber);
-
-      // 🔹 Registrar usuário (já envia verificação por email automaticamente)
+      // Registrar usuário (já envia verificação por email automaticamente)
       const authResponse = await register.mutateAsync({
         name: fullName,
         email: email,
@@ -92,7 +90,7 @@ export default function CreatePasswordScreen({ route }: CreatePasswordProps) {
       })
 
       console.log('authResponse.driver ==> ', authResponse.driver)
-      // 🔹 Navegar para tela de sucesso
+      // Navegar para tela de sucesso
       navigation.replace(ROUTES.AuthStack.VERIFICATION_SUCCESS)
     } catch (error: any) {
       console.error('❌ Erro no registro:', error)
@@ -120,7 +118,7 @@ export default function CreatePasswordScreen({ route }: CreatePasswordProps) {
     }
   }
 
-  // 🔹 Obter força da senha para feedback visual
+  // Obter força da senha para feedback visual
   const passwordStrength = validatePasswordStrength(password)
 
   const getPasswordStrengthText = () => {
@@ -173,7 +171,7 @@ export default function CreatePasswordScreen({ route }: CreatePasswordProps) {
               error={errors.password}
               placeholder={t('auth:input_password_placeholder')}
             />
-            {/* 🔹 Feedback de força da senha */}
+            {/* Feedback de força da senha */}
             {password.length > 0 && (
               <View className="mt-2">
                 <Text

@@ -75,14 +75,11 @@ function App() {
   }, [ready, appIsReady, fontsLoaded])
 
   // Apply language only when it changes and we are ready
-  // We avoid putting 'changeLanguage' in the dependency array to break the loop
-  // if changeLanguage is unstable. Alternatively, fix useTranslation hook.
-  // But strictly speaking, if language changes in store, we want to reflect it in i18n.
   useEffect(() => {
     if (ready && language) {
       changeLanguage(language)
     }
-  }, [ready, appIsReady, fontsLoaded]) // Removed changeLanguage from deps to be safe, though useTranslation fixes are better.
+  }, [ready, appIsReady, fontsLoaded])
 
   if (!appIsReady || !ready || !fontsLoaded) {
     return null

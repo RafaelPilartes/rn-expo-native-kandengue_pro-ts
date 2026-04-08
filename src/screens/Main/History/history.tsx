@@ -8,7 +8,6 @@ import RideItem from './components/RideItem'
 import RideDetailsBottomSheet from './components/RideDetailsSheetModal'
 
 // Hooks e Types
-// Hooks e Types
 import { useRidesViewModel } from '@/viewModels/RideViewModel'
 import { useAuthStore } from '@/storage/store/useAuthStore'
 import { RideInterface } from '@/interfaces/IRide'

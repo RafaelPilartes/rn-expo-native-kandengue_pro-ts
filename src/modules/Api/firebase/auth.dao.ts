@@ -38,7 +38,7 @@ export class FirebaseAuthDAO implements IAuthRepository {
   private auth = auth
   private driversRef = firebaseCollections.drivers.root
 
-  // 🔹 REGISTRO - Usando ID próprio em vez do UID
+  // REGISTRO - Usando ID próprio em vez do UID
   async register(driverData: RegisterData): Promise<AuthResponse> {
     try {
       console.log('Iniciando registro para:', driverData.email)
@@ -52,7 +52,18 @@ export class FirebaseAuthDAO implements IAuthRepository {
 
       const firebaseUser = driverCredential.user
 
-      // 🔹 GERAR: ID próprio (não usar UID do Firebase)
+      // VERIFICAR: Se já existe motorista com este email
+      const driversQuery = query(
+        collection(db, this.driversRef),
+        where('email', '==', driverData.email.toLowerCase())
+      )
+      const driverSnapshot = await getDocs(driversQuery)
+
+      if (!driverSnapshot.empty) {
+        throw new Error('Perfil de motorista já cadastrado')
+      }
+
+      // GERAR: ID próprio (não usar UID do Firebase)
       const driverId: string = generateId('dri')
 
       // 2. Criar perfil do usuário no Firestore com ID próprio
@@ -65,7 +76,7 @@ export class FirebaseAuthDAO implements IAuthRepository {
         phone_verified: false,
         vehicle: undefined,
         is_online: false,
-        is_invisible: false, // 🔹 Adicionado para corrigir tipo
+        is_invisible: false, // Adicionado para corrigir tipo
         rating: 0,
         created_at: new Date(),
         firebase_uid: firebaseUser.uid
@@ -78,7 +89,7 @@ export class FirebaseAuthDAO implements IAuthRepository {
         throw new Error(validation.errors.join(', '))
       }
 
-      // 🔹 SALVAR: No Firestore usando o ID próprio
+      // SALVAR: No Firestore usando o ID próprio
       await setDoc(
         doc(db, this.driversRef, driverId),
         this.sanitizeUserForFirestore(driverEntity)
@@ -105,7 +116,7 @@ export class FirebaseAuthDAO implements IAuthRepository {
     }
   }
 
-  // 🔹 LOGIN - Buscar por email em vez de UID
+  // LOGIN - Buscar por email em vez de UID
   async login(credentials: LoginCredentials): Promise<AuthResponse> {
     try {
       const userCredential = await signInWithEmailAndPassword(
@@ -116,7 +127,7 @@ export class FirebaseAuthDAO implements IAuthRepository {
 
       const firebaseUser = userCredential.user
 
-      // 🔹 BUSCAR: Driver pelo email (não pelo UID)
+      // BUSCAR: Driver pelo email (não pelo UID)
       const driversQuery = query(
         collection(db, this.driversRef),
         where('email', '==', firebaseUser.email?.toLowerCase())
@@ -134,7 +145,7 @@ export class FirebaseAuthDAO implements IAuthRepository {
       // Criar entidade
       const driverEntity = new DriverEntity({
         ...driverData,
-        id: driverDoc.id, // 🔹 USAR ID do documento (nosso ID próprio)
+        id: driverDoc.id, // USAR ID do documento (nosso ID próprio)
         name: driverData.name || '',
         email: driverData.email || firebaseUser.email || '',
         phone: driverData.phone || '',
@@ -145,20 +156,20 @@ export class FirebaseAuthDAO implements IAuthRepository {
         phone_verified: driverData.phone_verified || false,
         vehicle: driverData.vehicle || undefined,
         is_online: driverData.is_online || false,
-        is_invisible: driverData.is_invisible || false, // 🔹 Adicionado para corrigir tipo
+        is_invisible: driverData.is_invisible || false, // Adicionado para corrigir tipo
         rating: driverData.rating || 0,
-        firebase_uid: driverData.firebase_uid || firebaseUser.uid, // 🔹 MANTER referência
+        firebase_uid: driverData.firebase_uid || firebaseUser.uid, // MANTER referência
         created_at:
           convertFirestoreTimestamp(driverData.created_at) || new Date(),
         updated_at: convertFirestoreTimestamp(driverData.updated_at),
         last_login: new Date()
       })
 
-      // 🔹 ATUALIZAR: Usando nosso ID próprio
+      // ATUALIZAR: Usando nosso ID próprio
       await updateDoc(doc(db, this.driversRef, driverDoc.id), {
         last_login: new Date(),
         updated_at: new Date(),
-        firebase_uid: firebaseUser.uid // 🔹 GARANTIR que tem a referência
+        firebase_uid: firebaseUser.uid // GARANTIR que tem a referência
       })
 
       return {
@@ -181,7 +192,7 @@ export class FirebaseAuthDAO implements IAuthRepository {
     }
   }
 
-  // 🔹 APAGAR CONTA
+  // APAGAR CONTA
   async deleteAccount(): Promise<void> {
     try {
       const currentUser = this.auth.currentUser
@@ -193,7 +204,7 @@ export class FirebaseAuthDAO implements IAuthRepository {
         where('firebase_uid', '==', currentUser.uid)
       )
       const uidSnapshot = await getDocs(uidQuery)
-      
+
       if (!uidSnapshot.empty) {
         const driverDoc = uidSnapshot.docs[0]
         await updateDoc(doc(db, this.driversRef, driverDoc.id), {
@@ -209,13 +220,15 @@ export class FirebaseAuthDAO implements IAuthRepository {
       console.error('Erro ao eliminar conta:', error)
       // Traduzir erro para se precisar de reautenticação
       if (error.code === 'auth/requires-recent-login') {
-        throw new Error('Por medidas de segurança, faça o login novamente antes de eliminar a conta.')
+        throw new Error(
+          'Por medidas de segurança, faça o login novamente antes de eliminar a conta.'
+        )
       }
       throw new Error(mapFirebaseError(error) || 'Erro ao eliminar conta')
     }
   }
 
-  // 🔹 GET CURRENT DRIVER - Buscar por Firebase UID ou email
+  // GET CURRENT DRIVER - Buscar por Firebase UID ou email
   async getCurrentDriver(): Promise<DriverEntity | null> {
     try {
       const firebaseUser = this.auth.currentUser
@@ -226,7 +239,7 @@ export class FirebaseAuthDAO implements IAuthRepository {
 
       let driverDoc: any = null
 
-      // 🔹 TENTAR 1: Buscar por firebase_uid
+      // TENTAR 1: Buscar por firebase_uid
       const uidQuery = query(
         collection(db, this.driversRef),
         where('firebase_uid', '==', firebaseUser.uid)
@@ -236,7 +249,7 @@ export class FirebaseAuthDAO implements IAuthRepository {
       if (!uidSnapshot.empty) {
         driverDoc = uidSnapshot.docs[0]
       } else {
-        // 🔹 TENTAR 2: Buscar por email (fallback)
+        // TENTAR 2: Buscar por email (fallback)
         const emailQuery = query(
           collection(db, this.driversRef),
           where('email', '==', firebaseUser.email?.toLowerCase())
@@ -246,7 +259,7 @@ export class FirebaseAuthDAO implements IAuthRepository {
         if (!emailSnapshot.empty) {
           driverDoc = emailSnapshot.docs[0]
 
-          // 🔹 ATUALIZAR: Adicionar firebase_uid se não tiver
+          // ATUALIZAR: Adicionar firebase_uid se não tiver
           if (!driverDoc.data().firebase_uid) {
             await updateDoc(doc(db, this.driversRef, driverDoc.id), {
               firebase_uid: firebaseUser.uid,
@@ -264,7 +277,7 @@ export class FirebaseAuthDAO implements IAuthRepository {
       const driverData = driverDoc.data() as DriverInterface
 
       return new DriverEntity({
-        id: driverDoc.id, // 🔹 USAR ID do documento
+        id: driverDoc.id, // USAR ID do documento
         name: driverData.name || firebaseUser.displayName || '',
         email: driverData.email || firebaseUser.email || '',
         phone: driverData.phone || '',
@@ -314,7 +327,7 @@ export class FirebaseAuthDAO implements IAuthRepository {
     throw new Error('Método não implementado - use o link do email')
   }
 
-  // 🔹 Enviar verificação por email
+  // Enviar verificação por email
   async sendEmailVerification(): Promise<void> {
     try {
       const currentUser = this.auth.currentUser
@@ -338,7 +351,7 @@ export class FirebaseAuthDAO implements IAuthRepository {
     }
   }
 
-  // 🔹 Verificar se email foi confirmado
+  // Verificar se email foi confirmado
   async checkEmailVerification(): Promise<boolean> {
     try {
       const currentUser = this.auth.currentUser
@@ -355,7 +368,7 @@ export class FirebaseAuthDAO implements IAuthRepository {
     }
   }
 
-  // 🔹 Recarregar dados do usuário
+  // Recarregar dados do usuário
   async reloadDriver(): Promise<void> {
     try {
       const currentUser = this.auth.currentUser
@@ -372,7 +385,7 @@ export class FirebaseAuthDAO implements IAuthRepository {
     }
   }
 
-  // 🔹 UTILITÁRIO: Buscar driver por ID próprio
+  // UTILITÁRIO: Buscar driver por ID próprio
   async getDriverById(driverId: string): Promise<DriverEntity | null> {
     try {
       const driverDoc = await getDoc(doc(db, this.driversRef, driverId))

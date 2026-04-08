@@ -17,6 +17,8 @@ type Props = {
   routeCoords: LatLngType[]
   routeCoordsDriver: LatLngType[]
   markerHeading: number
+  polygons?: any[]
+  zoom?: number
 }
 
 const RideMapContainer = memo(
@@ -28,7 +30,9 @@ const RideMapContainer = memo(
     rideStatus,
     routeCoords,
     routeCoordsDriver,
-    markerHeading
+    markerHeading,
+    polygons,
+    zoom
   }: Props) => {
     // Build markers array
     const markers: Marker[] = []
@@ -127,10 +131,11 @@ const RideMapContainer = memo(
               ? currentRide.pickup.longitude
               : location.pickup.longitude
           },
-          zoom: 13
+          zoom: zoom || 13
         }}
         markers={markers}
         polylines={polylines}
+        polygons={polygons}
         uiSettings={{
           myLocationButtonEnabled: false
         }}

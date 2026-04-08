@@ -1,12 +1,12 @@
 // src/screens/Ride/components/RideStatusDelivering.tsx
 import React from 'react'
 import { View, Text, TouchableOpacity } from 'react-native'
-import { Package, Clock, MapPin, User, Navigation } from 'lucide-react-native'
+import { Package, MapPin, Navigation } from 'lucide-react-native'
 
 interface PackageInfo {
   type?: string
   description?: string
-  size?: 'pequeno' | 'medio' | 'grande'
+  size?: 'small' | 'medium' | 'large'
   quantity?: number
 }
 
@@ -69,7 +69,15 @@ export const RideStatusDelivering: React.FC<RideStatusDeliveringProps> = ({
             </Text>
             {packageInfo.size && (
               <Text className="text-gray-600 text-xs mt-1">
-                Tamanho: {packageInfo.size} • Qtd: {packageInfo.quantity || 1}
+                Tamanho:{' '}
+                {packageInfo.size === 'small'
+                  ? 'Pequeno'
+                  : packageInfo.size === 'medium'
+                    ? 'Médio'
+                    : packageInfo.size === 'large'
+                      ? 'Grande'
+                      : packageInfo.size}{' '}
+                • Qtd: {packageInfo.quantity || 1}
               </Text>
             )}
           </View>
