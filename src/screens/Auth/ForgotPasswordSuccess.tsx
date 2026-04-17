@@ -32,7 +32,7 @@ export default function ForgotPasswordSuccessScreen() {
     navigateTo(ROUTES.AuthStack.SIGN_IN)
   }
   return (
-    <View className="flex-1 flex items-center justify-center p-container m-safe">
+    <View className="flex-1 flex items-center justify-center p-container">
       <View className="items-center mt-16">
         <View className="mb-6">
           <SuccessCircule width={120} height={120} />

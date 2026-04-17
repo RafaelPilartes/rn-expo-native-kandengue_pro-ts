@@ -52,10 +52,11 @@ export class FirebaseAuthDAO implements IAuthRepository {
 
       const firebaseUser = driverCredential.user
 
-      // VERIFICAR: Se já existe motorista com este email
+      // VERIFICAR: Se já existe motorista com este email e não está deletado
       const driversQuery = query(
         collection(db, this.driversRef),
-        where('email', '==', driverData.email.toLowerCase())
+        where('email', '==', driverData.email.toLowerCase()),
+        where('status', '!=', 'deleted')
       )
       const driverSnapshot = await getDocs(driversQuery)
 
@@ -130,7 +131,8 @@ export class FirebaseAuthDAO implements IAuthRepository {
       // BUSCAR: Driver pelo email (não pelo UID)
       const driversQuery = query(
         collection(db, this.driversRef),
-        where('email', '==', firebaseUser.email?.toLowerCase())
+        where('email', '==', firebaseUser.email?.toLowerCase()),
+        where('status', '!=', 'deleted')
       )
       const driverSnapshot = await getDocs(driversQuery)
 

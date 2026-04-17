@@ -166,7 +166,7 @@ export default function SignUpScreen() {
                 placeholder={`${t('auth:input_email_placeholder')}`}
                 value={formData.email}
                 onChangeText={(text: any) =>
-                  setFormData({ ...formData, email: text })
+                  setFormData({ ...formData, email: text.toLowerCase().trim() })
                 }
                 keyboardType="email-address"
                 autoCapitalize="none"
