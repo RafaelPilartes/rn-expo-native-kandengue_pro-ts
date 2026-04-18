@@ -24,7 +24,7 @@ import {
   Modal
 } from 'react-native'
 import { useAlert } from '@/context/AlertContext'
-import { BottomSheetModal, BottomSheetView } from '@gorhom/bottom-sheet'
+import { BottomSheetModal, BottomSheetScrollView } from '@gorhom/bottom-sheet'
 import { RideInterface } from '@/interfaces/IRide'
 import { RideFareInterface } from '@/interfaces/IRideFare'
 import { formatMoney } from '@/utils/formattedNumber'
@@ -47,11 +47,14 @@ export const DriverRideSheet = forwardRef<BottomSheetModal, Props>(
     const [contactType, setContactType] = useState<'call' | 'message' | null>(
       null
     )
+    const [selectedPhone, setSelectedPhone] = useState<string | null>(null)
     const { showAlert } = useAlert()
 
-    const handleCall = () => {
-      if (rideDetails.user?.phone) {
+    const handleCall = (phone?: string) => {
+      const targetPhone = phone || rideDetails.user?.phone
+      if (targetPhone) {
         setContactType('call')
+        setSelectedPhone(targetPhone)
         setContactModalVisible(true)
       } else {
         showAlert({
@@ -63,7 +66,7 @@ export const DriverRideSheet = forwardRef<BottomSheetModal, Props>(
     }
 
     const navigation = useNavigation<any>()
-    
+
     const handleMessage = () => {
       if (rideDetails.user?.id && rideDetails.driver?.id) {
         setContactModalVisible(false)
@@ -72,12 +75,12 @@ export const DriverRideSheet = forwardRef<BottomSheetModal, Props>(
           driver: {
             id: rideDetails.driver.id,
             name: rideDetails.driver.name,
-            avatar: rideDetails.driver.photo,
+            avatar: rideDetails.driver.photo
           },
           passenger: {
             id: rideDetails.user.id,
             name: rideDetails.user.name,
-            avatar: rideDetails.user.photo,
+            avatar: rideDetails.user.photo
           }
         })
       } else {
@@ -125,9 +128,16 @@ export const DriverRideSheet = forwardRef<BottomSheetModal, Props>(
             height: 4
           }}
         >
-          <BottomSheetView className="flex-1 px-5 pt-2 pb-6 bg-white">
+          <BottomSheetScrollView
+            contentContainerStyle={{
+              paddingHorizontal: 20,
+              paddingTop: 8,
+              paddingBottom: 24
+            }}
+            className="bg-white"
+          >
             {/* Header: Status & Ride ID */}
-            <View className="flex-row justify-between items-center mb-6">
+            <View className="flex-row justify-between items-center mb-5">
               <View className={`px-3 py-1.5 rounded-full ${statusInfo.color}`}>
                 <Text
                   className={`text-xs font-bold uppercase tracking-widest ${statusInfo.textColor}`}
@@ -140,53 +150,145 @@ export const DriverRideSheet = forwardRef<BottomSheetModal, Props>(
               </Text>
             </View>
 
-            {/* Client Info */}
-            <View className="flex-row items-center justify-between mb-6">
-              <View className="flex-row items-center flex-1">
-                <Image
-                  source={{
-                    uri:
-                      rideDetails.user?.photo ||
-                      'https://cdn-icons-png.flaticon.com/512/3541/3541871.png'
-                  }}
-                  className="w-12 h-12 rounded-full bg-gray-200"
-                />
-                <View className="ml-3 flex-1">
-                  <Text
-                    className="font-bold text-gray-900 text-base"
-                    numberOfLines={1}
-                  >
-                    {rideDetails.user?.name || 'Cliente'}
-                  </Text>
-                  <View className="flex-row items-center mt-0.5">
-                    <Text
-                      className="text-gray-500 text-sm font-medium"
-                      numberOfLines={1}
-                    >
-                      {rideDetails.user?.phone ||
-                        rideDetails.user?.email ||
-                        'Sem contacto'}
-                    </Text>
-                  </View>
-                </View>
-              </View>
+            {/* Contacts Logic */}
+            {(() => {
+              const userPhone = rideDetails.user?.phone || ''
+              const userName = rideDetails.user?.name || ''
 
-              {/* Contact Actions */}
-              <View className="flex-row gap-3 ml-2">
-                <TouchableOpacity
-                  className="w-11 h-11 rounded-full bg-gray-100 items-center justify-center active:bg-gray-200"
-                  onPress={handleMessage}
-                >
-                  <MessageCircle color="#4B5563" size={18} />
-                </TouchableOpacity>
-                <TouchableOpacity
-                  className="w-11 h-11 rounded-full bg-green-100 items-center justify-center active:bg-green-200"
-                  onPress={handleCall}
-                >
-                  <Phone color="#16A34A" size={18} strokeWidth={2.5} />
-                </TouchableOpacity>
-              </View>
-            </View>
+              const senderPhone = rideDetails.details?.sender?.phone || ''
+              const senderName = rideDetails.details?.sender?.name || ''
+
+              const receiverPhone = rideDetails.details?.receiver?.phone || ''
+              const receiverName = rideDetails.details?.receiver?.name || ''
+
+              const isSenderDifferent = senderPhone && senderPhone !== userPhone
+              const isReceiverDifferent =
+                receiverPhone && receiverPhone !== userPhone
+
+              return (
+                <View className="mb-6 space-y-3">
+                  {/* Row 1: Solicitante (The App User - Always first for Chat) */}
+                  <View className="flex-row items-center justify-between">
+                    <View className="flex-row items-center flex-1">
+                      <Image
+                        source={{
+                          uri:
+                            rideDetails.user?.photo ||
+                            'https://cdn-icons-png.flaticon.com/512/3541/3541871.png'
+                        }}
+                        className="w-10 h-10 rounded-full bg-gray-200"
+                      />
+                      <View className="ml-3 flex-1">
+                        <View className="flex-row items-center">
+                          <Text className="text-[10px] font-bold text-blue-600 uppercase tracking-tighter mr-2">
+                            Solicitante
+                          </Text>
+                        </View>
+                        <Text
+                          className="font-bold text-gray-900 text-sm"
+                          numberOfLines={1}
+                        >
+                          {userName}
+                        </Text>
+                        <Text
+                          className="text-gray-500 text-xs font-medium"
+                          numberOfLines={1}
+                        >
+                          {userPhone || 'Sem contacto'}
+                        </Text>
+                      </View>
+                    </View>
+                    <View className="flex-row gap-2 ml-2">
+                      <TouchableOpacity
+                        className="w-8 h-8 rounded-full bg-gray-100 items-center justify-center active:bg-gray-200"
+                        onPress={handleMessage}
+                      >
+                        <MessageCircle color="#4B5563" size={16} />
+                      </TouchableOpacity>
+                      <TouchableOpacity
+                        className="w-8 h-8 rounded-full bg-green-100 items-center justify-center active:bg-green-200"
+                        onPress={() => handleCall(userPhone)}
+                      >
+                        <Phone color="#16A34A" size={16} strokeWidth={2.5} />
+                      </TouchableOpacity>
+                    </View>
+                  </View>
+
+                  {/* Row 2: Recolha (Sender - Only if different) */}
+                  {rideDetails.type === 'delivery' && isSenderDifferent && (
+                    <View className="flex-row items-center justify-between pt-2 border-t border-gray-50">
+                      <View className="flex-row items-center flex-1">
+                        <View className="w-10 h-10 rounded-full bg-green-50 items-center justify-center">
+                          <ArrowUpRight size={18} color="#22C55E" />
+                        </View>
+                        <View className="ml-3 flex-1">
+                          <View className="flex-row items-center">
+                            <Text className="text-[10px] font-bold text-green-600 uppercase tracking-tighter mr-2">
+                              Remetente
+                            </Text>
+                          </View>
+                          <Text
+                            className="font-bold text-gray-800 text-sm"
+                            numberOfLines={1}
+                          >
+                            {senderName || 'Remetente'}
+                          </Text>
+                          <Text
+                            className="text-gray-500 text-xs font-medium"
+                            numberOfLines={1}
+                          >
+                            {senderPhone}
+                          </Text>
+                        </View>
+                      </View>
+                      <TouchableOpacity
+                        className="w-8 h-8 rounded-full bg-green-100 items-center justify-center active:bg-green-200"
+                        onPress={() => handleCall(senderPhone)}
+                      >
+                        <Phone color="#16A34A" size={16} strokeWidth={2.5} />
+                      </TouchableOpacity>
+                    </View>
+                  )}
+
+                  {/* Row 3: Entrega (Receiver - Only if different or always for delivery) */}
+                  {rideDetails.type === 'delivery' &&
+                    (isReceiverDifferent || !isSenderDifferent) && (
+                      <View className="flex-row items-center justify-between pt-2 border-t border-gray-50">
+                        <View className="flex-row items-center flex-1">
+                          <View className="w-10 h-10 rounded-full bg-red-50 items-center justify-center">
+                            <ArrowDownRight size={18} color="#EF4444" />
+                          </View>
+                          <View className="ml-3 flex-1">
+                            <View className="flex-row items-center">
+                              <Text className="text-[10px] font-bold text-red-600 uppercase tracking-tighter mr-2">
+                                Destinatário
+                              </Text>
+                            </View>
+                            <Text
+                              className="font-bold text-gray-800 text-sm"
+                              numberOfLines={1}
+                            >
+                              {receiverName || 'Destinatário'}
+                            </Text>
+                            <Text
+                              className="text-gray-500 text-xs font-medium"
+                              numberOfLines={1}
+                            >
+                              {receiverPhone}
+                            </Text>
+                          </View>
+                        </View>
+                        <TouchableOpacity
+                          className="w-8 h-8 rounded-full bg-green-100 items-center justify-center active:bg-green-200"
+                          onPress={() => handleCall(receiverPhone)}
+                        >
+                          <Phone color="#16A34A" size={16} strokeWidth={2.5} />
+                        </TouchableOpacity>
+                      </View>
+                    )}
+                </View>
+              )
+            })()}
 
             {/* Route Section (Connects Pickup and Dropoff) */}
             <View className="bg-gray-50 rounded-2xl p-4 mb-6">
@@ -384,8 +486,6 @@ export const DriverRideSheet = forwardRef<BottomSheetModal, Props>(
               </View>
             )}
 
-            <View className="flex-1" />
-
             {/* Footer: Price and Actions */}
             <View className="pt-2 pb-6">
               <Text className="text-gray-400 text-xs font-bold uppercase tracking-widest mb-1 text-center">
@@ -408,7 +508,7 @@ export const DriverRideSheet = forwardRef<BottomSheetModal, Props>(
                 </TouchableOpacity>
               )}
             </View>
-          </BottomSheetView>
+          </BottomSheetScrollView>
         </BottomSheetModal>
 
         {/* Modal Personalizado de Contacto */}
@@ -441,9 +541,7 @@ export const DriverRideSheet = forwardRef<BottomSheetModal, Props>(
               <Text className="text-gray-500 text-center mb-8">
                 Deseja {contactType === 'call' ? 'ligar' : 'enviar mensagem'}{' '}
                 para{' '}
-                <Text className="font-bold text-gray-700">
-                  {rideDetails.user?.phone}
-                </Text>
+                <Text className="font-bold text-gray-700">{selectedPhone}</Text>
                 ?
               </Text>
 
@@ -466,9 +564,9 @@ export const DriverRideSheet = forwardRef<BottomSheetModal, Props>(
                   onPress={() => {
                     setContactModalVisible(false)
                     if (contactType === 'call') {
-                      Linking.openURL(`tel:${rideDetails.user?.phone}`)
+                      Linking.openURL(`tel:${selectedPhone}`)
                     } else {
-                      Linking.openURL(`sms:${rideDetails.user?.phone}`)
+                      Linking.openURL(`sms:${selectedPhone}`)
                     }
                   }}
                 >

@@ -407,7 +407,7 @@ export default function RideSummaryScreen() {
           fareDetails={fareDetails}
           distance={distance}
           onCancel={() => setShowCancelModal(true)}
-          snapPoints={['18%', '40%']}
+          snapPoints={['20%', '50%']}
         />
       )}
 
