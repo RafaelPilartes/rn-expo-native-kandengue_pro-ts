@@ -24,6 +24,7 @@ type Props = {
   duration: string
   handleAcceptRide: () => void
   durationDriver: string
+  distanceDriver: string
   driver: any // Replace with proper Driver type if available, using any for now to match usage
   setShowArrivalModal: (show: boolean) => void
   handleOpenInMaps: () => void
@@ -44,6 +45,7 @@ export const RideStatusManager = ({
   duration,
   handleAcceptRide,
   durationDriver,
+  distanceDriver,
   driver,
   setShowArrivalModal,
   handleOpenInMaps,
@@ -119,9 +121,9 @@ export const RideStatusManager = ({
       return (
         <>
           <RideStatusDelivering
-            distanceTraveled={distance}
+            distanceTraveled={distanceDriver || distance}
             distanceTotal={distance}
-            duration={duration}
+            duration={durationDriver || duration}
             packageInfo={currentRide?.details?.item}
             onArrived={() => setShowArrivalModal(true)}
             onPress={handleOpenInMaps}

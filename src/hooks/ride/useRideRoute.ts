@@ -59,7 +59,7 @@ export function useRideRoute(pickup?: LatLng | null, dropoff?: LatLng | null) {
     };
 
     fetchRoute();
-  }, [pickup, dropoff]);
+  }, [pickup?.latitude, pickup?.longitude, dropoff?.latitude, dropoff?.longitude]);
 
   return {
     routeCoords,

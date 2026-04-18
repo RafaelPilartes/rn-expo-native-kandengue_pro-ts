@@ -293,24 +293,18 @@ export default function RideSummaryScreen() {
     }
   }
 
-  // 🔹 ATUALIZAR REGIÃO DO MAPA BASEADO NO STATUS
+  // 🔹 ATUALIZAR REGIÃO DO MAPA BASEADO NA POSIÇÃO DO MOTORISTA (FOLLOW)
   useEffect(() => {
     if (!mapRef.current || !userLocation) return
 
-    let targetLocation = location.pickup
-
-    if (rideStatus === 'picked_up' || rideStatus === 'arrived_dropoff') {
-      targetLocation = location.dropoff
-    }
-
     mapRef.current?.setCameraPosition?.({
       coordinates: {
-        latitude: targetLocation.latitude,
-        longitude: targetLocation.longitude
+        latitude: userLocation.latitude,
+        longitude: userLocation.longitude
       },
-      zoom: 14
+      zoom: 16
     })
-  }, [rideStatus, location, userLocation])
+  }, [userLocation])
 
   useEffect(() => {
     if (hasDriver) {
@@ -394,6 +388,7 @@ export default function RideSummaryScreen() {
         duration={duration}
         handleAcceptRide={handleAcceptRide}
         durationDriver={durationDriver ? String(durationDriver) : ''}
+        distanceDriver={distanceDriver ? String(distanceDriver) : ''}
         driver={driver}
         setShowArrivalModal={setShowArrivalModal}
         handleOpenInMaps={handleOpenInMaps}
