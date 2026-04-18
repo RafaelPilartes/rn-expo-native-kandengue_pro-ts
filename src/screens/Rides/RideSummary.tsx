@@ -321,12 +321,21 @@ export default function RideSummaryScreen() {
   }, [rideStatus, navigation])
 
   useEffect(() => {
-    const unsubscribe = navigation.addListener('blur', () => {
+    const unsubscribeBlur = navigation.addListener('blur', () => {
       bottomSheetRef.current?.close()
     })
 
-    return unsubscribe
-  }, [navigation])
+    const unsubscribeFocus = navigation.addListener('focus', () => {
+      if (hasDriver) {
+        bottomSheetRef.current?.present()
+      }
+    })
+
+    return () => {
+      unsubscribeBlur()
+      unsubscribeFocus()
+    }
+  }, [navigation, hasDriver])
 
   useEffect(() => {
     if (!currentRide) return

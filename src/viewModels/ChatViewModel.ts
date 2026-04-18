@@ -13,6 +13,7 @@ export function useChatViewModel() {
   const queryClient = useQueryClient()
   const [messages, setMessages] = useState<MessageEntity[]>([])
   const [currentChat, setCurrentChat] = useState<ChatEntity | null>(null)
+  const [isMessagesLoaded, setIsMessagesLoaded] = useState(false)
 
   const getOrCreateChat = useMutation({
     mutationFn: ({
@@ -24,18 +25,27 @@ export function useChatViewModel() {
       driver: { id: string; name: string; avatar?: string }
       passenger: { id: string; name: string; avatar?: string }
     }) => chatUseCase.getOrCreateChatForRide(rideId, driver, passenger),
-    onSuccess: (chat) => {
+    onSuccess: chat => {
       setCurrentChat(chat)
     }
   })
 
   const sendMessage = useMutation({
-    mutationFn: ({ chatId, senderId, receiverId, text }: { chatId: string, senderId: string, receiverId: string, text: string }) =>
-      messageUseCase.sendMessage(chatId, senderId, receiverId, text)
+    mutationFn: ({
+      chatId,
+      senderId,
+      receiverId,
+      text
+    }: {
+      chatId: string
+      senderId: string
+      receiverId: string
+      text: string
+    }) => messageUseCase.sendMessage(chatId, senderId, receiverId, text)
   })
 
   const markAsRead = useMutation({
-    mutationFn: ({ chatId, userId }: { chatId: string, userId: string }) =>
+    mutationFn: ({ chatId, userId }: { chatId: string; userId: string }) =>
       chatUseCase.markAsRead(chatId, userId)
   })
 
@@ -44,9 +54,13 @@ export function useChatViewModel() {
   const listenChatMessages = (chatId: string) => {
     if (messagesListenRef.current) messagesListenRef.current()
 
-    messagesListenRef.current = messageUseCase.listenMessages(chatId, (newMessages) => {
-      setMessages(newMessages)
-    })
+    messagesListenRef.current = messageUseCase.listenMessages(
+      chatId,
+      newMessages => {
+        setMessages(newMessages)
+        setIsMessagesLoaded(true)
+      }
+    )
   }
 
   // Listener for Chat Meta Update (Unread count, etc)
@@ -54,7 +68,7 @@ export function useChatViewModel() {
   const listenChatSession = (chatId: string) => {
     if (chatListenRef.current) chatListenRef.current()
 
-    chatListenRef.current = chatUseCase.listenChat(chatId, (chat) => {
+    chatListenRef.current = chatUseCase.listenChat(chatId, chat => {
       setCurrentChat(chat)
     })
   }
@@ -70,6 +84,7 @@ export function useChatViewModel() {
     messages,
     currentChat,
     isInitializing: getOrCreateChat.isPending,
+    isMessagesLoaded,
     isSending: sendMessage.isPending,
 
     getOrCreateChat,

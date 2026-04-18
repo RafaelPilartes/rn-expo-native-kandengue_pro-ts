@@ -26,19 +26,16 @@ export class FirebaseChatDAO {
     const driverId = driver.id;
     const userId = passenger.id;
 
-    // Check if chat already exists for this ride
-    const q = query(this.chatsRef, where('rideId', '==', rideId))
-    const snapshot = await getDocs(q)
+    const chatDocRef = doc(this.chatsRef, rideId);
+    const docSnap = await getDoc(chatDocRef);
 
-    if (!snapshot.empty) {
-       const existingDoc = snapshot.docs[0]
-       return new ChatEntity({ id: existingDoc.id, ...(existingDoc.data() as ChatEntity) })
+    if (docSnap.exists()) {
+       return new ChatEntity({ id: docSnap.id, ...(docSnap.data() as ChatEntity) })
     }
 
-    // Create new chat
-    const chatId = generateId('chat')
+    // Create new chat using rideId as chatId
     const chatData: ChatEntity = {
-      id: chatId,
+      id: rideId,
       rideId,
       participantIds: [driverId, userId],
       driver,
@@ -48,7 +45,7 @@ export class FirebaseChatDAO {
       updated_at: new Date()
     }
 
-    await setDoc(doc(this.chatsRef, chatId), chatData)
+    await setDoc(chatDocRef, chatData)
 
     return new ChatEntity(chatData)
   }

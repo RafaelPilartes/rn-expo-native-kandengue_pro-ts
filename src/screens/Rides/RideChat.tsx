@@ -30,6 +30,7 @@ export default function RideChatScreen() {
   const {
     messages,
     currentChat,
+    isMessagesLoaded,
     isInitializing,
     isSending,
     getOrCreateChat,
@@ -42,19 +43,20 @@ export default function RideChatScreen() {
   const [text, setText] = useState('')
 
   useEffect(() => {
-    getOrCreateChat.mutateAsync({ rideId, driver, passenger }).then(chat => {
-      if (chat.id) {
-        listenChatMessages(chat.id)
-        listenChatSession(chat.id)
-        markAsRead.mutate({ chatId: chat.id, userId: currentUserId })
-      }
+    // 1. Inicia ouvintes imediatamente sem bloquear a UI (chatId == rideId)
+    listenChatMessages(rideId)
+    listenChatSession(rideId)
+
+    // 2. Garante a criação do Doc silenciosamente e marca como lido
+    getOrCreateChat.mutateAsync({ rideId, driver, passenger }).then(() => {
+      markAsRead.mutate({ chatId: rideId, userId: currentUserId })
     })
   }, [])
 
   const handleSend = () => {
-    if (!text.trim() || !currentChat?.id) return
+    if (!text.trim()) return
     sendMessage.mutate({
-      chatId: currentChat.id,
+      chatId: rideId,
       senderId: currentUserId,
       receiverId: otherUserId,
       text: text.trim()
@@ -123,7 +125,7 @@ export default function RideChatScreen() {
 
         {/* Body */}
         <View className="flex-1 bg-[#FAFAFA] px-4">
-          {isInitializing ? (
+          {!isMessagesLoaded ? (
             <View className="flex-1 justify-center items-center">
               <ActivityIndicator size="large" color="#16A34A" />
             </View>
