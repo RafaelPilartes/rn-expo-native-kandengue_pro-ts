@@ -29,6 +29,8 @@ import { RideInterface } from '@/interfaces/IRide'
 import { RideFareInterface } from '@/interfaces/IRideFare'
 import { formatMoney } from '@/utils/formattedNumber'
 import { getPaymentMethodLabel } from '@/utils/gettersLabels'
+import { useNavigation } from '@react-navigation/native'
+import ROUTES from '@/constants/routes'
 
 type Props = {
   rideDetails: RideInterface
@@ -60,14 +62,28 @@ export const DriverRideSheet = forwardRef<BottomSheetModal, Props>(
       }
     }
 
+    const navigation = useNavigation<any>()
+    
     const handleMessage = () => {
-      if (rideDetails.user?.phone) {
-        setContactType('message')
-        setContactModalVisible(true)
+      if (rideDetails.user?.id && rideDetails.driver?.id) {
+        setContactModalVisible(false)
+        navigation.navigate(ROUTES.Rides.CHAT, {
+          rideId: rideDetails.id,
+          driver: {
+            id: rideDetails.driver.id,
+            name: rideDetails.driver.name,
+            avatar: rideDetails.driver.photo,
+          },
+          passenger: {
+            id: rideDetails.user.id,
+            name: rideDetails.user.name,
+            avatar: rideDetails.user.photo,
+          }
+        })
       } else {
         showAlert({
           title: 'Erro',
-          message: 'Número de telefone não disponível',
+          message: 'Participantes não disponíveis no momento',
           type: 'error'
         })
       }

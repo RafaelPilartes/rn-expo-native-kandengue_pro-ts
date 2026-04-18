@@ -20,7 +20,8 @@ const Tab = createBottomTabNavigator<MainTabParamList>()
 const hiddenHomeTabRoutes = [
   ROUTES.Rides.SUMMARY,
   ROUTES.Rides.FINISHED,
-  ROUTES.HomeStack.NOTIFICATIONS
+  ROUTES.HomeStack.NOTIFICATIONS,
+  ROUTES.Rides.CHAT
 ]
 
 const hiddenMapTabRoutes = [ROUTES.MapStack.HISTORY_DETAILS]

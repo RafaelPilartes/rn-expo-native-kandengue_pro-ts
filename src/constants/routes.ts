@@ -51,7 +51,8 @@ const ROUTES = {
     SUMMARY: 'RideSummaryScreen',
     FINISHED: 'RideFinishedScreen',
     REQUESTS: 'RequestsScreen',
-    TRANSFERS: 'TransfersScreen'
+    TRANSFERS: 'TransfersScreen',
+    CHAT: 'RideChatScreen'
   },
   MainTab: {
     HOME: 'HomeTab',

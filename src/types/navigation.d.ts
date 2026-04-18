@@ -63,6 +63,13 @@ export type HomeStackParamList = {
       fare: RideFareInterface
     }
   }
+
+  RideChatScreen: {
+    rideId: string
+    chatId?: string 
+    driver: { id: string; name: string; avatar?: string }
+    passenger: { id: string; name: string; avatar?: string }
+  }
 }
 
 export type MapStackParamList = {

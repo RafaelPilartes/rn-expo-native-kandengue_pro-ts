@@ -6,6 +6,7 @@ import RideFinishedScreen from '@/screens/Rides/RideFinished'
 import RideSummaryScreen from '@/screens/Rides/RideSummary'
 import NotificationsScreen from '@/screens/Main/Notifications'
 import MissionsScreen from '@/screens/Main/Missions/Missions'
+import RideChatScreen from '@/screens/Rides/RideChat'
 
 const Stack = createNativeStackNavigator<HomeStackParamList>()
 
@@ -35,6 +36,7 @@ export default function HomeRouter() {
         name={ROUTES.Rides.FINISHED}
         component={RideFinishedScreen}
       />
+      <Stack.Screen name={ROUTES.Rides.CHAT} component={RideChatScreen} />
     </Stack.Navigator>
   )
 }
