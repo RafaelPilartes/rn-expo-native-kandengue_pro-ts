@@ -18,7 +18,8 @@ import {
   Phone,
   DoorOpen,
   ArrowDownRight,
-  ArrowUpRight
+  ArrowUpRight,
+  Info
 } from 'lucide-react-native'
 import { RideInterface } from '@/interfaces/IRide'
 import { formatMoney } from '@/utils/formattedNumber'
@@ -369,6 +370,23 @@ const RideDetailsSheetModal = forwardRef<
                       </Text>
                     </View>
                   </View>
+
+                  {/* Driver Instructions */}
+                  {selectedRide.details.driver_instructions && (
+                    <View className="px-4 pb-4">
+                      <View className="bg-gray-50 p-3 rounded-xl border border-gray-100 flex-row items-start">
+                        <Info size={16} color="#6b7280" className="mt-0.5" />
+                        <View className="flex-1 ml-2">
+                          <Text className="text-gray-900 font-bold text-[11px] uppercase tracking-wider mb-0.5">
+                            Instruções para o Motorista
+                          </Text>
+                          <Text className="text-gray-800 text-xs leading-relaxed">
+                            {selectedRide.details.driver_instructions}
+                          </Text>
+                        </View>
+                      </View>
+                    </View>
+                  )}
                 </View>
               </View>
             )}

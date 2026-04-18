@@ -1,161 +1,362 @@
 // src/screens/About.tsx
-import React from 'react'
-import {
-  View,
-  Text,
-  ScrollView,
-  TouchableOpacity,
-  Linking
-} from 'react-native'
-import { useAlert } from '@/context/AlertContext'
+import React, { useState } from 'react'
+import { View, Text, ScrollView, TouchableOpacity, Linking } from 'react-native'
 import {
   Info,
-  Mail,
-  Smartphone,
+  Shield,
+  Award,
+  Users,
   MapPin,
-  ChevronRight
+  Star,
+  Heart,
+  Globe,
+  ChevronRight,
+  ExternalLink
 } from 'lucide-react-native'
 import PageHeader from '@/components/PageHeader'
-import { APP_VERSION, BUILD_NUMBER } from '@/constants/config'
+import { useAlert } from '@/context/AlertContext'
+import { contentAbout } from '@/data/appContent'
+import { SafeAreaView } from 'react-native-safe-area-context'
+import {
+  APP_VERSION,
+  BUILD_NUMBER,
+  DEVELOPER_SITE,
+  SITE_URL
+} from '@/constants/config'
 
 export default function AboutScreen() {
+  const [expandedSection, setExpandedSection] = useState<string | null>(null)
   const { showAlert } = useAlert()
-  const handleContact = (type: 'site' | 'email' | 'tel') => {
-    let url = ''
-    switch (type) {
-      case 'site':
-        url = 'https://kandengueatrevido.ao'
-        break // Placeholder
-      case 'email':
-        url = 'mailto:Comercial@kandengueatrevido.ao'
-        break
-      case 'tel':
-        url = 'tel:928888745'
-        break
-    }
 
-    Linking.openURL(url).catch(() =>
-      showAlert({ title: 'Erro', message: 'Não foi possível abrir o link.', type: 'error' })
+  const toggleSection = (section: string) => {
+    setExpandedSection(expandedSection === section ? null : section)
+  }
+
+  const handleOpenWebsite = () => {
+    Linking.openURL(`${SITE_URL}`).catch(() =>
+      showAlert({
+        title: 'Erro',
+        message: 'Não foi possível abrir o website.',
+        type: 'error'
+      })
     )
   }
 
+  const handleOpenPrivacyPolicy = () => {
+    Linking.openURL(`${SITE_URL}/privacy`).catch(() =>
+      showAlert({
+        title: 'Erro',
+        message: 'Não foi possível abrir a política de privacidade.',
+        type: 'error'
+      })
+    )
+  }
+
+  const handleOpenTerms = () => {
+    Linking.openURL(`${SITE_URL}/terms`).catch(() =>
+      showAlert({
+        title: 'Erro',
+        message: 'Não foi possível abrir os termos de uso.',
+        type: 'error'
+      })
+    )
+  }
+
+  const handleOpenDev = () => {
+    Linking.openURL(`${DEVELOPER_SITE}`).catch(() =>
+      showAlert({
+        title: 'Erro',
+        message: 'Não foi possível abrir os site do desenvolvedor.',
+        type: 'error'
+      })
+    )
+  }
+
+  const stats = [
+    { icon: Users, value: '1k+', label: 'Usuários Ativos' },
+    { icon: MapPin, value: '5+', label: 'Provincias' },
+    { icon: Star, value: '4.8', label: 'Avaliação' },
+    { icon: Award, value: '97%', label: 'Entregas no Prazo' }
+  ]
+
+  const features = [
+    {
+      icon: Shield,
+      title: 'Segurança',
+      description: 'Todos os nossos motoristas são verificados e treinados'
+    },
+    {
+      icon: Globe,
+      title: 'Cobertura',
+      description: 'Atendemos em múltiplas cidades com ampla cobertura'
+    },
+    {
+      icon: Heart,
+      title: 'Compromisso',
+      description: 'Comprometidos com a satisfação dos nossos clientes'
+    }
+  ]
+
   return (
-    <View className="flex-1 bg-gray-50 p-safe">
-      <PageHeader title="Sobre" canGoBack={true} />
+    <SafeAreaView className="flex-1 bg-gray-50">
+      {/* Header */}
+      <PageHeader title="Sobre o App" canGoBack={true} />
 
-      <ScrollView
-        contentContainerStyle={{ paddingBottom: 40 }}
-        showsVerticalScrollIndicator={false}
-      >
-        {/* App Hero */}
-        <View className="items-center py-10">
-          <View className="w-24 h-24 bg-white rounded-3xl items-center justify-center mb-5 border border-gray-100">
-            {/* Logo Placeholder - idealmente seria uma Image */}
-            <Info size={40} color="#000" strokeWidth={1.5} />
+      <ScrollView contentContainerStyle={{ paddingBottom: 30 }}>
+        {/* Hero Section */}
+        <View className="bg-gray-100 px-6 py-8">
+          <View className="items-center">
+            <View className="w-20 h-20 bg-white rounded-2xl items-center justify-center mb-4">
+              <Info size={40} color="#374151" />
+            </View>
+            <Text className="text-3xl font-bold text-gray-900 text-center">
+              Kandengue Atrevido
+            </Text>
+            <Text className="text-gray-900/90 text-lg text-center mt-2">
+              Conectando pessoas, simplificando entregas
+            </Text>
           </View>
-          <Text className="text-2xl font-bold text-gray-900 tracking-tight">
-            Kandengue Atrevido
-          </Text>
-          <Text className="text-gray-500 font-medium mt-1">
-            Versão {APP_VERSION} ({BUILD_NUMBER})
-          </Text>
         </View>
 
-        {/* Company Info Card */}
-        <View className="px-5 mb-6">
-          <Text className="text-sm font-semibold text-gray-500 uppercase mb-3 ml-1 tracking-wider">
-            Informações da Empresa
-          </Text>
-          <View className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
-            <View className="p-5 border-b border-gray-50">
-              <Text className="text-xs text-gray-400 font-medium mb-1">
-                Entidade Responsável
-              </Text>
-              <Text className="text-base font-bold text-gray-900 leading-snug">
-                MUXIMA TECH - COMÉRCIO E SERVIÇOS, LDA
-              </Text>
+        {/* Stats */}
+        <View className="px-6 -mt-6">
+          <View className="bg-white rounded-2xl p-6">
+            <View className="flex-row flex-wrap justify-between">
+              {stats.map((stat, index) => {
+                const IconComponent = stat.icon
+                return (
+                  <View key={index} className="w-1/2 items-center mb-4">
+                    <IconComponent size={24} color="#E0212D" />
+                    <Text className="text-2xl font-bold text-gray-900 mt-1">
+                      {stat.value}
+                    </Text>
+                    <Text className="text-gray-600 text-xs text-center">
+                      {stat.label}
+                    </Text>
+                  </View>
+                )
+              })}
             </View>
-            <View className="p-5 flex-row justify-between items-center">
-              <View>
-                <Text className="text-xs text-gray-400 font-medium mb-1">
-                  NIF
+          </View>
+        </View>
+
+        {/* Nossa História */}
+        <View className="px-6 mt-6">
+          <TouchableOpacity
+            className="bg-white rounded-2xl p-6"
+            onPress={() => toggleSection('story')}
+          >
+            <View className="flex-row justify-between items-center">
+              <Text className="text-ls font-bold text-gray-900">
+                Nossa História
+              </Text>
+              <ChevronRight
+                size={20}
+                color="#6B7280"
+                className={expandedSection === 'story' ? 'rotate-90' : ''}
+              />
+            </View>
+
+            {expandedSection === 'story' && (
+              <View className="mt-4">
+                <Text className="text-gray-700 leading-6">
+                  {contentAbout.history}
                 </Text>
-                <Text className="text-base font-semibold text-gray-800">
-                  5002662523
+              </View>
+            )}
+          </TouchableOpacity>
+        </View>
+
+        {/* Nossa Missão */}
+        <View className="px-6 mt-4">
+          <TouchableOpacity
+            className="bg-white rounded-2xl p-6"
+            onPress={() => toggleSection('mission')}
+          >
+            <View className="flex-row justify-between items-center">
+              <Text className="text-ls font-bold text-gray-900">
+                Nossa Missão
+              </Text>
+              <ChevronRight
+                size={20}
+                color="#6B7280"
+                className={expandedSection === 'mission' ? 'rotate-90' : ''}
+              />
+            </View>
+
+            {expandedSection === 'mission' && (
+              <View className="mt-4">
+                <Text className="text-gray-700 leading-6 mb-4">
+                  {contentAbout.mission}
+                </Text>
+
+                <View className="gap-3">
+                  {features.map((feature, index) => {
+                    const IconComponent = feature.icon
+                    return (
+                      <View key={index} className="flex-row items-start gap-2">
+                        <IconComponent size={20} color="#E0212D" />
+                        <View className="flex-1">
+                          <Text className="font-semibold text-gray-900">
+                            {feature.title}
+                          </Text>
+                          <Text className="text-gray-600 text-sm mt-1">
+                            {feature.description}
+                          </Text>
+                        </View>
+                      </View>
+                    )
+                  })}
+                </View>
+              </View>
+            )}
+          </TouchableOpacity>
+        </View>
+
+        {/* Nossa Visão */}
+        <View className="px-6 mt-4">
+          <TouchableOpacity
+            className="bg-white rounded-2xl p-6"
+            onPress={() => toggleSection('vision')}
+          >
+            <View className="flex-row justify-between items-center">
+              <Text className="text-ls font-bold text-gray-900">
+                Nossa Visão
+              </Text>
+              <ChevronRight
+                size={20}
+                color="#6B7280"
+                className={expandedSection === 'vision' ? 'rotate-90' : ''}
+              />
+            </View>
+
+            {expandedSection === 'vision' && (
+              <View className="mt-4">
+                <Text className="text-gray-700 leading-6">
+                  {contentAbout.vision}
+                </Text>
+              </View>
+            )}
+          </TouchableOpacity>
+        </View>
+
+        {/* Nossos Valores e Slogan */}
+        <View className="px-6 mt-4">
+          <TouchableOpacity
+            className="bg-white rounded-2xl p-6"
+            onPress={() => toggleSection('values')}
+          >
+            <View className="flex-row justify-between items-center">
+              <Text className="text-ls font-bold text-gray-900">
+                Nossos Valores
+              </Text>
+              <ChevronRight
+                size={20}
+                color="#6B7280"
+                className={expandedSection === 'values' ? 'rotate-90' : ''}
+              />
+            </View>
+
+            {expandedSection === 'values' && (
+              <View className="mt-4">
+                <Text className="text-gray-700 leading-6 mb-4">
+                  {contentAbout.values}
+                </Text>
+                <View className="bg-primary-50 p-4 rounded-xl">
+                  <Text className="text-primary-800 font-bold text-center italic">
+                    "{contentAbout.slogan}"
+                  </Text>
+                </View>
+              </View>
+            )}
+          </TouchableOpacity>
+        </View>
+
+        {/* Informações Técnicas */}
+        <View className="px-6 mt-4">
+          <View className="bg-white rounded-2xl p-6">
+            <Text className="text-ls font-bold text-gray-900 mb-4">
+              Informações do App
+            </Text>
+
+            <View className="gap-3">
+              <View className="flex-row justify-between">
+                <Text className="text-gray-600">Versão</Text>
+                <Text className="font-semibold text-gray-900">
+                  {APP_VERSION}
+                </Text>
+              </View>
+
+              <View className="flex-row justify-between">
+                <Text className="text-gray-600">Build</Text>
+                <Text className="font-semibold text-gray-900">
+                  {BUILD_NUMBER}
                 </Text>
               </View>
             </View>
           </View>
         </View>
 
-        {/* Contacts */}
-        <View className="px-5 mb-8">
-          <Text className="text-sm font-semibold text-gray-500 uppercase mb-3 ml-1 tracking-wider">
-            Contactos
-          </Text>
-          <View className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+        {/* Links Rápidos */}
+        <View className="px-6 mt-4">
+          <View className="bg-white rounded-2xl p-6">
+            <Text className="text-ls font-bold text-gray-900 mb-4">
+              Links Úteis
+            </Text>
+
+            <View className="gap-3">
+              <TouchableOpacity
+                className="flex-row justify-between items-center py-3"
+                onPress={handleOpenWebsite}
+              >
+                <View className="flex-row items-center">
+                  <Globe size={20} color="#6B7280" />
+                  <Text className="text-gray-800 ml-3">Website Oficial</Text>
+                </View>
+                <ExternalLink size={16} color="#6B7280" />
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                className="flex-row justify-between items-center py-3"
+                onPress={handleOpenPrivacyPolicy}
+              >
+                <View className="flex-row items-center">
+                  <Shield size={20} color="#6B7280" />
+                  <Text className="text-gray-800 ml-3">
+                    Política de Privacidade
+                  </Text>
+                </View>
+                <ExternalLink size={16} color="#6B7280" />
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                className="flex-row justify-between items-center py-3"
+                onPress={handleOpenTerms}
+              >
+                <Text className="text-gray-800">Termos de Uso</Text>
+                <ExternalLink size={16} color="#6B7280" />
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+
+        {/* Footer */}
+        <View className="px-6 mt-6">
+          <View className="items-center">
+            <Text className="text-gray-400 text-sm mt-1 text-center">
+              © 2024 Kandengue Atrevido. Todos os direitos reservados.
+            </Text>
             <TouchableOpacity
-              onPress={() => handleContact('tel')}
-              className="flex-row items-center p-4 border-b border-gray-50 active:bg-gray-50"
+              className="flex-row justify-between items-center py-3"
+              onPress={handleOpenDev}
             >
-              <View className="w-10 h-10 bg-gray-50 rounded-full items-center justify-center mr-4">
-                <Smartphone size={20} color="#374151" />
-              </View>
-              <View className="flex-1">
-                <Text className="text-sm font-medium text-gray-900">
-                  Telefone Comercial
-                </Text>
-                <Text className="text-xs text-gray-500">928 888 745</Text>
-              </View>
-              <ChevronRight size={16} color="#9CA3AF" />
-            </TouchableOpacity>
-
-            <TouchableOpacity
-              onPress={() => handleContact('email')}
-              className="flex-row items-center p-4 active:bg-gray-50"
-            >
-              <View className="w-10 h-10 bg-gray-50 rounded-full items-center justify-center mr-4">
-                <Mail size={20} color="#374151" />
-              </View>
-              <View className="flex-1">
-                <Text className="text-sm font-medium text-gray-900">
-                  Email Comercial
-                </Text>
-                <Text className="text-xs text-gray-500">
-                  Comercial@kandengueatrevido.ao
-                </Text>
-              </View>
-              <ChevronRight size={16} color="#9CA3AF" />
+              <Text className="text-gray-500 text-center text-sm">
+                Desenvolvido por Rafael Pilartes
+              </Text>
             </TouchableOpacity>
           </View>
-        </View>
-
-        {/* Location (Optional/Placeholder based on context) */}
-        <View className="px-5">
-          <View className="bg-white rounded-2xl border border-gray-100 p-5 flex-row items-start">
-            <MapPin size={20} color="#374151" className="mt-0.5" />
-            <View className="ml-4 flex-1">
-              <Text className="text-sm font-bold text-gray-900 mb-1">
-                Luanda, Angola
-              </Text>
-              <Text className="text-xs text-gray-500 leading-relaxed">
-                Nossa sede está localizada no coração da cidade, focada em mover
-                Angola para o futuro.
-              </Text>
-            </View>
-          </View>
-        </View>
-
-        {/* Footer Credits */}
-        <View className="mt-10 items-center flex-col">
-          <Text className="text-gray-400 text-xs">
-            © 2024 Muxima Tech. Todos os direitos reservados.
-          </Text>
-          <Text className="text-gray-400 text-xs">
-            Desenvolvido por Rafael Pilartes
-          </Text>
         </View>
       </ScrollView>
-    </View>
+    </SafeAreaView>
   )
 }

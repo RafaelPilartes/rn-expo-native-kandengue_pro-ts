@@ -1,8 +1,16 @@
 import Constants from 'expo-constants'
 
-export const APP_VERSION = '1.0.0'
-export const BUILD_NUMBER = '1'
-export const LAST_UPDATE = '13 Nov 2025'
+// Busca a versão baseada no app.json (Garante que é sempre automática e verídica)
+export const APP_VERSION = Constants.expoConfig?.version || '1.0.0'
+
+// Busca o build number do iOS ou o versionCode do Android
+export const BUILD_NUMBER =
+  Constants.expoConfig?.ios?.buildNumber ||
+  Constants.expoConfig?.android?.versionCode?.toString() ||
+  '1'
+
+export const LAST_UPDATE = '18 Abr 2026'
+
 export const SITE_URL = 'https://kandengueatrevido.ao'
 export const DEVELOPER_SITE = 'https://rafaelpilartes.com'
 

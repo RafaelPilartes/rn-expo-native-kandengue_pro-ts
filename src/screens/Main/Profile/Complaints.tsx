@@ -28,6 +28,7 @@ import type {
   ComplaintPriority,
   ContactPreference
 } from '@/core/interfaces/IComplaintRepository'
+import { WHATSAPP_NUMBER, EMAIL_SUPPORT } from '@/constants/config'
 
 export default function ComplaintsScreen() {
   const navigation = useNavigation<any>()
@@ -47,7 +48,6 @@ export default function ComplaintsScreen() {
   // Tipos de reclamação baseados na interface
   const complaintTypes: Array<{ id: ComplaintType; label: string; icon: any }> =
     [
-      { id: 'service_quality', label: 'Qualidade do Serviço', icon: Package },
       {
         id: 'driver_behavior',
         label: 'Comportamento do Motorista',
@@ -68,6 +68,7 @@ export default function ComplaintsScreen() {
         label: 'Preocupação com Segurança',
         icon: AlertTriangle
       },
+      { id: 'service_quality', label: 'Qualidade do Serviço', icon: Package },
       { id: 'other', label: 'Outro', icon: MapPin }
     ]
 
@@ -75,22 +76,30 @@ export default function ComplaintsScreen() {
   const priorities: Array<{
     id: ComplaintPriority
     label: string
-    color: string
+    activeBgClass: string
+    activeBorderClass: string
+    activeTextClass: string
   }> = [
     {
       id: 'low',
       label: 'Baixa',
-      color: 'bg-green-100 text-green-800 green-300'
+      activeBgClass: 'bg-green-50',
+      activeBorderClass: 'border-green-400',
+      activeTextClass: 'text-green-800'
     },
     {
       id: 'medium',
       label: 'Média',
-      color: 'bg-yellow-100 text-yellow-800 yellow-300'
+      activeBgClass: 'bg-yellow-50',
+      activeBorderClass: 'border-yellow-400',
+      activeTextClass: 'text-yellow-800'
     },
     {
       id: 'high',
       label: 'Alta',
-      color: 'bg-orange-100 text-orange-800 orange-300'
+      activeBgClass: 'bg-orange-50',
+      activeBorderClass: 'border-orange-400',
+      activeTextClass: 'text-orange-800'
     }
   ]
 
@@ -116,22 +125,38 @@ export default function ComplaintsScreen() {
 
   const handleSubmit = async () => {
     if (!driver?.id) {
-      showAlert({ title: 'Erro', message: 'Usuário não identificado. Faça login novamente.', type: 'error' })
+      showAlert({
+        title: 'Erro',
+        message: 'Usuário não identificado. Faça login novamente.',
+        type: 'error'
+      })
       return
     }
 
     if (!formData.type) {
-      showAlert({ title: 'Atenção', message: 'Por favor, selecione o tipo de problema.', type: 'error' })
+      showAlert({
+        title: 'Atenção',
+        message: 'Por favor, selecione o tipo de problema.',
+        type: 'error'
+      })
       return
     }
 
     if (!formData.subject.trim()) {
-      showAlert({ title: 'Atenção', message: 'Por favor, informe o assunto.', type: 'error' })
+      showAlert({
+        title: 'Atenção',
+        message: 'Por favor, informe o assunto.',
+        type: 'error'
+      })
       return
     }
 
     if (!formData.description.trim()) {
-      showAlert({ title: 'Atenção', message: 'Por favor, descreva o problema.', type: 'error' })
+      showAlert({
+        title: 'Atenção',
+        message: 'Por favor, descreva o problema.',
+        type: 'error'
+      })
       return
     }
 
@@ -152,7 +177,11 @@ export default function ComplaintsScreen() {
 
       const validation = complaintEntity.validate()
       if (!validation.isValid) {
-        showAlert({ title: 'Erro de Validação', message: validation.errors.join('\n'), type: 'error' })
+        showAlert({
+          title: 'Erro de Validação',
+          message: validation.errors.join('\n'),
+          type: 'error'
+        })
         return
       }
 
@@ -184,7 +213,9 @@ export default function ComplaintsScreen() {
       console.error('Erro ao enviar reclamação:', error)
       showAlert({
         title: 'Erro',
-        message: error.message || 'Não foi possível enviar sua reclamação. Tente novamente.',
+        message:
+          error.message ||
+          'Não foi possível enviar sua reclamação. Tente novamente.',
         type: 'error'
       })
     }
@@ -308,19 +339,15 @@ export default function ComplaintsScreen() {
                   onPress={() => handlePrioritySelect(priority.id)}
                 >
                   <View
-                    className={`rounded-xl p-3 border ${
+                    className={`rounded-xl p-3 border border-1 ${
                       isSelected
-                        ? `${priority.color.split(' ')[0]} border-${
-                            priority.color.split(' ')[2]
-                          }`
+                        ? `${priority.activeBgClass} ${priority.activeBorderClass}`
                         : 'bg-white border-gray-200'
                     }`}
                   >
                     <Text
                       className={`text-center font-medium ${
-                        isSelected
-                          ? priority.color.split(' ')[1]
-                          : 'text-gray-700'
+                        isSelected ? priority.activeTextClass : 'text-gray-700'
                       }`}
                     >
                       {priority.label}
@@ -425,12 +452,22 @@ export default function ComplaintsScreen() {
         </TouchableOpacity>
 
         {/* Informações de Suporte */}
-        <View className="mt-6 bg-gray-100 rounded-xl p-4">
-          <Text className="text-gray-700 text-sm text-center">
-            📞 Atendimento 24h: +244 923 456 789{'\n'}
-            📧 Email: support@kandengueatrevido.com{'\n'}
-            🔐 Todas as informações são tratadas com confidencialidade
-          </Text>
+        <View className="mt-6 bg-gray-100 rounded-xl p-4 border border-gray-200">
+          <View className="flex-row items-center justify-center mb-1">
+            <Text className="text-gray-700 text-sm font-medium">
+              Atendimento 24h: {WHATSAPP_NUMBER}
+            </Text>
+          </View>
+          <View className="flex-row items-center justify-center mb-1">
+            <Text className="text-gray-700 text-sm font-medium">
+              Email: {EMAIL_SUPPORT}
+            </Text>
+          </View>
+          <View className="flex-row items-center justify-center mt-2">
+            <Text className="text-gray-500 text-xs italic">
+              Todas as informações são tratadas com confidencialidade
+            </Text>
+          </View>
         </View>
       </ScrollView>
     </View>

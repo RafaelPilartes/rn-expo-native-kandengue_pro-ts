@@ -9,13 +9,38 @@ import {
   Eye,
   User,
   Share2,
-  FileText
+  UserCheck,
+  Globe,
+  Archive,
+  ShieldAlert,
+  RefreshCw,
+  Phone,
+  CheckCircle
 } from 'lucide-react-native'
+import { useNavigation } from '@react-navigation/native'
+import { SafeAreaView } from 'react-native-safe-area-context'
+import { contentPrivacyPolicy } from '@/data/appContent'
 import PageHeader from '@/components/PageHeader'
 
+const IconMap: Record<string, any> = {
+  User,
+  Eye,
+  Share2,
+  Lock,
+  UserCheck,
+  Globe,
+  Archive,
+  ShieldAlert,
+  RefreshCw,
+  Phone,
+  CheckCircle,
+  Shield
+}
+
 export default function PrivacyPolicyScreen() {
+  const navigation = useNavigation<any>()
   const [expandedSections, setExpandedSections] = useState<Set<string>>(
-    new Set(['introduction'])
+    new Set()
   )
 
   const toggleSection = (section: string) => {
@@ -30,153 +55,113 @@ export default function PrivacyPolicyScreen() {
 
   const isSectionExpanded = (section: string) => expandedSections.has(section)
 
-  const sections = [
-    {
-      id: 'introduction',
-      title: '1. Introdução',
-      icon: Shield,
-      content: `A MUXIMA TECH - COMÉRCIO E SERVIÇOS, LDA ("Kandengue Atrevido") valoriza sua privacidade. Esta Política de Privacidade explica como coletamos, usamos, divulgamos e protegemos suas informações quando você usa nossos serviços.
-
-Ao utilizar nosso aplicativo, você concorda com a coleta e uso de informações de acordo com esta política.`
-    },
-    {
-      id: 'information-collection',
-      title: '2. Informações que Coletamos',
-      icon: User,
-      content: `Coletamos diferentes tipos de informações para fornecer e melhorar nosso serviço:
-
-• Informações Pessoais: Nome, endereço de e-mail, número de telefone e foto de perfil.
-• Dados de Geolocalização: Coletamos sua localização precisa para conectar motoristas e passageiros e rastrear entregas.
-• Dados de Pagamento: Detalhes de transações e métodos de pagamento (processados de forma segura).
-• Dados do Dispositivo: Modelo do aparelho, sistema operacional e identificadores únicos.`
-    },
-    {
-      id: 'how-we-use',
-      title: '3. Uso das Informações',
-      icon: Eye,
-      content: `Utilizamos seus dados para:
-
-• Facilitar e processar corridas e entregas.
-• Processar pagamentos e prevenir fraudes.
-• Melhorar a segurança e a eficiência da plataforma.
-• Enviar notificações importantes sobre o serviço.
-• Analisar tendências de uso para melhorias futuras.`
-    },
-    {
-      id: 'information-sharing',
-      title: '4. Compartilhamento de Dados',
-      icon: Share2,
-      content: `Não vendemos seus dados pessoais. Compartilhamos informações apenas nas seguintes situações:
-
-• Com Motoristas/Passageiros: Apenas os dados necessários para a realização do serviço (nome, foto, localização).
-• Prestadores de Serviço: Empresas que processam pagamentos ou hospedagem de dados.
-• Obrigações Legais: Quando exigido por lei ou autoridades competentes.`
-    },
-    {
-      id: 'data-security',
-      title: '5. Segurança',
-      icon: Lock,
-      content: `A MUXIMA TECH implementa medidas de segurança rigorosas para proteger seus dados, incluindo criptografia e controles de acesso restritos. No entanto, nenhum método de transmissão pela internet é 100% seguro.`
-    },
-    {
-      id: 'user-rights',
-      title: '6. Seus Direitos',
-      icon: FileText,
-      content: `Você tem direito a solicitar acesso, correção ou exclusão de seus dados pessoais. Entre em contato com nosso suporte para exercer esses direitos.`
-    },
-    {
-      id: 'contact',
-      title: '7. Fale Conosco',
-      content: `Se tiver dúvidas sobre esta Política de Privacidade, entre em contato:
-
-MUXIMA TECH - COMÉRCIO E SERVIÇOS, LDA
-NIF: 5002662523
-Email: privacy@kandengueatrevido.ao
-Telefone: 928 888 745`
-    }
-  ]
-
   return (
-    <View className="flex-1 bg-gray-50 p-safe">
+    <SafeAreaView className="flex-1 bg-gray-50">
+      {/* Header */}
       <PageHeader title="Política de Privacidade" canGoBack={true} />
 
-      <ScrollView
-        contentContainerStyle={{ paddingBottom: 40 }}
-        showsVerticalScrollIndicator={false}
-      >
-        {/* Header Summary */}
-        <View className="bg-white justify-center items-center px-6 pb-8 border-b border-gray-100">
-          <View className="bg-blue-50 w-12 h-12 rounded-xl items-center justify-center mb-4">
-            <Shield size={24} color="#2563EB" />
+      <ScrollView contentContainerStyle={{ padding: 20, paddingBottom: 40 }}>
+        {/* Header Section */}
+        <View className="bg-white rounded-2xl p-6 mb-6">
+          <View className="flex-row items-start mb-4">
+            <Shield size={32} color="#E0212D" />
+            <View className="ml-4 flex-1">
+              <Text className="text-2xl font-bold text-gray-900">
+                Sua privacidade é nossa prioridade
+              </Text>
+              <Text className="text-gray-600 mt-1">
+                Última atualização: 14 de Abril de 2026
+              </Text>
+            </View>
           </View>
-          <Text className="text-2xl font-bold text-gray-900 mb-2">
-            Sua privacidade é nossa prioridade
-          </Text>
-          <Text className="text-gray-500 text-sm">
-            Esta política descreve como a MUXIMA TECH trata seus dados pessoais.
-            {'\n'}Última atualização: Novembro, 2025
+
+          <Text className="text-gray-700 leading-6">
+            Sua privacidade é fundamental para nós. Esta política explica como
+            protegemos e utilizamos suas informações no Kandengue Atrevido.
           </Text>
         </View>
 
-        {/* Sections */}
-        <View className="px-5 mt-6">
-          {sections.map((section, index) => {
-            const IconComponent = section.icon
-            const isExpanded = isSectionExpanded(section.id)
+        {/* Quick Summary */}
+        <View className="bg-gray-100 rounded-2xl p-5 mb-6">
+          <Text className="text-gray-800 font-semibold mb-3">
+            Resumo da Política
+          </Text>
+          <View className="space-y-2">
+            <Text className="text-gray-700 text-sm">
+              • Coletamos apenas dados necessários para o serviço
+            </Text>
+            <Text className="text-gray-700 text-sm">
+              • Não vendemos seus dados a terceiros
+            </Text>
+            <Text className="text-gray-700 text-sm">
+              • Protegemos suas informações com segurança robusta
+            </Text>
+            <Text className="text-gray-700 text-sm">
+              • Você controla suas preferências de privacidade
+            </Text>
+          </View>
+        </View>
 
-            return (
-              <View key={section.id} className="mb-4">
-                <TouchableOpacity
-                  className={`bg-white rounded-2xl p-5 border border-gray-100 ${isExpanded ? 'border-blue-100 bg-blue-50' : ''}`}
-                  onPress={() => toggleSection(section.id)}
-                  activeOpacity={0.7}
-                >
-                  <View className="flex-row justify-between items-center">
-                    <View className="flex-row items-center flex-1">
-                      {IconComponent && (
-                        <View
-                          className={`w-8 h-8 rounded-full items-center justify-center mr-3 ${isExpanded ? 'bg-white' : 'bg-gray-50'}`}
-                        >
-                          <IconComponent
-                            size={14}
-                            color={isExpanded ? '#2563EB' : '#6B7280'}
-                          />
-                        </View>
-                      )}
-                      <Text
-                        className={`text-base font-bold flex-1 mr-2 ${isExpanded ? 'text-blue-900' : 'text-gray-900'}`}
-                      >
+        {/* Policy Sections */}
+        {contentPrivacyPolicy.map(section => {
+          const IconComponent = IconMap[section.iconName] || Shield
+          return (
+            <View key={section.id} className="mb-4">
+              <TouchableOpacity
+                className="bg-white rounded-2xl p-5"
+                onPress={() => toggleSection(section.id)}
+              >
+                <View className="flex-row justify-between items-start">
+                  <View className="flex-1 pr-4">
+                    <View className="flex-row items-center mb-2">
+                      <IconComponent size={16} color="#E0212D" />
+                      <Text className="text-lg font-semibold text-gray-900 ml-2">
                         {section.title}
                       </Text>
                     </View>
-                    {isExpanded ? (
-                      <ChevronUp
-                        size={20}
-                        color={isExpanded ? '#2563EB' : '#9CA3AF'}
-                      />
-                    ) : (
-                      <ChevronDown size={20} color="#9CA3AF" />
+
+                    {isSectionExpanded(section.id) && (
+                      <Text className="text-gray-700 leading-6">
+                        {section.content}
+                      </Text>
                     )}
                   </View>
 
-                  {isExpanded && (
-                    <Text className="text-gray-600 mt-4 text-sm">
-                      {section.content}
-                    </Text>
+                  {isSectionExpanded(section.id) ? (
+                    <ChevronUp size={20} color="#6B7280" />
+                  ) : (
+                    <ChevronDown size={20} color="#6B7280" />
                   )}
-                </TouchableOpacity>
-              </View>
-            )
-          })}
+                </View>
+              </TouchableOpacity>
+            </View>
+          )
+        })}
+
+        {/* Your Control */}
+        <View className="bg-gray-100 rounded-2xl p-6 mt-4">
+          <Text className="text-gray-800 font-semibold text-lg mb-3">
+            Você está no Controlo
+          </Text>
+          <Text className="text-gray-700 leading-6">
+            Você pode gerir suas preferências de privacidade a qualquer momento
+            através das configurações do app. Temos ferramentas para você
+            visualizar, corrigir ou excluir seus dados pessoais.
+          </Text>
         </View>
 
-        {/* Footer */}
-        <View className="px-6 mb-6 mt-2">
-          <Text className="text-center text-xs text-gray-400">
-            © 2025 MUXIMA TECH. Todos os direitos reservados.
+        {/* Compliance */}
+        <View className="bg-gray-100 rounded-2xl p-5 mt-6">
+          <Text className="text-gray-800 font-semibold mb-2">
+            Conformidade Legal
+          </Text>
+          <Text className="text-gray-600 text-sm">
+            Esta política está em conformidade com a Lei de Proteção de Dados
+            Pessoais de Angola e melhores práticas internacionais de
+            privacidade.
           </Text>
         </View>
       </ScrollView>
-    </View>
+    </SafeAreaView>
   )
 }

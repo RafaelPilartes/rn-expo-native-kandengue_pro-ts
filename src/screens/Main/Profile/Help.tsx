@@ -1,12 +1,6 @@
 // src/screens/Help.tsx
 import React, { useState } from 'react'
-import {
-  View,
-  Text,
-  ScrollView,
-  TouchableOpacity,
-  Linking
-} from 'react-native'
+import { View, Text, ScrollView, TouchableOpacity, Linking } from 'react-native'
 import { useAlert } from '@/context/AlertContext'
 import {
   MessageCircle,
@@ -19,18 +13,19 @@ import {
   MapPin,
   Shield
 } from 'lucide-react-native'
-import { useNavigation } from '@react-navigation/native'
-import PageHeader from '@/components/PageHeader'
+// import { useNavigation } from '@react-navigation/native'
 import {
   EMAIL_SUPPORT,
   VOICE_NUMBER,
   WHATSAPP_NUMBER
 } from '@/constants/config'
+import { contentHelp, contentFaq } from '@/data/appContent'
+import PageHeader from '@/components/PageHeader'
 
 export default function HelpScreen() {
-  const navigation = useNavigation<any>()
-  const [expandedFAQ, setExpandedFAQ] = useState<string | null>(null)
+  // const navigation = useNavigation<any>()
   const { showAlert } = useAlert()
+  const [expandedFAQ, setExpandedFAQ] = useState<string | null>(null)
 
   const toggleFAQ = (id: string) => {
     setExpandedFAQ(expandedFAQ === id ? null : id)
@@ -38,7 +33,11 @@ export default function HelpScreen() {
 
   const handleCall = () => {
     Linking.openURL(`tel:${VOICE_NUMBER}`).catch(() =>
-      showAlert({ title: 'Erro', message: 'Não foi possível iniciar a chamada.', type: 'error' })
+      showAlert({
+        title: 'Erro',
+        message: 'Não foi possível iniciar a chamada.',
+        type: 'error'
+      })
     )
   }
 
@@ -46,13 +45,25 @@ export default function HelpScreen() {
     // Ideally format number to international format without spaces/dashes
     Linking.openURL(
       `https://wa.me/244${WHATSAPP_NUMBER.replace(/\s/g, '')}`
-    ).catch(() => showAlert({ title: 'Erro', message: 'Não foi possível abrir o WhatsApp.', type: 'error' }))
+    ).catch(() =>
+      showAlert({
+        title: 'Erro',
+        message: 'Não foi possível abrir o WhatsApp.',
+        type: 'error'
+      })
+    )
   }
 
   const handleEmail = () => {
     Linking.openURL(
       `mailto:${EMAIL_SUPPORT}?subject=Suporte - Kandengue Atrevido`
-    ).catch(() => showAlert({ title: 'Erro', message: 'Não foi possível abrir o email.', type: 'error' }))
+    ).catch(() =>
+      showAlert({
+        title: 'Erro',
+        message: 'Não foi possível abrir o email.',
+        type: 'error'
+      })
+    )
   }
 
   const faqCategories = [
@@ -109,12 +120,6 @@ export default function HelpScreen() {
     }
   ]
 
-  const supportHours = [
-    { day: 'Segunda - Sexta', hours: '08:00 - 17:30' },
-    { day: 'Sábado', hours: '09:00 - 14:30' },
-    { day: 'Domingo', hours: 'Fechado' }
-  ]
-
   return (
     <View className="flex-1 bg-gray-50 m-safe">
       <PageHeader title="Central de Ajuda" canGoBack={true} />
@@ -141,26 +146,28 @@ export default function HelpScreen() {
               onPress={handleWhatsApp}
               className="flex-row items-center bg-white rounded-xl border border-gray-100 p-4 active:bg-gray-50"
             >
-              <View className="w-10 h-10 bg-green-50 rounded-full items-center justify-center border border-green-100">
-                <MessageCircle size={20} color="#10B981" />
+              <View className="w-10 h-10 bg-gray-50 rounded-full items-center justify-center border border-gray-100">
+                <MessageCircle size={20} color="#E0212D" />
               </View>
               <View className="ml-4 flex-1">
                 <Text className="font-semibold text-gray-900">WhatsApp</Text>
                 <Text className="text-gray-500 text-xs">Resposta rápida</Text>
               </View>
-              <Text className="text-green-600 font-bold text-sm">Online</Text>
+              <Text className="text-primary-600 font-bold text-sm">Online</Text>
             </TouchableOpacity>
 
             <TouchableOpacity
               onPress={handleCall}
               className="flex-row items-center bg-white rounded-xl border border-gray-100 p-4 active:bg-gray-50"
             >
-              <View className="w-10 h-10 bg-blue-50 rounded-full items-center justify-center border border-blue-100">
-                <Phone size={20} color="#3B82F6" />
+              <View className="w-10 h-10 bg-gray-50 rounded-full items-center justify-center border border-gray-100">
+                <Phone size={20} color="#E0212D" />
               </View>
               <View className="ml-4 flex-1">
                 <Text className="font-semibold text-gray-900">Ligar agora</Text>
-                <Text className="text-gray-500 text-xs">{VOICE_NUMBER}</Text>
+                <Text className="text-gray-500 text-xs">
+                  {contentHelp.attendanceChannels.phone}
+                </Text>
               </View>
             </TouchableOpacity>
 
@@ -169,12 +176,12 @@ export default function HelpScreen() {
               className="flex-row items-center bg-white rounded-xl border border-gray-100 p-4 active:bg-gray-50"
             >
               <View className="w-10 h-10 bg-gray-50 rounded-full items-center justify-center border border-gray-100">
-                <Mail size={20} color="#6B7280" />
+                <Mail size={20} color="#E0212D" />
               </View>
               <View className="ml-4 flex-1">
                 <Text className="font-semibold text-gray-900">Email</Text>
                 <Text className="text-gray-500 text-xs truncate">
-                  {EMAIL_SUPPORT}
+                  {contentHelp.attendanceChannels.email}
                 </Text>
               </View>
             </TouchableOpacity>
@@ -183,23 +190,18 @@ export default function HelpScreen() {
 
         {/* Support Hours */}
         <View className="px-5 mb-8">
-          <View className="bg-blue-50/50 rounded-xl p-4 border border-blue-100/50">
+          <View className="bg-gray-100 rounded-xl p-4 border border-gray-200">
             <View className="flex-row items-center mb-3">
-              <Clock size={16} color="#3B82F6" />
-              <Text className="text-blue-900 font-bold ml-2 text-sm">
+              <Clock size={16} color="#4B5563" />
+              <Text className="text-gray-800 font-bold ml-2 text-sm">
                 Horário de Atendimento
               </Text>
             </View>
-            {supportHours.map((schedule, index) => (
-              <View key={index} className="flex-row justify-between py-1">
-                <Text className="text-gray-600 text-xs font-medium">
-                  {schedule.day}
-                </Text>
-                <Text className="text-gray-900 text-xs font-bold">
-                  {schedule.hours}
-                </Text>
-              </View>
-            ))}
+            <View className="flex-row justify-between py-1">
+              <Text className="text-gray-600 text-xs font-medium">
+                {contentHelp.schedule}
+              </Text>
+            </View>
           </View>
         </View>
 
