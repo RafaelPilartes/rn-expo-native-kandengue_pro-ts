@@ -147,7 +147,7 @@ const RideDetailsSheetModal = forwardRef<
                 <View className="absolute left-[15px] top-4 bottom-8 w-[2px] bg-gray-200" />
 
                 <View className="flex-row items-start mb-6 z-10">
-                  <View className="w-8 h-8 rounded-full bg-green-50 border-2 border-green-500 items-center justify-center mr-3 bg-white">
+                  <View className="w-8 h-8 rounded-full bg-green-50 border-2 border-green-500 items-center justify-center mr-3">
                     <View className="w-2.5 h-2.5 bg-green-500 rounded-full" />
                   </View>
                   <View className="flex-1 pt-1">
@@ -166,7 +166,7 @@ const RideDetailsSheetModal = forwardRef<
                 </View>
 
                 <View className="flex-row items-start z-10">
-                  <View className="w-8 h-8 rounded-full bg-red-50 border-2 border-red-500 items-center justify-center mr-3 bg-white">
+                  <View className="w-8 h-8 rounded-full bg-red-50 border-2 border-red-500 items-center justify-center mr-3">
                     <View className="w-2.5 h-2.5 bg-red-500 rounded-full" />
                   </View>
                   <View className="flex-1 pt-1">
