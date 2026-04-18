@@ -169,7 +169,8 @@ export const rideTypeOptions: OptionType[] = [
 export const paymentMethodOptions: OptionType[] = [
   { value: 'cash', label: 'Dinheiro' },
   { value: 'card', label: 'Cartão' },
-  { value: 'mobile_money', label: 'Pagamento Digital' }
+  { value: 'mobile_money', label: 'Pagamento Digital' },
+  { value: 'wallet', label: 'Carteira' }
 ]
 
 // ==============================================

@@ -15,7 +15,10 @@ import {
   User,
   MapPin,
   CreditCard,
-  Phone
+  Phone,
+  DoorOpen,
+  ArrowDownRight,
+  ArrowUpRight
 } from 'lucide-react-native'
 import { RideInterface } from '@/interfaces/IRide'
 import { formatMoney } from '@/utils/formattedNumber'
@@ -78,7 +81,7 @@ const RideDetailsSheetModal = forwardRef<
           <>
             {/* Header: ID & Status */}
             <View className="px-5 pt-2 pb-6 border-b border-gray-100">
-              <View className="flex-row items-center justify-between mb-4">
+              <View className="flex-row items-center justify-between mb-2">
                 <View className="flex-row items-center bg-gray-50 px-3 py-1.5 rounded-full">
                   <Text className="text-gray-500 text-xs font-semibold uppercase tracking-wider">
                     ID: {selectedRide.id}
@@ -90,6 +93,10 @@ const RideDetailsSheetModal = forwardRef<
                     'dd MMM yyyy - HH:mm'
                   )}
                 </Text>
+              </View>
+
+              <View className="flex-row mb-2">
+                <StatusTag status={selectedRide.status} />
               </View>
 
               <View className="flex-row items-center justify-between">
@@ -105,12 +112,27 @@ const RideDetailsSheetModal = forwardRef<
                           ? 'Viagem de Moto'
                           : 'Viagem de Carro'}
                     </Text>
-                    <Text className="text-gray-500 text-sm">
-                      {selectedRide.pickup?.name?.split(',')[0]}
-                    </Text>
+                    <View className="flex-row items-center mt-1">
+                      <Text className="text-gray-500 text-sm">
+                        {selectedRide.pickup?.name?.split(',')[0]}
+                      </Text>
+                      {selectedRide.details?.pickup_option && (
+                        <View className="flex-row items-center ml-2 bg-blue-50 px-1.5 py-0.5 rounded">
+                          {selectedRide.details.pickup_option === 'door' ? (
+                            <DoorOpen size={10} color="#2563EB" />
+                          ) : (
+                            <MapPin size={10} color="#2563EB" />
+                          )}
+                          <Text className="text-blue-800 text-[9px] font-bold ml-1 uppercase tracking-wider">
+                            {selectedRide.details.pickup_option === 'door'
+                              ? 'Porta a Porta'
+                              : 'Rua/Exterior'}
+                          </Text>
+                        </View>
+                      )}
+                    </View>
                   </View>
                 </View>
-                <StatusTag status={selectedRide.status} />
               </View>
             </View>
 
@@ -283,12 +305,19 @@ const RideDetailsSheetModal = forwardRef<
                           {selectedRide.details.item.description}
                         </Text>
                       )}
-                      <View className="mt-2 flex-row">
-                        <View className="bg-blue-200/50 px-2 py-0.5 rounded text-xs">
-                          <Text className="text-blue-800 text-[10px] font-bold">
+                      <View className="mt-2 flex-row gap-2 flex-wrap">
+                        <View className="bg-blue-100/70 px-2.5 py-1.5 rounded-full flex-row items-center border border-blue-200">
+                          <Text className="text-blue-900 text-[10px] font-bold">
                             QTD: {selectedRide.details.item.quantity}
                           </Text>
                         </View>
+                        {selectedRide.details.item.weight && (
+                          <View className="bg-orange-50 px-2.5 py-1.5 rounded-full flex-row items-center border border-orange-100">
+                            <Text className="text-orange-700 text-[10px] font-bold">
+                              PESO: {selectedRide.details.item.weight} kg
+                            </Text>
+                          </View>
+                        )}
                       </View>
                     </View>
                   </View>
@@ -296,19 +325,46 @@ const RideDetailsSheetModal = forwardRef<
                   {/* Divider */}
                   <View className="h-[1px] bg-gray-200 mx-4" />
 
-                  {/* Receiver Info */}
-                  <View className="p-4 flex-row items-center">
-                    <View className="w-10 h-10 bg-white rounded-full items-center justify-center mr-3 border border-blue-100">
-                      <User size={20} color="#60A5FA" />
-                    </View>
-                    <View>
-                      <Text className="text-blue-900 font-bold text-sm mb-0.5">
-                        Destinatário
+                  {/* Sender & Receiver Info */}
+                  <View className="flex-row p-4">
+                    <View className="flex-1 pr-3">
+                      <View className="flex-row items-center mb-1.5">
+                        <ArrowUpRight size={14} color="#60A5FA" />
+                        <Text className="text-blue-900 font-bold text-xs ml-1">
+                          Remetente
+                        </Text>
+                      </View>
+                      <Text
+                        className="text-gray-800 text-sm font-medium"
+                        numberOfLines={1}
+                      >
+                        {selectedRide.details.sender?.name ||
+                          selectedRide.user?.name ||
+                          'Não informado'}
                       </Text>
-                      <Text className="text-gray-800 text-sm font-medium">
+                      <Text className="text-gray-500 text-xs mt-0.5">
+                        {selectedRide.details.sender?.phone ||
+                          selectedRide.user?.phone ||
+                          'Sem contacto'}
+                      </Text>
+                    </View>
+
+                    <View className="w-[1px] bg-gray-100" />
+
+                    <View className="flex-1 pl-3">
+                      <View className="flex-row items-center mb-1.5">
+                        <ArrowDownRight size={14} color="#F87171" />
+                        <Text className="text-red-900 font-bold text-xs ml-1">
+                          Destinatário
+                        </Text>
+                      </View>
+                      <Text
+                        className="text-gray-800 text-sm font-medium"
+                        numberOfLines={1}
+                      >
                         {selectedRide.details.receiver.name}
                       </Text>
-                      <Text className="text-gray-500 text-xs">
+                      <Text className="text-gray-500 text-xs mt-0.5">
                         {selectedRide.details.receiver.phone}
                       </Text>
                     </View>

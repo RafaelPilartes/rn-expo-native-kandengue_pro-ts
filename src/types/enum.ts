@@ -70,7 +70,7 @@ export type RideStatusType =
 
 export type RideType = 'car' | 'motorcycle' | 'bicycle' | 'delivery'
 
-export type PaymentMethodType = 'cash' | 'card' | 'mobile_money'
+export type PaymentMethodType = 'cash' | 'card' | 'mobile_money' | 'wallet'
 
 export type DocumentStatus = 'none' | 'pending' | 'approved' | 'rejected'
 

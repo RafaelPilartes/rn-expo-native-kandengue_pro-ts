@@ -136,14 +136,7 @@ export const AppProvider: React.FC<AppProviderProps> = ({ children }) => {
           pickup: ride.pickup,
           dropoff: ride.dropoff
         },
-        receiver: {
-          name: ride.details?.receiver.name ?? '',
-          phone: ride.details?.receiver.phone ?? ''
-        },
-        article: {
-          type: ride.details?.item.type ?? '',
-          description: ride.details?.item.description ?? ''
-        }
+        details: ride.details
       })
     },
     [

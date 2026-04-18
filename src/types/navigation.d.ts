@@ -52,14 +52,7 @@ export type HomeStackParamList = {
       pickup: CustomPlace
       dropoff: CustomPlace
     }
-    receiver: {
-      name: string
-      phone: string
-    }
-    article: {
-      type: string
-      description: string
-    }
+    details?: import('./ride').RideDetailsType
   }
   RideFinishedScreen: {
     details: {
