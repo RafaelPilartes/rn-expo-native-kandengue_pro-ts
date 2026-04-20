@@ -13,7 +13,7 @@ import {
   requestPermission,
   AuthorizationStatus,
   registerDeviceForRemoteMessages,
-  type FirebaseMessagingTypes,
+  type FirebaseMessagingTypes
 } from '@react-native-firebase/messaging'
 import { getAuth, getIdToken } from '@react-native-firebase/auth'
 import ApiDAO from '@/modules/Api/rest/Api.dao'
@@ -24,7 +24,7 @@ type NotificationRole = 'driver' | 'passenger'
 const TOPICS = {
   ALL: 'all_users',
   DRIVERS: 'drivers',
-  PASSENGERS: 'passengers',
+  PASSENGERS: 'passengers'
 } as const
 
 /**
@@ -33,8 +33,6 @@ const TOPICS = {
  * `com.google.firebase.messaging.default_notification_channel_id`
  */
 export const DEFAULT_CHANNEL_ID = 'kandengue_default'
-
-
 
 /**
  * Central service for push notification lifecycle management.
@@ -89,7 +87,7 @@ export const PushNotificationService = {
       await ApiDAO.post<{ message: string }>(
         '/devices/register',
         { token, platform: Platform.OS === 'ios' ? 'ios' : 'android' },
-        { Authorization: `Bearer ${idToken}` },
+        { Authorization: `Bearer ${idToken}` }
       )
 
       console.info('[Push] Token registered successfully')
@@ -140,7 +138,7 @@ export const PushNotificationService = {
         await ApiDAO.post<{ message: string }>(
           '/devices/unregister',
           { token },
-          { Authorization: `Bearer ${idToken}` },
+          { Authorization: `Bearer ${idToken}` }
         )
       }
 
@@ -174,8 +172,11 @@ export const PushNotificationService = {
       try {
         await ApiDAO.post<{ message: string }>(
           '/devices/register',
-          { token: newToken, platform: Platform.OS === 'ios' ? 'ios' : 'android' },
-          { Authorization: `Bearer ${idToken}` },
+          {
+            token: newToken,
+            platform: Platform.OS === 'ios' ? 'ios' : 'android'
+          },
+          { Authorization: `Bearer ${idToken}` }
         )
         console.info('[Push] Refreshed token registered')
       } catch (error) {
@@ -193,7 +194,7 @@ export const PushNotificationService = {
    *    in-app AlertContext or custom notification component.
    */
   onForegroundMessage(
-    handler: (message: FirebaseMessagingTypes.RemoteMessage) => void,
+    handler: (message: FirebaseMessagingTypes.RemoteMessage) => void
   ): () => void {
     return onMessage(getMessaging(), handler)
   },
@@ -217,5 +218,5 @@ export const PushNotificationService = {
    */
   async getInitialNotification(): Promise<FirebaseMessagingTypes.RemoteMessage | null> {
     return getInitialNotification(getMessaging())
-  },
+  }
 }

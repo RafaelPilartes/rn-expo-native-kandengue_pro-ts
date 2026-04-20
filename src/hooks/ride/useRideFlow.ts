@@ -121,7 +121,9 @@ export function useRideFlow(
           category: 'ride_fee',
           reference_id: rideId,
           amount: driver_earnings,
-          description: `Ganhos da corrida #${rideId}`
+          description: `Ganhos da corrida #${rideId}`,
+          status: 'success',
+          user_id: driver?.id as string
         })
       }
 
@@ -170,7 +172,7 @@ export function useRideFlow(
 
       await syncStatusToServer({ status: 'driver_on_the_way', driver })
       setCurrentMissionId(rideId)
-      startTracking()
+      startTracking('RIDE')
 
       console.log('✅ Corrida confirmada - Motorista a caminho')
     } catch (error: any) {
