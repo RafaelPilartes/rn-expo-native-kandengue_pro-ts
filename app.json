@@ -2,7 +2,7 @@
   "expo": {
     "name": "Kandengue Pro",
     "slug": "RnNativeKandengueProTs",
-    "version": "1.0.8",
+    "version": "1.0.9",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "light",
@@ -75,6 +75,16 @@
     "plugins": [
       "@react-native-firebase/app",
       "@react-native-firebase/auth",
+      [
+        "@react-native-firebase/messaging",
+        {
+          "ios": {
+            "permissions": ["alert", "badge", "sound"]
+          }
+        }
+      ],
+      "./plugins/withFcmDefaultChannel",
+      "./plugins/withNotifeeGradle",
       "expo-maps",
       [
         "expo-build-properties",

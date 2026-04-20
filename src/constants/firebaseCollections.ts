@@ -7,7 +7,7 @@ export const firebaseCollections = {
     single: (userId: string) => `users/${userId}`,
     documents: (userId: string) => `users/${userId}/documents`,
     transactions: (userId: string) => `users/${userId}/transactions`,
-    notifications: (userId: string) => `users/${userId}/notifications`
+    notifications: (userId: string) => `users/${userId}/notifications`,
   },
 
   // ============================================
@@ -21,8 +21,10 @@ export const firebaseCollections = {
   // DRIVERS
   drivers: {
     root: 'drivers',
-    single: (driverId: string) => `drivers/${driverId}`
+    single: (driverId: string) => `drivers/${driverId}`,
+    fcmTokens: (driverId: string) => `drivers/${driverId}/fcm_tokens`,
   },
+
 
   // ============================================
   // VEHICLES

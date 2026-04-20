@@ -34,8 +34,15 @@ import { SafeAreaProvider } from 'react-native-safe-area-context'
 import { NetworkStatusBanner } from './components/NetworkStatusBanner'
 import { ErrorBoundary } from './components/ErrorBoundary'
 
+import { PushNotificationService } from '@/services/notifications/pushNotification.service'
+import { setupNotifeeBackgroundHandler } from '@/services/notifications/notifee.service'
+
 // Prevent auto-hiding the splash screen
 SplashScreen.preventAutoHideAsync()
+
+// ⚠️ Must be registered at module level (before React renders)
+PushNotificationService.setBackgroundHandler()
+setupNotifeeBackgroundHandler()
 
 const queryClient = new QueryClient()
 

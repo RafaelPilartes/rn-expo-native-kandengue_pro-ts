@@ -2,6 +2,7 @@
 import React, { createContext, useState, useRef, useEffect } from 'react'
 import { Linking } from 'react-native'
 import * as Location from 'expo-location'
+import * as TaskManager from 'expo-task-manager'
 import { getAddressFromCoords } from '@/services/google/googleApi'
 import { BACKGROUND_LOCATION_TASK } from '@/services/location/BackgroundLocationTask'
 import {
@@ -395,13 +396,18 @@ export const LocationProvider = ({
       watchRef.current = null
     }
 
-    // Stop Background Updates
+    // Stop Background Updates — guard against task not being registered
     try {
-      const hasStarted = await Location.hasStartedLocationUpdatesAsync(
+      const isRegistered = await TaskManager.isTaskRegisteredAsync(
         BACKGROUND_LOCATION_TASK
       )
-      if (hasStarted) {
-        await Location.stopLocationUpdatesAsync(BACKGROUND_LOCATION_TASK)
+      if (isRegistered) {
+        const hasStarted = await Location.hasStartedLocationUpdatesAsync(
+          BACKGROUND_LOCATION_TASK
+        )
+        if (hasStarted) {
+          await Location.stopLocationUpdatesAsync(BACKGROUND_LOCATION_TASK)
+        }
       }
     } catch (e) {
       console.warn('Erro ao parar background location updates:', e)

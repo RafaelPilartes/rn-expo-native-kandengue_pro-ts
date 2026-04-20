@@ -16,6 +16,8 @@ import { useDriverState } from '@/hooks/useDriverState'
 import { useRidesState } from '@/hooks/useRidesState'
 import { useWalletState } from '@/hooks/useWalletState'
 import { useVehicleState } from '@/hooks/useVehicleState'
+import { usePushNotifications } from '@/hooks/usePushNotifications'
+import { displayNotification } from '@/services/notifications/notifee.service'
 
 interface AppContextReturn {
   // Estado
@@ -55,6 +57,20 @@ export const AppProvider: React.FC<AppProviderProps> = ({ children }) => {
   // Store
   const { driver, setCurrentMissionId } = useAuthStore()
   const { showAlert } = useAlert()
+
+  // Push notifications — registers FCM token once driver is authenticated
+  usePushNotifications({
+    userId: driver?.firebase_uid,
+    role: 'driver',
+    onForegroundMessage: message => {
+      // App is in foreground: FCM suppresses the system banner.
+      // Use notifee to show a real heads-up notification with sound (Uber/Yango style).
+      const title = message.notification?.title ?? 'Kandengue Pro'
+      const body = message.notification?.body ?? ''
+      const data = message.data as Record<string, string> | undefined
+      displayNotification(title, body, data)
+    },
+  })
 
   // Estados via Custom Hooks
   const { currentDriverData, toggleOnline, toggleInvisible, updateVehicle } =
