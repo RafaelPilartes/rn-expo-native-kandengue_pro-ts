@@ -36,5 +36,9 @@ export async function requestWalletTopup(
 ): Promise<WalletTopupApiResponse> {
   const headers = await getAuthHeaders()
 
-  return ApiDAO.post<WalletTopupApiResponse>('/wallet/topups', data, headers)
+  return ApiDAO.post<WalletTopupApiResponse>(
+    '/api/v1/wallet/topups',
+    data,
+    headers
+  )
 }

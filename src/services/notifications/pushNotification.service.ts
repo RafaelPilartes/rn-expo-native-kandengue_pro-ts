@@ -85,7 +85,7 @@ export const PushNotificationService = {
       const idToken = await getIdToken(currentUser)
 
       await ApiDAO.post<{ message: string }>(
-        '/devices/register',
+        '/api/v1/devices/register',
         { token, platform: Platform.OS === 'ios' ? 'ios' : 'android' },
         { Authorization: `Bearer ${idToken}` }
       )
@@ -136,7 +136,7 @@ export const PushNotificationService = {
 
       if (idToken && token) {
         await ApiDAO.post<{ message: string }>(
-          '/devices/unregister',
+          '/api/v1/devices/unregister',
           { token },
           { Authorization: `Bearer ${idToken}` }
         )
@@ -171,7 +171,7 @@ export const PushNotificationService = {
 
       try {
         await ApiDAO.post<{ message: string }>(
-          '/devices/register',
+          '/api/v1/devices/register',
           {
             token: newToken,
             platform: Platform.OS === 'ios' ? 'ios' : 'android'
