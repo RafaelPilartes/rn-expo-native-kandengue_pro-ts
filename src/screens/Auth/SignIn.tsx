@@ -248,7 +248,7 @@ export default function LoginScreen() {
                 label={`${t('auth:input_password_label')}`}
                 placeholder={`${t('auth:input_password_placeholder')}`}
                 value={password.trim()}
-                onChangeText={setPassword}
+                onChangeText={text => setPassword(text.replace(/\s/g, ''))}
                 error={errors.password}
                 onSubmitEditing={handleLogin}
               />

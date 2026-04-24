@@ -1,6 +1,6 @@
 // src/screens/Driver/Profile.tsx
-import React from 'react'
-import { View, Text, TouchableOpacity, ScrollView, Image } from 'react-native'
+import React, { useState } from 'react'
+import { View, Text, TouchableOpacity, ScrollView, Image, ActivityIndicator } from 'react-native'
 import {
   Edit,
   Car,
@@ -26,23 +26,30 @@ export default function DriverProfile() {
   const { showAlert } = useAlert()
 
   const { logout } = useAuthViewModel()
-
   const { driver } = useAuthStore()
+  const [isLoggingOut, setIsLoggingOut] = useState(false)
 
   const handleLogout = async () => {
-    await logout.mutateAsync()
+    setIsLoggingOut(true)
+    try {
+      await logout.mutateAsync()
+    } finally {
+      setIsLoggingOut(false)
+    }
   }
 
   const MenuItem = ({
     icon: Icon,
     label,
     onPress,
-    requiresActive = true
+    requiresActive = true,
+    isLoading
   }: {
     icon: any
     label: string
     onPress: () => void
     requiresActive?: boolean
+    isLoading?: boolean
   }) => (
     <TouchableOpacity
       onPress={() => {
@@ -57,10 +64,14 @@ export default function DriverProfile() {
         }
         onPress()
       }}
+      disabled={isLoading}
       className="flex-row items-center px-4 py-3 bg-white border-b border-gray-100"
     >
-      <Icon size={20} color="black" />
-      <Text className="ml-3 text-base text-gray-800">{label}</Text>
+      <Icon size={20} color={isLoading ? '#9ca3af' : 'black'} />
+      <Text className={`ml-3 text-base flex-1 ${isLoading ? 'text-gray-400' : 'text-gray-800'}`}>
+        {isLoading ? 'Saindo...' : label}
+      </Text>
+      {isLoading && <ActivityIndicator size="small" color="#111827" />}
     </TouchableOpacity>
   )
 
@@ -167,6 +178,7 @@ export default function DriverProfile() {
           label="Sair"
           requiresActive={false}
           onPress={handleLogout}
+          isLoading={isLoggingOut}
         />
       </View>
     </ScrollView>

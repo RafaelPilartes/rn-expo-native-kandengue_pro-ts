@@ -20,11 +20,11 @@ import ApiDAO from '@/modules/Api/rest/Api.dao'
 
 type NotificationRole = 'driver' | 'passenger'
 
-// FCM Topics — match o NotificationCategory do backend
+// FCM Topics — MUST match backend fcm-topics.ts exactly
 const TOPICS = {
-  ALL: 'all_users',
-  DRIVERS: 'drivers',
-  PASSENGERS: 'passengers'
+  ALL: 'all-users',
+  DRIVERS: 'drivers-all',
+  PASSENGERS: 'passengers-all'
 } as const
 
 /**
