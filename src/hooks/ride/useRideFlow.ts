@@ -1,13 +1,15 @@
-// src/screens/hooks/useRideFlow.ts
+// src/hooks/ride/useRideFlow.ts
 import { RideStatusType } from '@/types/enum'
+import { TrackingMode } from '@/types/trackingTypes'
 import { useRidesViewModel } from '@/viewModels/RideViewModel'
 import { useAuthStore } from '@/storage/store/useAuthStore'
-import { useLocation } from '../useLocation'
 import { DriverInterface } from '@/interfaces/IDriver'
 import { RideFareInterface } from '@/interfaces/IRideFare'
 import { useWalletsViewModel } from '@/viewModels/WalletViewModel'
 import { useTransactionsViewModel } from '@/viewModels/TransactionViewModel'
 import { useAppProvider } from '@/providers/AppProvider'
+import { RideRateEntity } from '@/core/entities/RideRate'
+import { calculateFare } from '@/helpers/rideCalculate'
 
 type SyncStatusToServerParams = {
   status: RideStatusType
@@ -22,16 +24,22 @@ type SyncStatusToServerParams = {
   fare?: RideFareInterface | null
 }
 
+type TrackingControls = {
+  startTracking: (mode: TrackingMode) => void | Promise<void>
+  stopTracking: () => void | Promise<void>
+}
+
 export function useRideFlow(
   rideId: string,
-  rideFare?: RideFareInterface | null
+  rideFare?: RideFareInterface | null,
+  rideRates?: RideRateEntity | null,
+  tracking?: TrackingControls
 ) {
   const { driver, setCurrentMissionId } = useAuthStore()
   const { wallet } = useAppProvider()
   const { updateRide, fetchRideById } = useRidesViewModel()
   const { updateWallet } = useWalletsViewModel()
   const { createTransaction } = useTransactionsViewModel()
-  const { startTracking, stopTracking } = useLocation()
 
   const syncStatusToServer = async ({
     status,
@@ -46,13 +54,13 @@ export function useRideFlow(
     fare
   }: SyncStatusToServerParams) => {
     try {
-      // Filtra somente valores válidos dentro do driver
+      // Filter only valid values from driver
       const filteredDriver = Object.fromEntries(
         Object.entries({
           ...driver
         }).filter(([_, v]) => v !== undefined && v !== null)
       )
-      // Monta o payload sem incluir campos undefined
+      // Build payload without undefined fields
       const payload: any = Object.fromEntries(
         Object.entries({
           status,
@@ -67,13 +75,10 @@ export function useRideFlow(
         }).filter(([_, v]) => v !== undefined && v !== null)
       )
 
-      // Só adiciona driver se existir **e não estiver vazio**
+      // Only add driver if it exists and is not empty
       if (filteredDriver && Object.keys(filteredDriver).length > 0) {
         payload.driver = filteredDriver
       }
-
-      console.log('🚀 payload =>:', payload)
-      console.log('🚀 filteredDriver  =>:', filteredDriver)
 
       await updateRide.mutateAsync({
         id: rideId,
@@ -85,7 +90,7 @@ export function useRideFlow(
     }
   }
 
-  // Atualizar carteira e criar transações
+  // Update wallet and create transactions
   const updateWalletAndCreateTransactions = async (fare: RideFareInterface) => {
     if (!driver?.id) {
       throw new Error('Driver não encontrado')
@@ -95,16 +100,13 @@ export function useRideFlow(
     const { driver_earnings, company_earnings, pension_fund } = payouts
 
     try {
-      // 1. Buscar carteira atual do motorista
       if (!wallet) {
         throw new Error('Carteira do motorista não encontrada')
       }
 
-      // 2. Calcular débitos e créditos CORRETAMENTE
       const totalDebits = company_earnings + pension_fund
       const newBalance = wallet.balance - totalDebits
 
-      // 3. Atualizar carteira com o valor líquido
       await updateWallet.mutateAsync({
         id: wallet.id as string,
         wallet: {
@@ -113,7 +115,7 @@ export function useRideFlow(
         }
       })
 
-      // 4. Criar transação de CRÉDITO (ganhos brutos do motorista)
+      // Create CREDIT transaction (driver gross earnings)
       if (driver_earnings > 0) {
         await createTransaction.mutateAsync({
           wallet_id: wallet.id as string,
@@ -126,18 +128,6 @@ export function useRideFlow(
           user_id: driver?.id as string
         })
       }
-
-      // 5. Criar transação de DÉBITO (taxa da empresa)
-      // if (totalDebits > 0) {
-      //   await createTransaction.mutateAsync({
-      //     wallet_id: wallet.id as string,
-      //     type: 'debit',
-      //     category: 'ride_fee',
-      //     reference_id: rideId,
-      //     amount: totalDebits,
-      //     description: `Taxa de corrida - Corrida #${rideId}`,
-      //   });
-      // }
 
       return {
         newBalance,
@@ -172,9 +162,7 @@ export function useRideFlow(
 
       await syncStatusToServer({ status: 'driver_on_the_way', driver })
       setCurrentMissionId(rideId)
-      startTracking('RIDE')
-
-      console.log('✅ Corrida confirmada - Motorista a caminho')
+      tracking?.startTracking('RIDE')
     } catch (error: any) {
       console.error('❌ Erro ao confirmar corrida:', error)
       throw error
@@ -187,8 +175,6 @@ export function useRideFlow(
         status: 'arrived_pickup',
         waitingStartAt: new Date()
       })
-
-      console.log('✅ Chegou ao local de recolha')
     } catch (error: any) {
       console.error('❌ Erro ao confirmar chegada na recolha:', error)
       throw error
@@ -201,8 +187,6 @@ export function useRideFlow(
         status: 'picked_up',
         waitingEndAt: new Date()
       })
-
-      console.log('✅ Pacote recolhido com sucesso')
     } catch (error: any) {
       console.error('❌ Erro ao confirmar recolha do pacote:', error)
       throw error
@@ -212,44 +196,68 @@ export function useRideFlow(
   const arrivedDropoff = async () => {
     try {
       await syncStatusToServer({ status: 'arrived_dropoff' })
-      console.log('✅ Chegou ao local de entrega')
     } catch (error: any) {
       console.error('❌ Erro ao confirmar chegada na entrega:', error)
       throw error
     }
   }
 
-  const completed = async (photoUri?: string) => {
+  /**
+   * Complete the ride with fare recalculation.
+   * Final fare = max(original_fare, fare_based_on_actual_distance)
+   * This ensures the driver is compensated for longer routes.
+   */
+  const completed = async (
+    photoUri?: string,
+    actualDistanceKm?: number,
+    waitMinutes?: number
+  ) => {
     if (!rideFare) {
       const errorMsg = 'Dados de fare não encontrados para completar a corrida'
       console.error('❌', errorMsg)
       throw new Error(errorMsg)
     }
 
-    try {
-      // 1. Atualizar carteira e criar transações
-      const transactionResult =
-        await updateWalletAndCreateTransactions(rideFare)
+    let finalFare = rideFare
 
-      // 2. Atualizar status da corrida para completed
+    // Recalculate fare if actual distance is greater and we have rates
+    if (actualDistanceKm && rideRates && actualDistanceKm > 0) {
+      const recalculatedFare = calculateFare(
+        actualDistanceKm,
+        waitMinutes ?? 0,
+        rideRates
+      )
+
+      // Use the higher fare: max(original, recalculated)
+      if (recalculatedFare.total > rideFare.total) {
+        finalFare = recalculatedFare
+      }
+    }
+
+    try {
+      // 1. Update wallet and create transactions with final fare
+      const transactionResult =
+        await updateWalletAndCreateTransactions(finalFare)
+
+      // 2. Update ride status to completed
       await syncStatusToServer({
         status: 'completed',
-        fare: rideFare,
+        fare: finalFare,
         proofDropoffPhoto: photoUri,
         completedAt: new Date()
       })
 
       setCurrentMissionId(null)
-      stopTracking()
+      tracking?.stopTracking()
 
       return transactionResult
     } catch (error: any) {
       console.error('❌ Erro ao completar corrida:', error)
 
-      // Tentar reverter para status anterior em caso de erro
+      // Attempt rollback on failure
       try {
         await syncStatusToServer({ status: 'arrived_dropoff' })
-        console.log('🔄 Status revertido para arrived_dropoff')
+        console.error('🔄 Tentando reverter status para arrived_dropoff')
       } catch (revertError) {
         console.error('❌ Erro ao reverter status:', revertError)
       }
@@ -266,9 +274,7 @@ export function useRideFlow(
       })
 
       setCurrentMissionId(null)
-      stopTracking()
-
-      console.log('❌ Corrida cancelada:', reason)
+      tracking?.stopTracking()
     } catch (error: any) {
       console.error('❌ Erro ao cancelar corrida:', error)
       throw error

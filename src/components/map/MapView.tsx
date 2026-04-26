@@ -14,4 +14,9 @@ export type Marker = Platform['OS'] extends 'ios'
   ? AppleMaps.Marker
   : GoogleMaps.Marker
 
+export type Polyline = Platform['OS'] extends 'ios'
+  ? NonNullable<AppleMaps.MapProps['polylines']>[number]
+  : NonNullable<GoogleMaps.MapProps['polylines']>[number]
+
 export default PlatformMapView
+

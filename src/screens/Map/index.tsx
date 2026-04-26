@@ -81,28 +81,21 @@ export default function MapScreen() {
         mapRef={mapRef}
         userLocation={location}
         currentRide={null}
-        location={{
-          pickup: {
-            latitude: location?.latitude || -8.839987,
-            longitude: location?.longitude || 13.289437,
-            name: '',
-            description: '',
-            place_id: ''
-          },
-          dropoff: {
-            latitude: location?.latitude || -8.839987,
-            longitude: location?.longitude || 13.289437,
-            name: '',
-            description: '',
-            place_id: ''
-          }
-        }}
         rideStatus="idle"
-        routeCoords={[]}
-        routeCoordsDriver={[]}
-        markerHeading={0}
-        polygons={DEMAND_ZONES}
-        zoom={isFollowing ? 18 : 13}
+        route={{
+          coords: [],
+          distanceKm: 0,
+          durationMinutes: 0,
+          distanceText: '',
+          durationText: ''
+        }}
+        driverRoute={{
+          coords: [],
+          distanceKm: 0,
+          durationMinutes: 0,
+          distanceText: '',
+          durationText: ''
+        }}
       />
 
       {/* Top Bar com Endereço */}

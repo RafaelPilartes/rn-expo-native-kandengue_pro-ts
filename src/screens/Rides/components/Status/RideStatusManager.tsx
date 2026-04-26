@@ -13,6 +13,7 @@ import { FloatingActionButton } from '../UI/FloatingActionButton'
 import { RideStatusArrival } from './RideStatusArrival'
 import { RideStatusDelivering } from './RideStatusDelivering'
 import { RideStatusArrivedDestination } from './RideStatusArrivedDestination'
+import { RideStatusCanceled } from './RideStatusCanceled'
 
 type Props = {
   rideStatus: string
@@ -140,6 +141,9 @@ export const RideStatusManager = ({
           />
         </>
       )
+
+    case 'canceled':
+      return <RideStatusCanceled />
 
     default:
       return null

@@ -1,28 +1,28 @@
-// src/screens/Ride/RideSummaryScreen.tsx
-import React, { useEffect, useRef, useState, useMemo } from 'react'
-import { StyleSheet, Linking, Platform } from 'react-native'
-import MapView from '@/components/map/MapView'
-
-import { useRideSummary } from '@/hooks/useRideSummary'
-import { DriverRideSheet } from './components/Cards/DriverRideCard'
-
-import { CustomPlace } from '@/types/places'
+// src/screens/Rides/RideSummary.tsx
+import React, { useEffect, useRef, useState, useCallback } from 'react'
+import { BackHandler, Linking, Platform, Vibration } from 'react-native'
 import { SafeAreaView } from 'react-native-safe-area-context'
 import { useNavigation, useRoute } from '@react-navigation/native'
 import { NativeStackNavigationProp } from '@react-navigation/native-stack'
-import { HomeStackParamList } from '@/types/navigation'
 import { BottomSheetModal } from '@gorhom/bottom-sheet'
-import ROUTES from '@/constants/routes'
-import { useLocation } from '@/hooks/useLocation'
-import { calculateHeading } from '@/helpers/bearing'
-import { converter } from '@/utils/converter'
-import { RideFareInterface } from '@/interfaces/IRideFare'
-import { useAlert } from '@/context/AlertContext'
 
-// New Components
+// Hooks
+import { useRideSummary } from '@/hooks/ride/useRideSummary'
+import { useAlert } from '@/context/AlertContext'
+import { useMap } from '@/providers/MapProvider'
+
+// Types
+import { HomeStackParamList } from '@/types/navigation'
+import { CustomPlace } from '@/types/places'
+import { RideFareInterface } from '@/interfaces/IRideFare'
+import ROUTES from '@/constants/routes'
+import { converter } from '@/utils/converter'
+
+// Components
 import { RideMapContainer } from './components/Map/RideMapContainer'
 import { RideStatusManager } from './components/Status/RideStatusManager'
 import { RideModals } from './components/Modals/RideModals'
+import { DriverRideSheet } from './components/Cards/DriverRideCard'
 
 type RideSummaryScreenRouteParams = {
   id: string
@@ -32,63 +32,35 @@ type RideSummaryScreenRouteParams = {
   }
 }
 
-import { useMap } from '@/providers/MapProvider'
-
 export default function RideSummaryScreen() {
-  const route = useRoute()
-
-  const { id: rideId, location } = route.params as RideSummaryScreenRouteParams
+  const routeNav = useRoute()
   const navigation =
     useNavigation<NativeStackNavigationProp<HomeStackParamList>>()
-
-  const {
-    location: userLocation,
-    isLoading: isLoadingUserLocation,
-    requestCurrentLocation
-  } = useLocation()
-
   const { showAlert } = useAlert()
-
   const { mapRef, centerOnUser } = useMap()
 
+  const { id: rideId, location } = routeNav.params as RideSummaryScreenRouteParams
   const bottomSheetRef = useRef<BottomSheetModal>(null)
 
+  // Local UI state
   const [showCancelModal, setShowCancelModal] = useState(false)
   const [showArrivalModal, setShowArrivalModal] = useState(false)
   const [showConfirmationFlow, setShowConfirmationFlow] = useState(false)
   const [isLoadingCompleteRide, setIsLoadingCompleteRide] = useState(false)
 
+  // Unified hook — single source of truth (no duplicate useLocation!)
   const {
-    loading: isLoadingDataRide,
-    ride: currentRide,
-    rideTracking,
-    routeCoords,
-    distance,
-    duration,
-
-    // Rota do motorista
-    routeCoordsDriver,
-    distanceDriver,
-    durationDriver,
-
-    // distanceKm,
-    fareDetails,
-    driver,
+    loading,
+    isLoadingUserLocation,
     rideStatus,
-
-    // tempo
-    currentTime,
-    additionalTime,
-
-    // ações
-    handleCancelFindRide, // Motorista cancelou a entrega = canceled
-    handleConfirmRide, // Motorista confirmou a entrega = driver_on_the_way
-    handleArrivedToPickup, // Motorista chegou ao local de recolha = arrived_pickup
-    handlePickedUpRide, // Motorista pegou o pacote = picked_up
-    handleArrivedToDropoff, // Motorista chegou ao local de entrega = arrived_dropoff
-    handleCompletedRide, // Motorista entregou o pacote = completed
-    handleCanceledRide, // Motorista cancelou a entrega = canceled
-    handleCalculateFareSummary
+    currentRide,
+    route,
+    driverRoute,
+    driver,
+    driverData,
+    fareDetails,
+    waitTimer,
+    actions
   } = useRideSummary(rideId)
 
   const hasDriver = [
@@ -98,30 +70,14 @@ export default function RideSummaryScreen() {
     'arrived_dropoff'
   ].includes(rideStatus)
 
-  const ridePath = rideTracking?.path || []
+  // ─── Actions ──────────────────────────────────────────
 
-  // Calculate Heading
-  const markerHeading = useMemo(() => {
-    if (ridePath.length >= 2) {
-      const lastPointTracked = ridePath[ridePath.length - 1]
-      const prevPointTracked = ridePath[ridePath.length - 2]
-      return calculateHeading(
-        prevPointTracked.latitude,
-        prevPointTracked.longitude,
-        lastPointTracked.latitude,
-        lastPointTracked.longitude
-      )
-    }
-    return 0
-  }, [ridePath])
-
-  // 🔹 ABRIR NO GPS
-  const handleOpenInMaps = () => {
+  const handleOpenInMaps = useCallback(() => {
     const destination =
       rideStatus === 'picked_up' ? location.dropoff : location.pickup
 
     const url = Platform.select({
-      ios: `maps://app?saddr=${userLocation?.latitude},${userLocation?.longitude}&daddr=${destination.latitude},${destination.longitude}`,
+      ios: `maps://app?saddr=${driver.location?.latitude},${driver.location?.longitude}&daddr=${destination.latitude},${destination.longitude}`,
       android: `google.navigation:q=${destination.latitude},${destination.longitude}`
     })
 
@@ -135,205 +91,167 @@ export default function RideSummaryScreen() {
         })
       })
     }
-  }
+  }, [rideStatus, location, driver.location, showAlert])
 
-  // 🔹 CONFIRMAR CHEGADA NO LOCAL
-  const handleConfirmArrival = async () => {
-    if (rideStatus === 'driver_on_the_way') {
-      try {
-        setShowArrivalModal(false)
-        await handleArrivedToPickup()
-      } catch (error) {
-        showAlert({
-          title: 'Erro',
-          message: 'Falha ao confirmar chegada',
-          type: 'error',
-          buttons: [{ text: 'OK' }]
-        })
-      }
-    }
-
-    if (rideStatus === 'picked_up') {
-      try {
-        setShowArrivalModal(false)
-        await handleArrivedToDropoff()
-      } catch (error) {
-        showAlert({
-          title: 'Erro',
-          message: 'Falha ao confirmar chegada',
-          type: 'error',
-          buttons: [{ text: 'OK' }]
-        })
-      }
-    }
-  }
-
-  const handleAcceptRide = async () => {
+  const handleConfirmArrival = useCallback(async () => {
     try {
+      if (rideStatus === 'driver_on_the_way') {
+        setShowArrivalModal(false)
+        await actions.arrivedPickup()
+      }
+      if (rideStatus === 'picked_up') {
+        setShowArrivalModal(false)
+        await actions.arrivedDropoff()
+      }
+    } catch (error) {
       showAlert({
-        title: 'Corrida aceita?',
-        message: 'Tem certeza que deseja aceitar essa corrida?',
-        type: 'info',
-        buttons: [
-          {
-            text: 'Cancelar',
-            style: 'cancel'
-          },
-          {
-            text: 'Aceitar',
-            onPress: async () => {
-              await handleConfirmRide()
-                .then(() => {
-                  console.log('Corrida aceita com sucesso')
-                })
-                .catch(error => {
-                  console.error('Erro ao aceitar corrida:', error)
-                })
+        title: 'Erro',
+        message: 'Falha ao confirmar chegada',
+        type: 'error',
+        buttons: [{ text: 'OK' }]
+      })
+    }
+  }, [rideStatus, actions, showAlert])
+
+  const handleAcceptRide = useCallback(async () => {
+    showAlert({
+      title: 'Corrida aceita?',
+      message: 'Tem certeza que deseja aceitar essa corrida?',
+      type: 'info',
+      buttons: [
+        { text: 'Cancelar', style: 'cancel' },
+        {
+          text: 'Aceitar',
+          onPress: async () => {
+            try {
+              await actions.confirmRide()
+            } catch (error: any) {
+              showAlert({
+                title: 'Erro',
+                message: error.message || 'Falha ao aceitar corrida',
+                type: 'error',
+                buttons: [{ text: 'OK' }]
+              })
             }
           }
-        ]
-      })
-    } catch (error) {
-      showAlert({
-        title: 'Erro',
-        message: 'Falha ao aceitar corrida',
-        type: 'error',
-        buttons: [{ text: 'OK' }]
-      })
-    }
-  }
+        }
+      ]
+    })
+  }, [actions, showAlert])
 
-  // 🔹 CANCELAR CORRIDA
-  const handleCancelRide = async (reason: string) => {
-    try {
-      // setCancelReason(reason);
-      setShowCancelModal(false)
-      await handleCanceledRide(reason)
-
-      // Navegar de volta
-      setTimeout(() => {
-        navigation.goBack()
-      }, 1000)
-    } catch (error) {
-      showAlert({
-        title: 'Erro',
-        message: 'Falha ao cancelar corrida',
-        type: 'error',
-        buttons: [{ text: 'OK' }]
-      })
-    }
-  }
-
-  const handleStartConfirmation = () => {
-    setShowConfirmationFlow(true)
-  }
-
-  // 🔹 COMPLETAR CORRIDA COM OTP
-  const handleCompleteWithOTP = async (otpCode: string, photoUri?: string) => {
-    setIsLoadingCompleteRide(true)
-
-    try {
-      // Validar OTP antes de completar a corrida
-      if (otpCode.length !== 4) {
+  const handleCancelRide = useCallback(
+    async (reason: string) => {
+      try {
+        setShowCancelModal(false)
+        await actions.cancelRide(reason)
+        // Navigation happens automatically via canceled status detection below
+      } catch (error) {
         showAlert({
           title: 'Erro',
-          message: 'Código OTP deve ter 4 dígitos',
+          message: 'Falha ao cancelar corrida',
           type: 'error',
           buttons: [{ text: 'OK' }]
         })
-        return
       }
+    },
+    [actions, showAlert]
+  )
 
-      if (!currentRide?.otp_code) {
-        showAlert({
-          title: 'Erro',
-          message: 'Código OTP não encontrado',
-          type: 'error',
-          buttons: [{ text: 'OK' }]
-        })
-        return
-      }
-      // Aqui você pode validar o OTP com o backend
-      const isValidOTP =
-        converter.stringToNumber(currentRide?.otp_code) ==
-        converter.stringToNumber(otpCode)
+  const handleCompleteWithOTP = useCallback(
+    async (otpCode: string, photoUri?: string) => {
+      setIsLoadingCompleteRide(true)
 
-      if (isValidOTP) {
-        await handleCompletedRide(photoUri)
-        // setShowOTPModal(false) // Deprecated/Unused?
+      try {
+        if (otpCode.length !== 4) {
+          showAlert({
+            title: 'Erro',
+            message: 'Código OTP deve ter 4 dígitos',
+            type: 'error',
+            buttons: [{ text: 'OK' }]
+          })
+          return
+        }
 
-        // Navegar para tela de conclusão
-        navigation.replace(ROUTES.Rides.FINISHED, {
-          details: {
-            rideId: currentRide.id,
-            pickup: location.pickup,
-            dropoff: location.dropoff,
-            distance: distance,
-            fare: fareDetails as RideFareInterface
-          }
-        })
-      } else {
+        if (!currentRide?.otp_code) {
+          showAlert({
+            title: 'Erro',
+            message: 'Código OTP não encontrado',
+            type: 'error',
+            buttons: [{ text: 'OK' }]
+          })
+          return
+        }
+
+        const isValidOTP =
+          converter.stringToNumber(currentRide.otp_code) ===
+          converter.stringToNumber(otpCode)
+
+        if (isValidOTP) {
+          // Pass actual distance for max(original, real) fare recalculation
+          await actions.completedRide(
+            photoUri,
+            driverRoute.distanceKm > 0 ? driverRoute.distanceKm : undefined,
+            waitTimer.totalMinutes
+          )
+
+          navigation.replace(ROUTES.Rides.FINISHED, {
+            details: {
+              rideId: currentRide.id,
+              pickup: location.pickup,
+              dropoff: location.dropoff,
+              distance: route.distanceText,
+              fare: fareDetails as RideFareInterface
+            }
+          })
+        } else {
+          setIsLoadingCompleteRide(false)
+          showAlert({
+            title: 'Erro',
+            message: 'Código OTP inválido',
+            type: 'error',
+            buttons: [{ text: 'OK' }]
+          })
+        }
+      } catch (error) {
         setIsLoadingCompleteRide(false)
         showAlert({
           title: 'Erro',
-          message: 'Código OTP inválido',
+          message: 'Falha ao validar código OTP',
           type: 'error',
           buttons: [{ text: 'OK' }]
         })
       }
-    } catch (error) {
-      setIsLoadingCompleteRide(false)
-      console.error('Erro ao validar OTP:', error)
-      showAlert({
-        title: 'Erro',
-        message: 'Falha ao validar código OTP',
-        type: 'error',
-        buttons: [{ text: 'OK' }]
-      })
-    }
-  }
+    },
+    [currentRide, actions, navigation, location, route.distanceText, driverRoute.distanceKm, waitTimer.totalMinutes, fareDetails, showAlert]
+  )
 
-  // 🔹 ATUALIZAR REGIÃO DO MAPA BASEADO NA POSIÇÃO DO MOTORISTA (FOLLOW)
-  useEffect(() => {
-    if (!mapRef.current || !userLocation) return
+  // ─── Lifecycle Effects ────────────────────────────────
 
-    mapRef.current?.setCameraPosition?.({
-      coordinates: {
-        latitude: userLocation.latitude,
-        longitude: userLocation.longitude
-      },
-      zoom: 16
-    })
-  }, [userLocation])
-
+  // Bottom sheet
   useEffect(() => {
     if (hasDriver) {
       bottomSheetRef.current?.present()
     } else {
       bottomSheetRef.current?.dismiss()
     }
-  }, [rideStatus, navigation])
+  }, [rideStatus, hasDriver])
 
   useEffect(() => {
-    const unsubscribeBlur = navigation.addListener('blur', () => {
+    const unBlur = navigation.addListener('blur', () => {
       bottomSheetRef.current?.close()
     })
-
-    const unsubscribeFocus = navigation.addListener('focus', () => {
-      if (hasDriver) {
-        bottomSheetRef.current?.present()
-      }
+    const unFocus = navigation.addListener('focus', () => {
+      if (hasDriver) bottomSheetRef.current?.present()
     })
-
     return () => {
-      unsubscribeBlur()
-      unsubscribeFocus()
+      unBlur()
+      unFocus()
     }
   }, [navigation, hasDriver])
 
+  // Guard: ride taken by another driver
   useEffect(() => {
-    if (!currentRide) return
-    if (!driver) return
+    if (!currentRide || !driverData) return
 
     if (currentRide.status !== 'idle' && !currentRide.driver) {
       showAlert({
@@ -342,70 +260,101 @@ export default function RideSummaryScreen() {
         type: 'error',
         buttons: [{ text: 'OK' }]
       })
-      if (navigation.canGoBack()) {
-        navigation.goBack()
-      }
+      if (navigation.canGoBack()) navigation.goBack()
     }
 
     if (
       currentRide.status !== 'idle' &&
-      currentRide?.driver?.id !== driver.id
+      currentRide?.driver?.id !== driverData.id
     ) {
-      if (navigation.canGoBack()) {
-        showAlert({
-          title: 'Erro',
-          message: 'Outro motorista iniciou a corrida',
-          type: 'error',
-          buttons: [{ text: 'OK' }]
-        })
-        navigation.goBack()
-      }
+      showAlert({
+        title: 'Erro',
+        message: 'Outro motorista iniciou a corrida',
+        type: 'error',
+        buttons: [{ text: 'OK' }]
+      })
+      if (navigation.canGoBack()) navigation.goBack()
     }
-  }, [currentRide])
+  }, [currentRide, driverData, navigation, showAlert])
+
+  // Vibrate on status change
+  useEffect(() => {
+    if (!rideId || !rideStatus || rideStatus === 'idle') return
+    Vibration.vibrate([0, 100, 50, 100])
+  }, [rideStatus, rideId])
+
+  // Prevent accidental back navigation during active ride
+  useEffect(() => {
+    const backAction = () => {
+      if (rideStatus === 'idle') return false
+
+      showAlert({
+        title: 'Corrida em andamento',
+        message: 'Deseja realmente sair da tela da corrida?',
+        type: 'warning',
+        buttons: [
+          { text: 'Ficar', style: 'cancel' },
+          {
+            text: 'Sair',
+            onPress: () => {
+              if (navigation.canGoBack()) navigation.goBack()
+            }
+          }
+        ]
+      })
+      return true
+    }
+
+    const handler = BackHandler.addEventListener(
+      'hardwareBackPress',
+      backAction
+    )
+    return () => handler.remove()
+  }, [rideStatus, navigation, showAlert])
+
+  // ─── Render ───────────────────────────────────────────
 
   return (
     <SafeAreaView className="flex-1 bg-white">
-      {/* MAPA */}
+      {/* MAP */}
       <RideMapContainer
         mapRef={mapRef}
-        userLocation={userLocation}
+        userLocation={driver.location}
         currentRide={currentRide || null}
-        location={location}
         rideStatus={rideStatus}
-        routeCoords={routeCoords}
-        routeCoordsDriver={routeCoordsDriver}
-        markerHeading={markerHeading}
+        route={route}
+        driverRoute={driverRoute}
       />
 
-      {/* CONTENT */}
+      {/* STATUS CONTENT */}
       <RideStatusManager
         rideStatus={rideStatus}
-        isLoadingDataRide={isLoadingDataRide}
+        isLoadingDataRide={loading}
         currentRide={currentRide || null}
         isLoadingUserLocation={isLoadingUserLocation}
         centerOnUser={centerOnUser}
         fareDetails={fareDetails}
-        duration={duration}
+        duration={route.durationText}
         handleAcceptRide={handleAcceptRide}
-        durationDriver={durationDriver ? String(durationDriver) : ''}
-        distanceDriver={distanceDriver ? String(distanceDriver) : ''}
-        driver={driver}
+        durationDriver={driverRoute.durationText || ''}
+        distanceDriver={driverRoute.distanceText || ''}
+        driver={driverData}
         setShowArrivalModal={setShowArrivalModal}
         handleOpenInMaps={handleOpenInMaps}
-        currentTime={currentTime}
-        additionalTime={String(additionalTime)}
-        handlePickedUpRide={handlePickedUpRide}
-        distance={distance}
-        handleStartConfirmation={handleStartConfirmation}
+        currentTime={waitTimer.formatted}
+        additionalTime={String(waitTimer.extraMinutes)}
+        handlePickedUpRide={actions.pickedUp}
+        distance={route.distanceText}
+        handleStartConfirmation={() => setShowConfirmationFlow(true)}
       />
 
-      {/* DRIVER RIDE SHEET */}
+      {/* DRIVER BOTTOM SHEET */}
       {currentRide && (
         <DriverRideSheet
           ref={bottomSheetRef}
           rideDetails={currentRide}
           fareDetails={fareDetails}
-          distance={distance}
+          distance={route.distanceText}
           onCancel={() => setShowCancelModal(true)}
           snapPoints={['20%', '50%']}
         />

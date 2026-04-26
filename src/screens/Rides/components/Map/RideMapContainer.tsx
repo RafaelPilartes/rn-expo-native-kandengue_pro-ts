@@ -1,150 +1,210 @@
-import React, { memo } from 'react'
+import React, { useEffect, useMemo } from 'react'
 import { StyleSheet, Platform } from 'react-native'
-import MapView, { Marker } from '@/components/map/MapView'
+import MapView, { Marker, Polyline } from '@/components/map/MapView'
 import { RideInterface } from '@/interfaces/IRide'
-import { CustomPlace } from '@/types/places'
-import { LatLngType } from '@/types/latLng'
+import { RideStatusType } from '@/types/enum'
+import type { RouteInfo } from '@/hooks/ride/useRideSummary'
 
-type Props = {
+type LatLng = { latitude: number; longitude: number }
+
+interface RideMapContainerProps {
   mapRef: React.RefObject<any>
-  userLocation: LatLngType | null
+  userLocation: LatLng | null
   currentRide: RideInterface | null
-  location: {
-    pickup: CustomPlace
-    dropoff: CustomPlace
-  }
-  rideStatus: string
-  routeCoords: LatLngType[]
-  routeCoordsDriver: LatLngType[]
-  markerHeading: number
-  polygons?: any[]
-  zoom?: number
+  rideStatus: RideStatusType
+  route: RouteInfo
+  driverRoute: RouteInfo
 }
 
-const RideMapContainer = memo(
-  ({
-    mapRef,
-    userLocation,
-    currentRide,
-    location,
-    rideStatus,
-    routeCoords,
-    routeCoordsDriver,
-    markerHeading,
-    polygons,
-    zoom
-  }: Props) => {
-    // Build markers array
-    const markers: Marker[] = []
+export const RideMapContainer: React.FC<RideMapContainerProps> = ({
+  mapRef,
+  userLocation,
+  currentRide,
+  rideStatus,
+  route,
+  driverRoute
+}) => {
+  // Build markers with proper colors
+  const markers = useMemo(() => {
+    const list: Marker[] = []
 
-    // User location marker (Motorista - Azul)
+    // Driver marker (blue) — the driver IS the user
     if (userLocation) {
-      markers.push({
-        id: 'user-location',
+      const marker: any = {
+        id: 'driver-location',
         coordinates: userLocation,
-        title: 'Sua Localização',
-        ...(Platform.OS === 'ios'
-          ? { tintColor: '#007AFF', subtitle: 'Motorista' }
-          : { color: '#007AFF', snippet: 'Motorista' })
-      })
+        title: 'Sua Localização'
+      }
+      if (Platform.OS === 'ios') {
+        marker.tintColor = '#007AFF'
+        marker.systemImage = 'car.fill'
+      } else {
+        marker.color = '#007AFF'
+      }
+      marker.snippet = 'Motorista'
+      list.push(marker)
     }
 
-    // Pickup marker (Verde)
-    if (currentRide) {
-      markers.push({
+    // Pickup marker (green)
+    const showPickup = ['idle', 'driver_on_the_way', 'arrived_pickup'].includes(rideStatus)
+    if (showPickup && currentRide) {
+      const marker: any = {
         id: 'pickup',
         coordinates: {
           latitude: currentRide.pickup.latitude,
           longitude: currentRide.pickup.longitude
         },
-        title: 'Local de Recolha',
-        ...(Platform.OS === 'ios'
-          ? { tintColor: '#03af5f' }
-          : { color: '#03af5f' })
-      })
+        title: 'Local de Recolha'
+      }
+      if (Platform.OS === 'ios') {
+        marker.tintColor = '#03af5f'
+        marker.systemImage = 'mappin.circle.fill'
+      } else {
+        marker.color = '#03af5f'
+      }
+      list.push(marker)
     }
 
-    // Dropoff marker (Vermelho)
-    if (currentRide) {
-      markers.push({
+    // Dropoff marker (red)
+    const showDropoff = ['idle', 'driver_on_the_way', 'arrived_pickup', 'picked_up', 'arrived_dropoff'].includes(rideStatus)
+    if (showDropoff && currentRide) {
+      const marker: any = {
         id: 'dropoff',
         coordinates: {
           latitude: currentRide.dropoff.latitude,
           longitude: currentRide.dropoff.longitude
         },
-        title: 'Local de Entrega',
-        ...(Platform.OS === 'ios'
-          ? { tintColor: '#EF4444' }
-          : { color: '#EF4444' })
-      })
+        title: 'Local de Entrega'
+      }
+      if (Platform.OS === 'ios') {
+        marker.tintColor = '#EF4444'
+        marker.systemImage = 'flag.fill'
+      } else {
+        marker.color = '#EF4444'
+      }
+      list.push(marker)
     }
 
-    // Build polylines array - Dynamic Routes + Movement State
-    const polylines: any[] = []
+    return list
+  }, [userLocation, currentRide, rideStatus])
 
-    // 1. Preview da rota completa (idle) - Verde claro
-    if (rideStatus === 'idle' && routeCoords.length > 0) {
-      polylines.push({
-        id: 'preview-route',
-        coordinates: routeCoords,
-        ...(Platform.OS === 'ios'
-          ? { color: '#86efac', width: 3 } // Verde claro (preview)
-          : { color: '#86efac', width: 3 })
-      })
+  // Polylines by status
+  const polylines = useMemo(() => {
+    const list: Polyline[] = []
+
+    switch (rideStatus) {
+      // Preview: full route pickup → dropoff (light green)
+      case 'idle': {
+        if (route.coords.length > 0) {
+          list.push({
+            id: 'routePreview',
+            coordinates: route.coords,
+            color: '#86EFAC',
+            width: 3
+          })
+        }
+        break
+      }
+
+      // Driver heading to pickup: blue driver route + gray context
+      case 'driver_on_the_way': {
+        if (driverRoute.coords.length > 0) {
+          list.push({
+            id: 'driverToPickup',
+            coordinates: driverRoute.coords,
+            color: '#007AFF',
+            width: 5
+          })
+        }
+        if (route.coords.length > 0) {
+          list.push({
+            id: 'routeContext',
+            coordinates: route.coords,
+            color: '#D1D5DB',
+            width: 3
+          })
+        }
+        break
+      }
+
+      // At pickup: show upcoming route (green)
+      case 'arrived_pickup': {
+        if (route.coords.length > 0) {
+          list.push({
+            id: 'nextSegment',
+            coordinates: route.coords,
+            color: '#86EFAC',
+            width: 4
+          })
+        }
+        break
+      }
+
+      // Delivering: driver → dropoff (green, trimmed/shrinking)
+      case 'picked_up': {
+        if (driverRoute.coords.length > 0) {
+          list.push({
+            id: 'driverToDropoff',
+            coordinates: driverRoute.coords,
+            color: '#03af5f',
+            width: 5
+          })
+        }
+        break
+      }
+
+      default:
+        break
     }
 
-    // 2. Rota do motorista → pickup (driver_on_the_way) - Azul
-    if (rideStatus === 'driver_on_the_way' && routeCoordsDriver.length > 0) {
-      polylines.push({
-        id: 'driver-to-pickup',
-        coordinates: routeCoordsDriver,
-        ...(Platform.OS === 'ios'
-          ? { color: '#007AFF', width: 4 }
-          : { color: '#007AFF', width: 4 })
+    return list
+  }, [route.coords, driverRoute.coords, rideStatus])
+
+  // Camera follow driver in real-time
+  useEffect(() => {
+    if (!mapRef.current || !userLocation) return
+
+    const isDriverMoving = ['driver_on_the_way', 'picked_up'].includes(rideStatus)
+
+    if (isDriverMoving) {
+      mapRef.current?.setCameraPosition?.({
+        coordinates: {
+          latitude: userLocation.latitude,
+          longitude: userLocation.longitude
+        },
+        zoom: 16,
+        duration: 1000
       })
     }
+  }, [rideStatus, userLocation, mapRef])
 
-    // 3. Rota do motorista → dropoff (picked_up) - Verde
-    if (rideStatus === 'picked_up' && routeCoords.length > 0) {
-      polylines.push({
-        id: 'driver-to-dropoff',
-        coordinates: routeCoords,
-        ...(Platform.OS === 'ios'
-          ? { color: '#03af5f', width: 4 }
-          : { color: '#03af5f', width: 4 })
-      })
-    }
+  // Initial camera
+  const initialCamera = useMemo(() => ({
+    coordinates: {
+      latitude: currentRide
+        ? currentRide.pickup.latitude
+        : userLocation?.latitude ?? -8.838,
+      longitude: currentRide
+        ? currentRide.pickup.longitude
+        : userLocation?.longitude ?? 13.234
+    },
+    zoom: 13
+  }), [currentRide, userLocation?.latitude, userLocation?.longitude])
 
-    // Nota: Não mostrar rotas quando motorista está parado
-    // (arrived_pickup, arrived_dropoff, completed) - foco nos markers
-
-    return (
-      <MapView
-        ref={mapRef}
-        style={StyleSheet.absoluteFillObject}
-        cameraPosition={{
-          coordinates: {
-            latitude: currentRide
-              ? currentRide.pickup.latitude
-              : location.pickup.latitude,
-            longitude: currentRide
-              ? currentRide.pickup.longitude
-              : location.pickup.longitude
-          },
-          zoom: zoom || 13
-        }}
-        markers={markers}
-        polylines={polylines}
-        polygons={polygons}
-        uiSettings={{
-          myLocationButtonEnabled: false
-        }}
-        properties={{
-          isMyLocationEnabled: false
-        }}
-      />
-    )
-  }
-)
-
-export { RideMapContainer }
+  return (
+    <MapView
+      ref={mapRef}
+      style={StyleSheet.absoluteFillObject}
+      cameraPosition={initialCamera}
+      markers={markers}
+      polylines={polylines}
+      uiSettings={{
+        myLocationButtonEnabled: false
+      }}
+      properties={{
+        isMyLocationEnabled: false,
+        isTrafficEnabled: ['driver_on_the_way', 'picked_up'].includes(rideStatus)
+      }}
+    />
+  )
+}
