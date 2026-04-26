@@ -9,11 +9,11 @@ import {
   Info,
   CreditCard
 } from 'lucide-react-native'
-import { RideDetailsInterface } from '@/interfaces/IRide'
+import { RideDetailsType } from '@/types/ride'
 import { getPaymentMethodLabel } from '@/utils/gettersLabels'
 
 interface DeliveryDetailsSectionProps {
-  details: RideDetailsInterface
+  details: RideDetailsType
   userName?: string
   userPhone?: string
 }
