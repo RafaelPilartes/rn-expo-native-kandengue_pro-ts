@@ -1,6 +1,7 @@
 // src/screens/Rides/components/Map/useMapMarkers.ts
 import { useMemo } from 'react'
 import { Platform } from 'react-native'
+import { useImage } from 'expo-image'
 import { Marker } from '@/components/map/MapView'
 import { RideStatusType } from '@/types/enum'
 
@@ -16,12 +17,8 @@ type MarkerConfig = {
 /**
  * Generates properly colored markers based on ride status.
  *
- * Uses platform-native icons:
- * - iOS: SF Symbols (mappin.circle.fill, flag.fill, car.fill) with tintColor
- * - Android: Default marker with color prop
- *
- * Note: expo-image is NOT installed in this project,
- * so we use platform-native marker styling only.
+ * - iOS: Uses SF Symbols (mappin.circle.fill, flag.fill, car.fill) with tintColor
+ * - Android: Uses custom PNG icons via expo-image's useImage hook
  */
 export function useMapMarkers({
   pickup,
@@ -29,10 +26,14 @@ export function useMapMarkers({
   driver,
   rideStatus
 }: MarkerConfig): Marker[] {
+  // Load custom marker icons for Android (expo-maps accepts ImageSource from useImage)
+  const pickupIcon = useImage(require('@/assets/markers/pickup.png'))
+  const dropoffIcon = useImage(require('@/assets/markers/dropoff.png'))
+  const driverIcon = useImage(require('@/assets/markers/driver.png'))
+
   return useMemo(() => {
     const list: Marker[] = []
 
-    // Determine which markers are visible per status
     const showPickup = [
       'idle',
       'pending',
@@ -70,6 +71,8 @@ export function useMapMarkers({
       if (Platform.OS === 'ios') {
         marker.tintColor = '#10B981'
         marker.systemImage = 'mappin.circle.fill'
+      } else if (pickupIcon) {
+        marker.icon = pickupIcon
       } else {
         marker.color = '#10B981'
       }
@@ -91,6 +94,8 @@ export function useMapMarkers({
       if (Platform.OS === 'ios') {
         marker.tintColor = '#EF4444'
         marker.systemImage = 'flag.fill'
+      } else if (dropoffIcon) {
+        marker.icon = dropoffIcon
       } else {
         marker.color = '#EF4444'
       }
@@ -111,11 +116,12 @@ export function useMapMarkers({
       if (Platform.OS === 'ios') {
         marker.tintColor = '#3B82F6'
         marker.systemImage = 'car.fill'
+      } else if (driverIcon) {
+        marker.icon = driverIcon
       } else {
         marker.color = '#3B82F6'
       }
 
-      // Rotation based on GPS heading
       if (driver.heading !== undefined && driver.heading !== 0) {
         marker.rotation = driver.heading
       }
@@ -124,5 +130,5 @@ export function useMapMarkers({
     }
 
     return list
-  }, [pickup, dropoff, driver, rideStatus])
+  }, [pickup, dropoff, driver, rideStatus, pickupIcon, dropoffIcon, driverIcon])
 }
