@@ -328,24 +328,27 @@ export default function RideSummaryScreen() {
 
       {/* STATUS CONTENT */}
       <RideStatusManager
-        rideStatus={rideStatus}
-        isLoadingDataRide={loading}
-        currentRide={currentRide || null}
-        isLoadingUserLocation={isLoadingUserLocation}
-        centerOnUser={centerOnUser}
-        fareDetails={fareDetails}
-        duration={route.durationText}
-        handleAcceptRide={handleAcceptRide}
-        durationDriver={driverRoute.durationText || ''}
-        distanceDriver={driverRoute.distanceText || ''}
-        driver={driverData}
-        setShowArrivalModal={setShowArrivalModal}
-        handleOpenInMaps={handleOpenInMaps}
-        currentTime={waitTimer.formatted}
-        additionalTime={String(waitTimer.extraMinutes)}
-        handlePickedUpRide={actions.pickedUp}
-        distance={route.distanceText}
-        handleStartConfirmation={() => setShowConfirmationFlow(true)}
+        rideData={{
+          status: rideStatus,
+          ride: currentRide || null,
+          loading: loading,
+          fareDetails: fareDetails,
+          route: route,
+          driverRoute: driverRoute,
+          driver: driverData,
+          waitTimer: waitTimer
+        }}
+        actions={{
+          acceptRide: handleAcceptRide,
+          pickedUp: actions.pickedUp,
+          startConfirmation: () => setShowConfirmationFlow(true),
+          openInMaps: handleOpenInMaps,
+          showArrivalModal: setShowArrivalModal
+        }}
+        ui={{
+          isLoadingUserLocation: isLoadingUserLocation,
+          centerOnUser: centerOnUser
+        }}
       />
 
       {/* DRIVER BOTTOM SHEET */}

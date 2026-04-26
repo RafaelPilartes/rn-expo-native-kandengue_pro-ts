@@ -2,7 +2,9 @@ import React from 'react'
 import { View } from 'react-native'
 import { RideInterface } from '@/interfaces/IRide'
 import { RideFareInterface } from '@/interfaces/IRideFare'
+import { RideStatusType } from '@/types/enum'
 import { formatMoney } from '@/utils/formattedNumber'
+import type { RouteInfo, WaitTimerInfo } from '@/hooks/ride/useRideSummary'
 
 import { LoadingCard } from '../Cards/LoadingCard'
 import { RoutePreviewCard } from '../Cards/RoutePreviewCard'
@@ -16,45 +18,51 @@ import { RideStatusArrivedDestination } from './RideStatusArrivedDestination'
 import { RideStatusCanceled } from './RideStatusCanceled'
 
 type Props = {
-  rideStatus: string
-  isLoadingDataRide: boolean
-  currentRide: RideInterface | null
-  isLoadingUserLocation: boolean
-  centerOnUser: () => void
-  fareDetails: RideFareInterface | null
-  duration: string
-  handleAcceptRide: () => void
-  durationDriver: string
-  distanceDriver: string
-  driver: any // Replace with proper Driver type if available, using any for now to match usage
-  setShowArrivalModal: (show: boolean) => void
-  handleOpenInMaps: () => void
-  currentTime: string
-  additionalTime: string
-  handlePickedUpRide: () => void
-  distance: string
-  handleStartConfirmation: () => void
+  rideData: {
+    status: RideStatusType
+    ride: RideInterface | null
+    loading: boolean
+    fareDetails: RideFareInterface | null
+    route: RouteInfo
+    driverRoute: RouteInfo
+    driver: any
+    waitTimer: WaitTimerInfo
+  }
+  actions: {
+    acceptRide: () => void
+    pickedUp: () => void
+    startConfirmation: () => void
+    openInMaps: () => void
+    showArrivalModal: (show: boolean) => void
+  }
+  ui: {
+    isLoadingUserLocation: boolean
+    centerOnUser: () => void
+  }
 }
 
 export const RideStatusManager = ({
-  rideStatus,
-  isLoadingDataRide,
-  currentRide,
-  isLoadingUserLocation,
-  centerOnUser,
-  fareDetails,
-  duration,
-  handleAcceptRide,
-  durationDriver,
-  distanceDriver,
-  driver,
-  setShowArrivalModal,
-  handleOpenInMaps,
-  currentTime,
-  additionalTime,
-  handlePickedUpRide,
-  distance,
-  handleStartConfirmation
+  rideData: {
+    status: rideStatus,
+    ride: currentRide,
+    loading: isLoadingDataRide,
+    fareDetails,
+    route,
+    driverRoute,
+    driver,
+    waitTimer
+  },
+  actions: {
+    acceptRide: handleAcceptRide,
+    pickedUp: handlePickedUpRide,
+    startConfirmation: handleStartConfirmation,
+    openInMaps: handleOpenInMaps,
+    showArrivalModal: setShowArrivalModal
+  },
+  ui: {
+    isLoadingUserLocation,
+    centerOnUser
+  }
 }: Props) => {
   switch (rideStatus) {
     case 'idle':
@@ -78,8 +86,8 @@ export const RideStatusManager = ({
               </View>
 
               <ConfirmRideCard
-                price={formatMoney(fareDetails?.total as number, 0)}
-                duration={duration}
+                price={formatMoney(fareDetails?.total || 0, 0)}
+                duration={route.durationText}
                 isLoading={isLoadingDataRide}
                 onConfirm={handleAcceptRide}
               />
@@ -92,8 +100,9 @@ export const RideStatusManager = ({
       return (
         <>
           <DriverStatusOverlay
-            duration={durationDriver}
+            duration={driverRoute.durationText || ''}
             driverName={driver?.name || 'Motorista'}
+            estimatedTime={driverRoute.durationText || ''}
             onArrived={() => setShowArrivalModal(true)}
           />
           <FloatingActionButton
@@ -109,11 +118,11 @@ export const RideStatusManager = ({
       return (
         <>
           <RideStatusArrival
-            rideStatus={rideStatus as any} // Cast if types don't match exactly string
-            currentTime={currentTime}
-            additionalTime={String(additionalTime)}
+            rideStatus={rideStatus as any}
+            currentTime={waitTimer.formatted}
+            additionalTime={String(waitTimer.extraMinutes)}
             onConfirmPickup={handlePickedUpRide}
-            customerName={currentRide?.user?.name}
+            customerName={currentRide?.user?.name || currentRide?.details?.receiver?.name}
           />
         </>
       )
@@ -122,9 +131,9 @@ export const RideStatusManager = ({
       return (
         <>
           <RideStatusDelivering
-            distanceTraveled={distanceDriver || distance}
-            distanceTotal={distance}
-            duration={durationDriver || duration}
+            distanceTraveled={driverRoute.distanceText || ''}
+            distanceTotal={route.distanceText || ''}
+            duration={driverRoute.durationText || ''}
             packageInfo={currentRide?.details?.item}
             onArrived={() => setShowArrivalModal(true)}
             onPress={handleOpenInMaps}
