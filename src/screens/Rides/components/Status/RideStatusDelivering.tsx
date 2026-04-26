@@ -29,8 +29,6 @@ export const RideStatusDelivering: React.FC<RideStatusDeliveringProps> = ({
   onPress,
   disabled = false
 }) => {
-  const progress = 50 // Mock - calcular baseado na distância
-
   return (
     <View className="absolute top-safe left-4 right-4">
       <View className="bg-white rounded-2xl shadow-lg border border-gray-200 p-4 mb-4">

@@ -1,8 +1,9 @@
 import React, { useEffect, useMemo } from 'react'
-import { StyleSheet, Platform } from 'react-native'
-import MapView, { Marker, Polyline } from '@/components/map/MapView'
+import { StyleSheet } from 'react-native'
+import MapView, { Polyline } from '@/components/map/MapView'
 import { RideInterface } from '@/interfaces/IRide'
 import { RideStatusType } from '@/types/enum'
+import { useMapMarkers } from './useMapMarkers'
 import type { RouteInfo } from '@/hooks/ride/useRideSummary'
 
 type LatLng = { latitude: number; longitude: number }
@@ -24,69 +25,13 @@ export const RideMapContainer: React.FC<RideMapContainerProps> = ({
   route,
   driverRoute
 }) => {
-  // Build markers with proper colors
-  const markers = useMemo(() => {
-    const list: Marker[] = []
-
-    // Driver marker (blue) — the driver IS the user
-    if (userLocation) {
-      const marker: any = {
-        id: 'driver-location',
-        coordinates: userLocation,
-        title: 'Sua Localização'
-      }
-      if (Platform.OS === 'ios') {
-        marker.tintColor = '#007AFF'
-        marker.systemImage = 'car.fill'
-      } else {
-        marker.color = '#007AFF'
-      }
-      marker.snippet = 'Motorista'
-      list.push(marker)
-    }
-
-    // Pickup marker (green)
-    const showPickup = ['idle', 'driver_on_the_way', 'arrived_pickup'].includes(rideStatus)
-    if (showPickup && currentRide) {
-      const marker: any = {
-        id: 'pickup',
-        coordinates: {
-          latitude: currentRide.pickup.latitude,
-          longitude: currentRide.pickup.longitude
-        },
-        title: 'Local de Recolha'
-      }
-      if (Platform.OS === 'ios') {
-        marker.tintColor = '#03af5f'
-        marker.systemImage = 'mappin.circle.fill'
-      } else {
-        marker.color = '#03af5f'
-      }
-      list.push(marker)
-    }
-
-    // Dropoff marker (red)
-    const showDropoff = ['idle', 'driver_on_the_way', 'arrived_pickup', 'picked_up', 'arrived_dropoff'].includes(rideStatus)
-    if (showDropoff && currentRide) {
-      const marker: any = {
-        id: 'dropoff',
-        coordinates: {
-          latitude: currentRide.dropoff.latitude,
-          longitude: currentRide.dropoff.longitude
-        },
-        title: 'Local de Entrega'
-      }
-      if (Platform.OS === 'ios') {
-        marker.tintColor = '#EF4444'
-        marker.systemImage = 'flag.fill'
-      } else {
-        marker.color = '#EF4444'
-      }
-      list.push(marker)
-    }
-
-    return list
-  }, [userLocation, currentRide, rideStatus])
+  // Use extracted hook for markers (supports custom PNGs and rotation)
+  const markers = useMapMarkers({
+    pickup: currentRide?.pickup,
+    dropoff: currentRide?.dropoff,
+    driver: userLocation ? { location: userLocation, heading: 0 } : undefined, // Assuming driver is the user
+    rideStatus
+  })
 
   // Polylines by status
   const polylines = useMemo(() => {
@@ -173,10 +118,23 @@ export const RideMapContainer: React.FC<RideMapContainerProps> = ({
           longitude: userLocation.longitude
         },
         zoom: 16,
+        duration: 1000 // Smooth animation
+      })
+    } else if (rideStatus === 'idle' && route.coords.length > 0) {
+      // Fit to full route
+      mapRef.current?.fitToCoordinates?.(route.coords, {
+        edgePadding: { top: 100, right: 50, bottom: 400, left: 50 },
+        animated: true
+      })
+    } else if (currentRide?.pickup && ['arrived_pickup', 'arrived_dropoff'].includes(rideStatus)) {
+      // Zoom to current location
+      mapRef.current?.setCameraPosition?.({
+        coordinates: rideStatus === 'arrived_pickup' ? currentRide.pickup : currentRide.dropoff,
+        zoom: 18,
         duration: 1000
       })
     }
-  }, [rideStatus, userLocation, mapRef])
+  }, [rideStatus, userLocation, route.coords, currentRide, mapRef])
 
   // Initial camera
   const initialCamera = useMemo(() => ({
