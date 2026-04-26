@@ -11,6 +11,7 @@ type LatLng = { latitude: number; longitude: number }
 interface RideMapContainerProps {
   mapRef: React.RefObject<any>
   userLocation: LatLng | null
+  driverHeading: number
   currentRide: RideInterface | null
   rideStatus: RideStatusType
   route: RouteInfo
@@ -20,16 +21,17 @@ interface RideMapContainerProps {
 export const RideMapContainer: React.FC<RideMapContainerProps> = ({
   mapRef,
   userLocation,
+  driverHeading,
   currentRide,
   rideStatus,
   route,
   driverRoute
 }) => {
-  // Use extracted hook for markers (supports custom PNGs and rotation)
+  // Use extracted hook for markers
   const markers = useMapMarkers({
     pickup: currentRide?.pickup,
     dropoff: currentRide?.dropoff,
-    driver: userLocation ? { location: userLocation, heading: 0 } : undefined, // Assuming driver is the user
+    driver: userLocation ? { location: userLocation, heading: driverHeading } : undefined,
     rideStatus
   })
 

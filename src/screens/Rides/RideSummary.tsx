@@ -320,6 +320,7 @@ export default function RideSummaryScreen() {
       <RideMapContainer
         mapRef={mapRef}
         userLocation={driver.location}
+        driverHeading={driver.heading}
         currentRide={currentRide || null}
         rideStatus={rideStatus}
         route={route}

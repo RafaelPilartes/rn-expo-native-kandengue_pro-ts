@@ -80,6 +80,7 @@ export default function MapScreen() {
       <RideMapContainer
         mapRef={mapRef}
         userLocation={location}
+        driverHeading={0}
         currentRide={null}
         rideStatus="idle"
         route={{

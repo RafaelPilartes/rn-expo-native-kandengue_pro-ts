@@ -1,7 +1,6 @@
 // src/screens/Rides/components/Map/useMapMarkers.ts
 import { useMemo } from 'react'
 import { Platform } from 'react-native'
-import { useImage } from 'expo-image'
 import { Marker } from '@/components/map/MapView'
 import { RideStatusType } from '@/types/enum'
 
@@ -17,9 +16,12 @@ type MarkerConfig = {
 /**
  * Generates properly colored markers based on ride status.
  *
- * - Pickup: green marker (visible in idle, pending, driver_on_the_way, arrived_pickup)
- * - Dropoff: red marker (visible in idle, pending, picked_up, arrived_dropoff)
- * - Driver: blue marker (visible when driver is assigned and moving)
+ * Uses platform-native icons:
+ * - iOS: SF Symbols (mappin.circle.fill, flag.fill, car.fill) with tintColor
+ * - Android: Default marker with color prop
+ *
+ * Note: expo-image is NOT installed in this project,
+ * so we use platform-native marker styling only.
  */
 export function useMapMarkers({
   pickup,
@@ -27,11 +29,6 @@ export function useMapMarkers({
   driver,
   rideStatus
 }: MarkerConfig): Marker[] {
-  // Load custom marker icons via expo-image's useImage
-  const pickupIcon = useImage(require('@/assets/markers/pickup.png'))
-  const dropoffIcon = useImage(require('@/assets/markers/dropoff.png'))
-  const driverIcon = useImage(require('@/assets/markers/driver.png'))
-
   return useMemo(() => {
     const list: Marker[] = []
 
@@ -70,12 +67,11 @@ export function useMapMarkers({
         snippet: pickup.description
       }
 
-      // Platform-specific icon handling
       if (Platform.OS === 'ios') {
-        marker.tintColor = '#10B981' // Tailwind Emerald-500
+        marker.tintColor = '#10B981'
         marker.systemImage = 'mappin.circle.fill'
-      } else if (pickupIcon) {
-        marker.icon = pickupIcon
+      } else {
+        marker.color = '#10B981'
       }
 
       list.push(marker)
@@ -93,10 +89,10 @@ export function useMapMarkers({
       }
 
       if (Platform.OS === 'ios') {
-        marker.tintColor = '#EF4444' // Tailwind Red-500
+        marker.tintColor = '#EF4444'
         marker.systemImage = 'flag.fill'
-      } else if (dropoffIcon) {
-        marker.icon = dropoffIcon
+      } else {
+        marker.color = '#EF4444'
       }
 
       list.push(marker)
@@ -113,15 +109,14 @@ export function useMapMarkers({
       }
 
       if (Platform.OS === 'ios') {
-        marker.tintColor = '#3B82F6' // Tailwind Blue-500
+        marker.tintColor = '#3B82F6'
         marker.systemImage = 'car.fill'
-      } else if (driverIcon) {
-        marker.icon = driverIcon
+      } else {
+        marker.color = '#3B82F6'
       }
 
-      // Add rotation to the marker based on heading
-      // (Depends on expo-maps supporting rotation, typically passed in marker props)
-      if (driver.heading !== undefined) {
+      // Rotation based on GPS heading
+      if (driver.heading !== undefined && driver.heading !== 0) {
         marker.rotation = driver.heading
       }
 
@@ -129,13 +124,5 @@ export function useMapMarkers({
     }
 
     return list
-  }, [
-    pickup,
-    dropoff,
-    driver,
-    rideStatus,
-    pickupIcon,
-    dropoffIcon,
-    driverIcon
-  ])
+  }, [pickup, dropoff, driver, rideStatus])
 }

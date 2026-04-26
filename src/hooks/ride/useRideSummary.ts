@@ -170,12 +170,11 @@ export function useRideSummary(rideId: string) {
     canceled: handleCanceledRide
   } = useRideFlow(rideId, fareDetails, rideRates, { startTracking, stopTracking })
 
-  // Load rates (once)
+  // Load rates (once) — ViewModel manages listener cleanup internally via refs
   useEffect(() => {
-    const unsub = listenRates((rates: RideRateEntity[]) => {
+    listenRates((rates: RideRateEntity[]) => {
       if (rates?.[0]) setRideRates(rates[0])
     })
-    return unsub
   }, [])
 
   // Driver info (with vehicle)
