@@ -2,7 +2,7 @@ export type LanguageEnum = 'pt' | 'en' | 'fr'
 export type AppTheme = 'light' | 'dark'
 
 export type TrustedContactStatusType = 'pending' | 'accepted' | 'rejected'
-export type NotificationType = 'push' | 'sms' | 'both'
+export type NotificationType = 'ride' | 'wallet' | 'document' | 'system'
 
 export type LocationSourceType = 'emergency' | 'safe_path' | 'routine' | 'other'
 
@@ -101,16 +101,19 @@ export type WalletTopupStatus =
 
 export type WalletTopupMethodType = 'unitel_money' | 'bank_transfer' | 'cash'
 
-// export type NotificationType = 'ride' | 'wallet' | 'document' | 'system'
 export type NotificationCategory = 'driver' | 'passenger' | 'admin' | 'all'
 
 // =========================================================================
 export type AdminRole =
-  | 'superadmin'
-  | 'manager'
-  | 'finance'
-  | 'content'
-  | 'support'
+  | 'direcao_geral'
+  | 'operacoes_qualidade'
+  | 'administracao_financas'
+  | 'tecnologia_inovacao'
+  | 'seguranca_qualidade_operacional'
+  | 'negocios_imagem_institucional'
+  | 'capital_humano'
+  | 'contabilidade_financas'
+  | 'tecnologia_inovacao_tecnica'
 
 export type MissionType = 'daily' | 'weekly' | 'monthly'
 

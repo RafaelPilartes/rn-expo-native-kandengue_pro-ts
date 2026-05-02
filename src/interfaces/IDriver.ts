@@ -6,6 +6,6 @@ export interface DriverInterface extends UserInterface {
   vehicle?: VehicleInterface
   rating?: number
   is_online: boolean
-  is_invisible: boolean // Privacy mode - online but not tracked/visible
+  is_invisible?: boolean // Privacy mode - online but not tracked/visible
   current_location?: LocationType // Latest known position for matching
 }
