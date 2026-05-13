@@ -22,6 +22,8 @@ type SyncStatusToServerParams = {
   completedAt?: Date
   canceledAt?: Date
   fare?: RideFareInterface | null
+  driverMatchedAt?: Date
+  cancelledBy?: 'driver' | 'user' | 'system'
 }
 
 type TrackingControls = {
@@ -51,7 +53,9 @@ export function useRideFlow(
     waitingEndAt,
     completedAt,
     canceledAt,
-    fare
+    fare,
+    driverMatchedAt,
+    cancelledBy
   }: SyncStatusToServerParams) => {
     try {
       // Filter only valid values from driver
@@ -71,7 +75,9 @@ export function useRideFlow(
           waiting_end_at: waitingEndAt,
           completed_at: completedAt,
           canceled_at: canceledAt,
-          fare
+          fare,
+          driver_matched_at: driverMatchedAt,
+          cancelled_by: cancelledBy
         }).filter(([_, v]) => v !== undefined && v !== null)
       )
 
@@ -160,7 +166,13 @@ export function useRideFlow(
         throw new Error('Corrida não está aguardando motorista')
       }
 
-      await syncStatusToServer({ status: 'driver_on_the_way', driver })
+      // driver_matched_at marca o início da janela de graça (2min) usada
+      // pelo trigger onRideCancelled — ver promocodes_system.md.
+      await syncStatusToServer({
+        status: 'driver_on_the_way',
+        driver,
+        driverMatchedAt: new Date()
+      })
       setCurrentMissionId(rideId)
       tracking?.startTracking('RIDE')
     } catch (error: any) {
@@ -204,33 +216,54 @@ export function useRideFlow(
 
   /**
    * Complete the ride with fare recalculation.
-   * Final fare = max(original_fare, fare_based_on_actual_distance)
-   * This ensures the driver is compensated for longer routes.
+   * Final fare = max(original_gross, gross_based_on_actual_distance), minus any
+   * promo discount that was applied by the passenger.
+   * Fetches the authoritative fare from Firestore first so promo fields
+   * (discount, promotion_id, promotion_code) are never overwritten.
    */
   const completed = async (
     photoUri?: string,
     actualDistanceKm?: number,
     waitMinutes?: number
   ) => {
-    if (!rideFare) {
+    // Fetch authoritative fare from Firestore to preserve promo discount fields
+    let baseFare: RideFareInterface | null = rideFare ?? null
+    try {
+      const currentRideData = await fetchRideById(rideId)
+      if (currentRideData?.fare) {
+        baseFare = currentRideData.fare
+      }
+    } catch {
+      // keep rideFare as fallback
+    }
+
+    if (!baseFare) {
       const errorMsg = 'Dados de fare não encontrados para completar a corrida'
       console.error('❌', errorMsg)
       throw new Error(errorMsg)
     }
 
-    let finalFare = rideFare
+    const storedGross = baseFare.breakdown?.gross_amount ?? baseFare.total ?? 0
+    const storedDiscount = baseFare.breakdown?.discount ?? 0
 
-    // Recalculate fare if actual distance is greater and we have rates
+    let finalFare: RideFareInterface = baseFare
+
+    // Only increase gross if actual driven distance exceeds the estimate.
+    // Promo discount is preserved; the server trigger revalidates using gross_amount.
     if (actualDistanceKm && rideRates && actualDistanceKm > 0) {
-      const recalculatedFare = calculateFare(
-        actualDistanceKm,
-        waitMinutes ?? 0,
-        rideRates
-      )
+      const recalcFare = calculateFare(actualDistanceKm, waitMinutes ?? 0, rideRates)
 
-      // Use the higher fare: max(original, recalculated)
-      if (recalculatedFare.total > rideFare.total) {
-        finalFare = recalculatedFare
+      if (recalcFare.total > storedGross) {
+        const newGross = recalcFare.total
+        const newNet = newGross - storedDiscount
+        finalFare = {
+          ...recalcFare,
+          total: newNet,
+          breakdown: {
+            ...baseFare.breakdown,   // preserve discount, promotion_id, promotion_code
+            ...recalcFare.breakdown, // updated base_fare, distance_cost, wait_cost, gross_amount=newGross
+          },
+        }
       }
     }
 
@@ -267,10 +300,13 @@ export function useRideFlow(
 
   const canceled = async (reason: string) => {
     try {
+      // cancelled_by: 'driver' — usado pelo trigger onRideCancelled para
+      // libertar o código do passageiro sem o queimar.
       await syncStatusToServer({
         status: 'canceled',
         reason,
-        canceledAt: new Date()
+        canceledAt: new Date(),
+        cancelledBy: 'driver'
       })
 
       setCurrentMissionId(null)

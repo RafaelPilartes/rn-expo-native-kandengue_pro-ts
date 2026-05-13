@@ -1,6 +1,6 @@
 // src/screens/Ride/RideFinishedScreen.tsx
 import React from 'react'
-import { View, Text, TouchableOpacity, ScrollView } from 'react-native'
+import { ActivityIndicator, View, Text, TouchableOpacity, ScrollView } from 'react-native'
 import { SafeAreaView } from 'react-native-safe-area-context'
 import { Check, Star, DollarSign, Award } from 'lucide-react-native'
 import { useRoute } from '@react-navigation/native'
@@ -9,6 +9,7 @@ import { CustomPlace } from '@/types/places'
 import { useAppProvider } from '@/providers/AppProvider'
 import { RideFareInterface } from '@/interfaces/IRideFare'
 import { formatMoney } from '@/utils/formattedNumber'
+import { useRideFinishedFare } from '@/hooks/ride/useRideFinishedFare'
 
 type RideFinishedScreenRouteParams = {
   details: {
@@ -25,12 +26,25 @@ export default function RideFinishedScreen() {
   const route = useRoute()
   const { details } = route.params as RideFinishedScreenRouteParams
 
-  // Calcular "ganhos" aproximados (80% do total como exemplo)
-  const driverEarnings = formatMoney(details.fare.total)
-  const driverDebit = formatMoney(
-    details.fare.payouts.company_earnings + details.fare.payouts.pension_fund
+  const hasPromo = !!(
+    details.fare.breakdown?.promotion_id ||
+    (details.fare.breakdown?.discount ?? 0) > 0
   )
-  const formattedEarnings = `Kz ${driverEarnings}`
+
+  const { fare, isVerifying } = useRideFinishedFare(
+    details.rideId,
+    details.fare,
+    hasPromo,
+  )
+
+  const grossAmount = fare.breakdown?.gross_amount ?? fare.total
+  const discount = fare.breakdown?.discount ?? 0
+  const hasDiscount = discount > 0
+  const netTotal = fare.total
+  const driverEarnings = fare.payouts?.driver_earnings ?? netTotal
+  const commission = fare.payouts?.company_earnings ?? 0
+  const pensionFund = fare.payouts?.pension_fund ?? 0
+  const formattedEarnings = `Kz ${formatMoney(driverEarnings)}`
 
   return (
     <SafeAreaView className="flex-1 bg-gray-50">
@@ -99,32 +113,75 @@ export default function RideFinishedScreen() {
               </View>
 
               {/* Ganhos */}
-              <View className="bg-gradient-to-r from-green-50 to-emerald-50 rounded-xl p-4 border border-green-200">
-                <View className="flex-row items-center justify-between mb-2">
+              <View className="bg-green-50 rounded-xl p-4 border border-green-200">
+                <View className="flex-row items-center justify-between mb-3">
                   <View className="flex-row items-center">
                     <DollarSign size={20} color="#059669" />
                     <Text className="text-green-800 font-semibold ml-2">
-                      Seus Ganhos
+                      Resumo Financeiro
                     </Text>
                   </View>
-                  <Award size={20} color="#059669" />
+                  {isVerifying
+                    ? <ActivityIndicator size="small" color="#059669" />
+                    : <Award size={20} color="#059669" />
+                  }
                 </View>
 
-                <View className="flex-row justify-between items-end">
-                  <View>
-                    <Text className="text-green-600 text-2xl font-bold">
-                      {formattedEarnings}
-                    </Text>
-                    <Text className="text-green-700 text-sm">
-                      Valor debitado na sua carteira
+                {isVerifying && (
+                  <View className="items-center py-4">
+                    <ActivityIndicator size="large" color="#059669" />
+                    <Text className="text-green-700 text-sm mt-2">
+                      A calcular ganhos...
                     </Text>
                   </View>
-                  <View className="bg-green-100 px-2 py-1 rounded-full">
-                    <Text className="text-green-700 text-xs font-medium">
-                      -{driverDebit} Kz
-                    </Text>
-                  </View>
+                )}
+
+                {!isVerifying && (<>
+
+                {hasDiscount && (
+                  <>
+                    <View className="flex-row justify-between mb-1">
+                      <Text className="text-gray-500 text-sm">Valor bruto</Text>
+                      <Text className="text-gray-500 text-sm line-through">
+                        Kz {formatMoney(grossAmount)}
+                      </Text>
+                    </View>
+                    <View className="flex-row justify-between mb-2">
+                      <Text className="text-green-700 text-sm">Desconto promo</Text>
+                      <Text className="text-green-700 text-sm font-medium">
+                        − Kz {formatMoney(discount)}
+                      </Text>
+                    </View>
+                    <View className="h-px bg-green-200 mb-2" />
+                  </>
+                )}
+
+                <View className="flex-row justify-between mb-1">
+                  <Text className="text-gray-600 text-sm">Total da corrida</Text>
+                  <Text className="text-gray-800 text-sm font-semibold">
+                    Kz {formatMoney(netTotal)}
+                  </Text>
                 </View>
+                {commission + pensionFund > 0 && (
+                  <View className="flex-row justify-between mb-2">
+                    <Text className="text-gray-500 text-xs">
+                      Comissão + fundo
+                    </Text>
+                    <Text className="text-red-500 text-xs">
+                      − Kz {formatMoney(commission + pensionFund)}
+                    </Text>
+                  </View>
+                )}
+                <View className="h-px bg-green-200 my-2" />
+                <View className="flex-row justify-between items-center">
+                  <Text className="text-green-800 font-semibold text-base">
+                    Os seus ganhos
+                  </Text>
+                  <Text className="text-green-600 text-2xl font-bold">
+                    {formattedEarnings}
+                  </Text>
+                </View>
+                </>)}
               </View>
 
               {/* Agradecimento */}

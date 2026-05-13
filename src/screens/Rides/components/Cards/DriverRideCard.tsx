@@ -309,8 +309,13 @@ export const DriverRideSheet = forwardRef<BottomSheetModal, Props>(
               <Text className="text-gray-400 text-xs font-bold uppercase tracking-widest mb-1 text-center">
                 Valor a Receber
               </Text>
+              {(rideDetails.fare?.breakdown?.discount ?? 0) > 0 && (
+                <Text className="text-gray-400 text-xs line-through text-center">
+                  {formatMoney(rideDetails.fare.breakdown!.gross_amount!)}
+                </Text>
+              )}
               <Text className="text-gray-900 text-2xl font-bold text-center mb-6 tracking-tight">
-                {formatMoney(fareDetails?.total ?? 0)}
+                {formatMoney(rideDetails.fare?.total ?? fareDetails?.total ?? 0)}
               </Text>
 
               {(rideDetails.status === 'driver_on_the_way' ||

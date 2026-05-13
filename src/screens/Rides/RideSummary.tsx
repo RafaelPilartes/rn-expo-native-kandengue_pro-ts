@@ -200,7 +200,7 @@ export default function RideSummaryScreen() {
               pickup: location.pickup,
               dropoff: location.dropoff,
               distance: route.distanceText,
-              fare: fareDetails as RideFareInterface
+              fare: currentRide.fare ?? (fareDetails as RideFareInterface)
             }
           })
         } else {
