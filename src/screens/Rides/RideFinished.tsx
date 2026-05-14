@@ -1,6 +1,12 @@
 // src/screens/Ride/RideFinishedScreen.tsx
 import React from 'react'
-import { ActivityIndicator, View, Text, TouchableOpacity, ScrollView } from 'react-native'
+import {
+  ActivityIndicator,
+  View,
+  Text,
+  TouchableOpacity,
+  ScrollView
+} from 'react-native'
 import { SafeAreaView } from 'react-native-safe-area-context'
 import { Check, Star, DollarSign, Award } from 'lucide-react-native'
 import { useRoute } from '@react-navigation/native'
@@ -34,7 +40,7 @@ export default function RideFinishedScreen() {
   const { fare, isVerifying } = useRideFinishedFare(
     details.rideId,
     details.fare,
-    hasPromo,
+    hasPromo
   )
 
   const grossAmount = fare.breakdown?.gross_amount ?? fare.total
@@ -80,7 +86,7 @@ export default function RideFinishedScreen() {
               {/* Rota */}
               <View className="mb-6">
                 <Text className="text-lg font-semibold text-gray-800 mb-3">
-                  📍 Rota Realizada
+                  Rota Realizada
                 </Text>
 
                 <View className="space-y-3">
@@ -121,10 +127,11 @@ export default function RideFinishedScreen() {
                       Resumo Financeiro
                     </Text>
                   </View>
-                  {isVerifying
-                    ? <ActivityIndicator size="small" color="#059669" />
-                    : <Award size={20} color="#059669" />
-                  }
+                  {isVerifying ? (
+                    <ActivityIndicator size="small" color="#059669" />
+                  ) : (
+                    <Award size={20} color="#059669" />
+                  )}
                 </View>
 
                 {isVerifying && (
@@ -136,59 +143,66 @@ export default function RideFinishedScreen() {
                   </View>
                 )}
 
-                {!isVerifying && (<>
-
-                {hasDiscount && (
+                {!isVerifying && (
                   <>
+                    {hasDiscount && (
+                      <>
+                        <View className="flex-row justify-between mb-1">
+                          <Text className="text-gray-500 text-sm">
+                            Valor bruto
+                          </Text>
+                          <Text className="text-gray-500 text-sm line-through">
+                            Kz {formatMoney(grossAmount)}
+                          </Text>
+                        </View>
+                        <View className="flex-row justify-between mb-2">
+                          <Text className="text-green-700 text-sm">
+                            Desconto promo
+                          </Text>
+                          <Text className="text-green-700 text-sm font-medium">
+                            − Kz {formatMoney(discount)}
+                          </Text>
+                        </View>
+                        <View className="h-px bg-green-200 mb-2" />
+                      </>
+                    )}
+
                     <View className="flex-row justify-between mb-1">
-                      <Text className="text-gray-500 text-sm">Valor bruto</Text>
-                      <Text className="text-gray-500 text-sm line-through">
-                        Kz {formatMoney(grossAmount)}
+                      <Text className="text-gray-600 text-sm">
+                        Total da corrida
+                      </Text>
+                      <Text className="text-gray-800 text-sm font-semibold">
+                        Kz {formatMoney(netTotal)}
                       </Text>
                     </View>
-                    <View className="flex-row justify-between mb-2">
-                      <Text className="text-green-700 text-sm">Desconto promo</Text>
-                      <Text className="text-green-700 text-sm font-medium">
-                        − Kz {formatMoney(discount)}
+                    {commission + pensionFund > 0 && (
+                      <View className="flex-row justify-between mb-2">
+                        <Text className="text-gray-500 text-xs">
+                          Comissão + fundo
+                        </Text>
+                        <Text className="text-red-500 text-xs">
+                          − Kz {formatMoney(commission + pensionFund)}
+                        </Text>
+                      </View>
+                    )}
+                    <View className="h-px bg-green-200 my-2" />
+                    <View className="flex-row justify-between items-center">
+                      <Text className="text-green-800 font-semibold text-base">
+                        Os seus ganhos
+                      </Text>
+                      <Text className="text-green-600 text-2xl font-bold">
+                        {formattedEarnings}
                       </Text>
                     </View>
-                    <View className="h-px bg-green-200 mb-2" />
                   </>
                 )}
-
-                <View className="flex-row justify-between mb-1">
-                  <Text className="text-gray-600 text-sm">Total da corrida</Text>
-                  <Text className="text-gray-800 text-sm font-semibold">
-                    Kz {formatMoney(netTotal)}
-                  </Text>
-                </View>
-                {commission + pensionFund > 0 && (
-                  <View className="flex-row justify-between mb-2">
-                    <Text className="text-gray-500 text-xs">
-                      Comissão + fundo
-                    </Text>
-                    <Text className="text-red-500 text-xs">
-                      − Kz {formatMoney(commission + pensionFund)}
-                    </Text>
-                  </View>
-                )}
-                <View className="h-px bg-green-200 my-2" />
-                <View className="flex-row justify-between items-center">
-                  <Text className="text-green-800 font-semibold text-base">
-                    Os seus ganhos
-                  </Text>
-                  <Text className="text-green-600 text-2xl font-bold">
-                    {formattedEarnings}
-                  </Text>
-                </View>
-                </>)}
               </View>
 
               {/* Agradecimento */}
               <View className="mt-4 bg-blue-50 rounded-lg p-3">
-                <Text className="text-blue-800 text-sm text-center">
-                  🎉 Obrigado por usar o Kandengue! Sua avaliação ajuda a
-                  melhorar nosso serviço.
+                <Text className="text-gray-800 text-sm text-center">
+                  Obrigado por usar o Kandengue! Sua avaliação ajuda a melhorar
+                  nosso serviço.
                 </Text>
               </View>
             </View>

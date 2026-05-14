@@ -267,6 +267,23 @@ export function useRideFlow(
       }
     }
 
+    // Payouts are initially calculated on gross_amount. When a promo discount
+    // exists, recalculate on the net amount (total) so the wallet reflects the
+    // correct split — the trigger also does this server-side, but the wallet
+    // update happens client-side first.
+    const discount = finalFare.breakdown?.discount ?? 0
+    if (discount > 0 && rideRates) {
+      const net = finalFare.total
+      finalFare = {
+        ...finalFare,
+        payouts: {
+          driver_earnings: Math.round((net * rideRates.payouts.driver_percent) / 100),
+          company_earnings: Math.round((net * rideRates.payouts.company_percent) / 100),
+          pension_fund: Math.round((net * rideRates.payouts.pension_fund_percent) / 100),
+        }
+      }
+    }
+
     try {
       // 1. Update wallet and create transactions with final fare
       const transactionResult =
