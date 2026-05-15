@@ -75,7 +75,7 @@ export const CustomAlert = () => {
     if (cancelable) handleClose()
   }
 
-  if (!visible && opacity.value === 0) return null
+  if (!visible) return null
 
   const Config = TYPE_CONFIG[type]
   const Icon = Config.icon

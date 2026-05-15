@@ -22,6 +22,7 @@ export const TopupRequestCard: React.FC<TopupRequestCardProps> = ({
         return {
           icon: CheckCircle,
           color: 'text-green-600',
+          iconColor: '#16A34A',
           bg: 'bg-green-100',
           label: status === 'success' ? 'Sucesso' : 'Aprovado',
         };
@@ -33,6 +34,7 @@ export const TopupRequestCard: React.FC<TopupRequestCardProps> = ({
         return {
           icon: XCircle,
           color: 'text-red-600',
+          iconColor: '#DC2626',
           bg: 'bg-red-100',
           label: status === 'failed' ? 'Falhou' : status === 'cancelled' ? 'Cancelado' : status === 'timeout' ? 'Expirou' : status === 'reversed' ? 'Estornado' : 'Rejeitado',
         };
@@ -40,6 +42,7 @@ export const TopupRequestCard: React.FC<TopupRequestCardProps> = ({
         return {
           icon: Clock,
           color: 'text-blue-600',
+          iconColor: '#2563EB',
           bg: 'bg-blue-100',
           label: 'Processando',
         };
@@ -48,6 +51,7 @@ export const TopupRequestCard: React.FC<TopupRequestCardProps> = ({
         return {
           icon: Clock,
           color: 'text-yellow-600',
+          iconColor: '#CA8A04',
           bg: 'bg-yellow-100',
           label: 'Pendente',
         };
@@ -95,7 +99,7 @@ export const TopupRequestCard: React.FC<TopupRequestCardProps> = ({
         <View className="flex-row items-center mt-1">
           <StatusIcon
             size={14}
-            color={statusConfig.color.replace('text-', '')}
+            color={statusConfig.iconColor}
           />
           <Text className={`text-xs ml-1 ${statusConfig.color}`}>
             {statusConfig.label}
